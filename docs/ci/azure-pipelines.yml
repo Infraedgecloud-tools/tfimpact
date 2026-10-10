@@ -1,7 +1,7 @@
 # Add this step after the step that writes plan.json.
 # Set VERSION to the release you want, without the leading v.
 variables:
-  TFIMPACT_VERSION: '1.0.0'
+  TFIMPACT_VERSION: '0.1.0'
 
 steps:
   - script: |
