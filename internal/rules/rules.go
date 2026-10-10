@@ -418,6 +418,17 @@ func conditions(k *knowledge.Resource, attrs map[string]any) (mitigations, safeg
 	return
 }
 
+// joinSentences joins non-empty sentences with single spaces.
+func joinSentences(parts ...string) string {
+	var out []string
+	for _, p := range parts {
+		if p = strings.TrimSpace(p); p != "" {
+			out = append(out, p)
+		}
+	}
+	return strings.Join(out, " ")
+}
+
 func sentence(parts []string) string {
 	if len(parts) == 0 {
 		return ""

@@ -52,6 +52,10 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		return explain(args[1:], stdin, stdout, stderr)
 	case "comment":
 		return comment(args[1:], stderr)
+	case "rules":
+		return listRules(stdout)
+	case "knowledge":
+		return showKnowledge(args[1:], stdout, stderr)
 	case "version", "--version", "-v":
 		fmt.Fprintln(stdout, versionString())
 		return exitOK
@@ -70,6 +74,8 @@ func usage(w io.Writer) {
 Usage:
   tfimpact explain <plan.json|-> [flags]   explain a plan produced by 'terraform show -json tfplan'
   tfimpact comment --body FILE             create or update the pull-request comment (GitHub Actions)
+  tfimpact rules                           list the rules and what they mean
+  tfimpact knowledge [TYPE]                list the AWS resource types tfimpact knows, or show one
   tfimpact version
 
 Explain flags:
@@ -260,6 +266,134 @@ func isTerminal(w io.Writer) bool {
 	}
 	st, err := f.Stat()
 	return err == nil && st.Mode()&os.ModeCharDevice != 0
+}
+
+func listRules(stdout io.Writer) int {
+	for _, r := range rules.Catalogue {
+		fmt.Fprintf(stdout, "%-16s %-13s %-14s %s\n", r.ID, r.Domain, r.Severity, r.Summary)
+	}
+	return exitOK
+}
+
+func showKnowledge(args []string, stdout, stderr io.Writer) int {
+	fs := flag.NewFlagSet("knowledge", flag.ContinueOnError)
+	fs.SetOutput(stderr)
+	dir := fs.String("knowledge", "", "directory of knowledge TOML files")
+	positional, err := parseInterspersed(fs, args)
+	if err != nil {
+		return exitUsage
+	}
+	var kb *knowledge.Base
+	if *dir != "" {
+		kb, err = knowledge.LoadDir(*dir)
+	} else {
+		kb, err = knowledge.Load()
+	}
+	if err != nil {
+		fmt.Fprintf(stderr, "tfimpact: %v\n", err)
+		return exitUsage
+	}
+	if len(positional) == 0 {
+		for _, t := range kb.Types() {
+			r := kb.Get(t)
+			fmt.Fprintf(stdout, "%-50s %s\n", t, knowledgeTags(r))
+		}
+		return exitOK
+	}
+	r := kb.Get(positional[0])
+	if r == nil {
+		fmt.Fprintf(stderr, "tfimpact: no knowledge for %s; add internal/knowledge/aws/%s.toml\n", positional[0], positional[0])
+		return exitUsage
+	}
+	fmt.Fprintf(stdout, "%s (%s)\n%s\n", r.Type, r.Display, r.Doc)
+	if r.HoldsData {
+		fmt.Fprintf(stdout, "\nHolds data: %s\n", r.Data)
+	}
+	if r.DowntimeOnReplace {
+		fmt.Fprintf(stdout, "\nOn replace: %s\n", r.Downtime)
+	}
+	if r.Delete != nil {
+		fmt.Fprintf(stdout, "\nOn delete (%s): %s\n", r.Delete.Severity, r.Delete.Message)
+	}
+	if len(r.Identity) > 0 {
+		fmt.Fprintf(stdout, "\nIdentity for rename detection: %s\n", strings.Join(r.Identity, ", "))
+	}
+	if len(r.Mitigations) > 0 {
+		fmt.Fprintln(stdout, "\nLoss is real when:")
+		for _, c := range r.Mitigations {
+			fmt.Fprintf(stdout, "  %s: %s\n", conditionText(c), c.Message)
+		}
+	}
+	if len(r.Safeguards) > 0 {
+		fmt.Fprintln(stdout, "\nSoftened when:")
+		for _, c := range r.Safeguards {
+			fmt.Fprintf(stdout, "  %s: %s\n", conditionText(c), c.Message)
+		}
+	}
+	if len(r.Disruptive) > 0 {
+		fmt.Fprintln(stdout, "\nDisruptive in-place changes:")
+		for _, d := range r.Disruptive {
+			sev := d.Severity
+			if sev == "" {
+				sev = "medium"
+			}
+			fmt.Fprintf(stdout, "  %s (%s): %s\n", d.Attr, sev, d.Effect)
+		}
+	}
+	if len(r.Flags) > 0 {
+		fmt.Fprintln(stdout, "\nExposure flags:")
+		for _, f := range r.Flags {
+			sev := f.Severity
+			if sev == "" {
+				sev = "high"
+			}
+			fmt.Fprintf(stdout, "  %s = %v (%s): %s\n", f.Attr, f.Unsafe, sev, f.Message)
+		}
+	}
+	if len(r.Policies) > 0 {
+		fmt.Fprintln(stdout, "\nPolicy documents:")
+		for _, p := range r.Policies {
+			fmt.Fprintf(stdout, "  %s (%s policy)\n", p.Attr, p.Kind)
+		}
+	}
+	return exitOK
+}
+
+func knowledgeTags(r *knowledge.Resource) string {
+	var tags []string
+	if r.HoldsData {
+		tags = append(tags, "data")
+	}
+	if r.DowntimeOnReplace {
+		tags = append(tags, "downtime-on-replace")
+	}
+	if r.Delete != nil {
+		tags = append(tags, "protective")
+	}
+	if len(r.Disruptive) > 0 {
+		tags = append(tags, "disruptive-updates")
+	}
+	if len(r.Flags) > 0 {
+		tags = append(tags, "exposure-flags")
+	}
+	if len(r.Policies) > 0 {
+		tags = append(tags, "policy")
+	}
+	if len(tags) == 0 {
+		return "display only"
+	}
+	return strings.Join(tags, ", ")
+}
+
+func conditionText(c knowledge.Condition) string {
+	switch {
+	case c.Absent:
+		return c.Attr + " not set"
+	case c.Present:
+		return c.Attr + " set"
+	default:
+		return fmt.Sprintf("%s = %v", c.Attr, c.Equals)
+	}
 }
 
 func comment(args []string, stderr io.Writer) int {
