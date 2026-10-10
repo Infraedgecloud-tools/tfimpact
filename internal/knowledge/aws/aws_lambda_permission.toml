@@ -1,0 +1,9 @@
+type = "aws_lambda_permission"
+display = "Lambda invoke permission"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_permission"
+
+[[flag]]
+attr = "principal"
+unsafe = "*"
+message = "any principal may invoke the function (principal = \"*\"); check source_arn and source_account"
+severity = "critical"

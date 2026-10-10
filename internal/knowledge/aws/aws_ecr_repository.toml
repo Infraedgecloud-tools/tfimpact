@@ -1,0 +1,27 @@
+type = "aws_ecr_repository"
+display = "ECR repository"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_repository"
+holds_data = true
+data = "every container image in the repository"
+identity = ["name"]
+
+[[mitigation]]
+attr = "force_delete"
+equals = true
+message = "force_delete = true, so the images are deleted first without asking"
+
+[[safeguard]]
+attr = "force_delete"
+absent = true
+message = "force_delete is not set, so the delete fails if images remain"
+
+[[safeguard]]
+attr = "force_delete"
+equals = false
+message = "force_delete is false, so the delete fails if images remain"
+
+[[flag]]
+attr = "image_tag_mutability"
+unsafe = "MUTABLE"
+message = "image tags become mutable, so a tag such as latest can be repointed"
+severity = "low"

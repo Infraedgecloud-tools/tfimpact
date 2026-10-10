@@ -1,0 +1,43 @@
+type = "aws_elasticache_replication_group"
+display = "ElastiCache (Redis/Valkey) replication group"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/elasticache_replication_group"
+holds_data = true
+data = "every key in the cache; applications treating it as a store lose that data"
+identity = ["replication_group_id"]
+
+[[mitigation]]
+attr = "final_snapshot_identifier"
+absent = true
+message = "no final snapshot will be taken (final_snapshot_identifier is not set)"
+
+[[safeguard]]
+attr = "final_snapshot_identifier"
+present = true
+message = "a final snapshot will be taken first"
+
+[[disruptive]]
+attr = "node_type"
+effect = "nodes are replaced one at a time; expect brief failovers"
+severity = "medium"
+
+[[disruptive]]
+attr = "engine_version"
+effect = "an engine upgrade with a rolling restart"
+severity = "medium"
+
+[[disruptive]]
+attr = "num_cache_clusters"
+effect = "replicas are added or removed; removing the last replica turns off automatic failover"
+severity = "low"
+
+[[flag]]
+attr = "at_rest_encryption_enabled"
+unsafe = false
+message = "encryption at rest is off"
+severity = "high"
+
+[[flag]]
+attr = "transit_encryption_enabled"
+unsafe = false
+message = "encryption in transit is off"
+severity = "high"

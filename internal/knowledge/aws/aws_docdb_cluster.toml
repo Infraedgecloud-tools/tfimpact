@@ -1,0 +1,26 @@
+type = "aws_docdb_cluster"
+display = "DocumentDB cluster"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/docdb_cluster"
+holds_data = true
+data = "every collection and document"
+identity = ["cluster_identifier"]
+
+[[mitigation]]
+attr = "skip_final_snapshot"
+equals = true
+message = "no final snapshot will be taken (skip_final_snapshot = true)"
+
+[[mitigation]]
+attr = "deletion_protection"
+equals = false
+message = "deletion protection is off"
+
+[[safeguard]]
+attr = "deletion_protection"
+equals = true
+message = "deletion protection is on, so AWS will refuse the delete"
+
+[[safeguard]]
+attr = "final_snapshot_identifier"
+present = true
+message = "a final snapshot will be taken first"

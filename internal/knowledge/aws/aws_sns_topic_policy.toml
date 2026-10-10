@@ -1,0 +1,8 @@
+type = "aws_sns_topic_policy"
+display = "SNS topic policy"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sns_topic_policy"
+identity = ["arn"]
+
+[[policy]]
+attr = "policy"
+kind = "resource"

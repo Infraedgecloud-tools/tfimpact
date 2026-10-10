@@ -1,0 +1,8 @@
+type = "aws_s3_bucket_logging"
+display = "S3 access logging"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_logging"
+identity = ["bucket"]
+
+[delete]
+severity = "medium"
+message = "access logging for the bucket stops"

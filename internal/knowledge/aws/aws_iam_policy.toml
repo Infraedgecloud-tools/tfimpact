@@ -1,0 +1,8 @@
+type = "aws_iam_policy"
+display = "IAM managed policy"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy"
+identity = ["name"]
+
+[[policy]]
+attr = "policy"
+kind = "identity"

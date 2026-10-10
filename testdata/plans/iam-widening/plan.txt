@@ -1,0 +1,95 @@
+data.aws_iam_policy_document.deploy: Reading...
+data.aws_iam_policy_document.deploy: Read complete after 0s [id=3125787031]
+data.aws_iam_policy_document.trust: Reading...
+data.aws_iam_policy_document.trust: Read complete after 0s [id=704452225]
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  ~ update in-place
+
+Terraform will perform the following actions:
+
+  # aws_iam_policy.deploy will be updated in-place
+  ~ resource "aws_iam_policy" "deploy" {
+        id               = "arn:aws:iam::123456789012:policy/fixture-ci-deploy"
+        name             = "fixture-ci-deploy"
+      ~ policy           = jsonencode(
+          ~ {
+              ~ Statement = [
+                  ~ {
+                      ~ Action   = [
+                          - "s3:PutObject",
+                          - "s3:GetObject",
+                        ] -> "s3:*"
+                      ~ Resource = "arn:aws:s3:::fixture-artifacts/*" -> "*"
+                        # (1 unchanged attribute hidden)
+                    },
+                ]
+                # (1 unchanged attribute hidden)
+            }
+        )
+        # (7 unchanged attributes hidden)
+    }
+
+  # aws_iam_role.deploy will be updated in-place
+  ~ resource "aws_iam_role" "deploy" {
+      ~ assume_role_policy    = jsonencode(
+          ~ {
+              ~ Statement = [
+                  ~ {
+                      ~ Condition = {
+                          ~ StringEquals = {
+                              - "token.actions.githubusercontent.com:sub" = "repo:acme/platform:ref:refs/heads/main"
+                                # (1 unchanged attribute hidden)
+                            }
+                          + StringLike   = {
+                              + "token.actions.githubusercontent.com:sub" = "repo:acme/*"
+                            }
+                        }
+                        # (3 unchanged attributes hidden)
+                    },
+                ]
+                # (1 unchanged attribute hidden)
+            }
+        )
+        id                    = "fixture-ci-deploy"
+        name                  = "fixture-ci-deploy"
+        # (11 unchanged attributes hidden)
+    }
+
+  # aws_security_group.admin will be updated in-place
+  ~ resource "aws_security_group" "admin" {
+        id                     = "sg-4b5a65de50c001227"
+      ~ ingress                = [
+          - {
+              - cidr_blocks      = [
+                  - "10.0.0.0/8",
+                ]
+              - from_port        = 22
+              - ipv6_cidr_blocks = []
+              - prefix_list_ids  = []
+              - protocol         = "tcp"
+              - security_groups  = []
+              - self             = false
+              - to_port          = 22
+                # (1 unchanged attribute hidden)
+            },
+          + {
+              + cidr_blocks      = [
+                  + "0.0.0.0/0",
+                ]
+              + from_port        = 22
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "tcp"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 22
+                # (1 unchanged attribute hidden)
+            },
+        ]
+        name                   = "fixture-admin"
+        # (9 unchanged attributes hidden)
+    }
+
+Plan: 0 to add, 3 to change, 0 to destroy.

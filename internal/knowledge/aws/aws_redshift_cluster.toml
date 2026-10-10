@@ -1,0 +1,43 @@
+type = "aws_redshift_cluster"
+display = "Redshift cluster"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/redshift_cluster"
+holds_data = true
+data = "the warehouse and everything stored in it"
+identity = ["cluster_identifier"]
+
+[[mitigation]]
+attr = "skip_final_snapshot"
+equals = true
+message = "no final snapshot will be taken (skip_final_snapshot = true)"
+
+[[safeguard]]
+attr = "final_snapshot_identifier"
+present = true
+message = "a final snapshot will be taken first"
+
+[[disruptive]]
+attr = "node_type"
+effect = "the cluster is resized; it is read-only or unavailable while that happens"
+severity = "high"
+
+[[disruptive]]
+attr = "number_of_nodes"
+effect = "the cluster is resized; it is read-only or unavailable while that happens"
+severity = "high"
+
+[[disruptive]]
+attr = "cluster_identifier"
+effect = "the endpoint hostname changes"
+severity = "high"
+
+[[flag]]
+attr = "publicly_accessible"
+unsafe = true
+message = "the cluster becomes reachable from the internet"
+severity = "critical"
+
+[[flag]]
+attr = "encrypted"
+unsafe = false
+message = "encryption at rest is off"
+severity = "high"

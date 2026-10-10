@@ -1,0 +1,53 @@
+type = "aws_rds_cluster"
+display = "Aurora or RDS Multi-AZ cluster"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/rds_cluster"
+holds_data = true
+data = "the cluster's databases and everything stored in them"
+identity = ["cluster_identifier"]
+
+[[mitigation]]
+attr = "skip_final_snapshot"
+equals = true
+message = "no final snapshot will be taken (skip_final_snapshot = true)"
+
+[[mitigation]]
+attr = "deletion_protection"
+equals = false
+message = "deletion protection is off"
+
+[[safeguard]]
+attr = "deletion_protection"
+equals = true
+message = "deletion protection is on, so AWS will refuse the delete and the apply will fail before anything is lost"
+
+[[safeguard]]
+attr = "final_snapshot_identifier"
+present = true
+message = "a final snapshot will be taken first, so the data can be restored"
+
+[[disruptive]]
+attr = "cluster_identifier"
+effect = "the cluster endpoints change; anything connecting by the old hostnames will fail until it is updated"
+severity = "high"
+
+[[disruptive]]
+attr = "engine_version"
+effect = "an engine upgrade; minor versions restart the writer briefly, major versions take longer and cannot be rolled back"
+severity = "medium"
+
+[[disruptive]]
+attr = "master_password"
+effect = "the master password changes immediately; connections using the old one fail"
+severity = "medium"
+
+[[flag]]
+attr = "deletion_protection"
+unsafe = false
+message = "deletion protection is being turned off"
+severity = "medium"
+
+[[flag]]
+attr = "storage_encrypted"
+unsafe = false
+message = "storage encryption is off"
+severity = "high"

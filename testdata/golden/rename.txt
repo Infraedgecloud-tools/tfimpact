@@ -1,0 +1,20 @@
+tfimpact: 1 change destroys data, 1 minor, 1 routine
+Plan: 2 to add, 0 to change, 2 to destroy (1 move, 2 unchanged). Terraform/OpenTofu 1.15.5 · 6 resources.
+
+CRITICAL (1)
+  * aws_s3_bucket.logs is renamed to aws_s3_bucket.audit_logs without a moved block, so it will be destroyed and recreated [PLAN-RENAME-001]
+    aws_s3_bucket.logs will be destroyed because it left the configuration, and aws_s3_bucket.audit_logs will be created with the same bucket ("fixture-alb-access-logs-eu-west-2"). Terraform does not know they are the same object. Every object and object version in the bucket would be lost with the S3 bucket.
+    -> Add a moved block (from = aws_s3_bucket.logs, to = aws_s3_bucket.audit_logs) so Terraform changes the address in state instead. Applying as planned also tries to create a resource with the same bucket, which fails for globally named resources.
+
+LOW (1)
+  * aws_s3_bucket_versioning.logs will be destroyed [PLAN-DELETE-001]
+    The S3 bucket versioning is destroyed because it is no longer in the configuration.
+    -> Confirm nothing outside this configuration still depends on it.
+
+ROUTINE (1)
+  * aws_s3_bucket_versioning.audit_logs: created
+
+MOVED (1)
+  * aws_sqs_queue.events -> aws_sqs_queue.event_queue
+
+tfimpact test by InfraEdge · deterministic, runs on the runner, sends nothing anywhere · sensitive values masked

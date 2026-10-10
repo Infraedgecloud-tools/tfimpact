@@ -1,0 +1,16 @@
+type = "aws_elasticache_cluster"
+display = "ElastiCache cluster"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/elasticache_cluster"
+holds_data = true
+data = "everything in the cache"
+identity = ["cluster_id"]
+
+[[mitigation]]
+attr = "final_snapshot_identifier"
+absent = true
+message = "no final snapshot will be taken (Memcached cannot snapshot; Redis would need final_snapshot_identifier)"
+
+[[disruptive]]
+attr = "node_type"
+effect = "nodes are replaced; the cache is cold afterwards"
+severity = "medium"

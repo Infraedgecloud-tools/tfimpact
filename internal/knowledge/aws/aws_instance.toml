@@ -1,0 +1,37 @@
+type = "aws_instance"
+display = "EC2 instance"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance"
+downtime_on_replace = true
+downtime = "the instance is terminated and a new one launched with a new instance ID, new private IP and, unless an Elastic IP is attached, a new public IP; the root volume is deleted unless delete_on_termination is false"
+
+[[disruptive]]
+attr = "user_data"
+effect = "the instance is stopped and started to apply the new user data (user_data_replace_on_change is false); it keeps its ID but gets a new public IP unless it has an Elastic IP, and the script only re-runs if the AMI's cloud-init is configured to"
+severity = "high"
+
+[[disruptive]]
+attr = "user_data_base64"
+effect = "the instance is stopped and started to apply the new user data; it keeps its ID but gets a new public IP unless it has an Elastic IP"
+severity = "high"
+
+[[disruptive]]
+attr = "instance_type"
+effect = "the instance is stopped and started on the new type"
+severity = "high"
+
+[[disruptive]]
+attr = "ebs_optimized"
+effect = "the instance is stopped and started"
+severity = "medium"
+
+[[flag]]
+attr = "associate_public_ip_address"
+unsafe = true
+message = "the instance gets a public IP address"
+severity = "medium"
+
+[[flag]]
+attr = "metadata_options[0].http_tokens"
+unsafe = "optional"
+message = "IMDSv1 is allowed (http_tokens = optional), which weakens protection against credential theft via SSRF"
+severity = "medium"

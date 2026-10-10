@@ -1,0 +1,8 @@
+type = "aws_sqs_queue_policy"
+display = "SQS queue policy"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sqs_queue_policy"
+identity = ["queue_url"]
+
+[[policy]]
+attr = "policy"
+kind = "resource"

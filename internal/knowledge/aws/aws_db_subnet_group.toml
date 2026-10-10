@@ -1,0 +1,4 @@
+type = "aws_db_subnet_group"
+display = "RDS subnet group"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/db_subnet_group"
+identity = ["name"]

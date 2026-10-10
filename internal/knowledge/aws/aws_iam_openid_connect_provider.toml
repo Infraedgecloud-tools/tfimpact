@@ -1,0 +1,8 @@
+type = "aws_iam_openid_connect_provider"
+display = "IAM OIDC identity provider"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_openid_connect_provider"
+identity = ["url"]
+
+[delete]
+severity = "high"
+message = "every role that trusts this provider (for example CI deploy roles) can no longer be assumed"

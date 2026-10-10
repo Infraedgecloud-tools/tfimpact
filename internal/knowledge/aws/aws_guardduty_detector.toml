@@ -1,0 +1,13 @@
+type = "aws_guardduty_detector"
+display = "GuardDuty detector"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/guardduty_detector"
+
+[delete]
+severity = "high"
+message = "threat detection for the account stops and existing findings are deleted"
+
+[[flag]]
+attr = "enable"
+unsafe = false
+message = "GuardDuty is being disabled"
+severity = "high"

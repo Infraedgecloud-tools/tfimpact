@@ -1,0 +1,8 @@
+type = "aws_s3_bucket_server_side_encryption_configuration"
+display = "S3 default encryption configuration"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_server_side_encryption_configuration"
+identity = ["bucket"]
+
+[delete]
+severity = "medium"
+message = "the bucket's default encryption settings are removed and fall back to the S3 default (SSE-S3)"

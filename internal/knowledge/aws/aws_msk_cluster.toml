@@ -1,0 +1,16 @@
+type = "aws_msk_cluster"
+display = "MSK (Kafka) cluster"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/msk_cluster"
+holds_data = true
+data = "every topic and retained message; the bootstrap broker addresses also change"
+identity = ["cluster_name"]
+
+[[disruptive]]
+attr = "kafka_version"
+effect = "a rolling broker upgrade"
+severity = "medium"
+
+[[disruptive]]
+attr = "number_of_broker_nodes"
+effect = "brokers are added; partitions must be reassigned to use them"
+severity = "low"

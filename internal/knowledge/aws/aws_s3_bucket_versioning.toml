@@ -1,0 +1,10 @@
+type = "aws_s3_bucket_versioning"
+display = "S3 bucket versioning"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_versioning"
+identity = ["bucket"]
+
+[[flag]]
+attr = "versioning_configuration[0].status"
+unsafe = "Suspended"
+message = "versioning is suspended, so overwritten and deleted objects can no longer be recovered"
+severity = "medium"

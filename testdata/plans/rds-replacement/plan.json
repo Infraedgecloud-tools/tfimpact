@@ -1,0 +1,1429 @@
+{
+    "format_version": "1.2",
+    "terraform_version": "1.15.5",
+    "variables": {
+        "cost_centre": {
+            "value": "platform"
+        }
+    },
+    "planned_values": {
+        "root_module": {
+            "resources": [
+                {
+                    "address": "aws_db_instance.app",
+                    "mode": "managed",
+                    "type": "aws_db_instance",
+                    "name": "app",
+                    "provider_name": "registry.terraform.io/hashicorp/aws",
+                    "schema_version": 2,
+                    "values": {
+                        "allocated_storage": 100,
+                        "allow_major_version_upgrade": null,
+                        "apply_immediately": false,
+                        "auto_minor_version_upgrade": true,
+                        "backup_retention_period": 7,
+                        "blue_green_update": [],
+                        "copy_tags_to_snapshot": false,
+                        "custom_iam_instance_profile": null,
+                        "customer_owned_ip_enabled": null,
+                        "db_subnet_group_name": "app-db",
+                        "dedicated_log_volume": false,
+                        "delete_automated_backups": true,
+                        "deletion_protection": false,
+                        "domain": null,
+                        "domain_auth_secret_arn": null,
+                        "domain_dns_ips": null,
+                        "domain_iam_role_name": null,
+                        "domain_ou": null,
+                        "enabled_cloudwatch_logs_exports": null,
+                        "engine": "postgres",
+                        "engine_version": "15.4",
+                        "final_snapshot_identifier": null,
+                        "iam_database_authentication_enabled": null,
+                        "identifier": "app-db-eu",
+                        "instance_class": "db.m6g.large",
+                        "manage_master_user_password": null,
+                        "max_allocated_storage": null,
+                        "monitoring_interval": 0,
+                        "password": "fixture-password-not-real",
+                        "password_wo": null,
+                        "password_wo_version": null,
+                        "performance_insights_enabled": false,
+                        "publicly_accessible": false,
+                        "region": "eu-west-2",
+                        "replicate_source_db": null,
+                        "restore_to_point_in_time": [],
+                        "s3_import": [],
+                        "skip_final_snapshot": true,
+                        "storage_encrypted": true,
+                        "tags": {
+                            "Name": "app-db"
+                        },
+                        "tags_all": {
+                            "CostCentre": "platform",
+                            "Name": "app-db",
+                            "Project": "fixture"
+                        },
+                        "timeouts": null,
+                        "upgrade_storage_config": null,
+                        "username": "app",
+                        "warning_event_categories": null
+                    },
+                    "sensitive_values": {
+                        "blue_green_update": [],
+                        "listener_endpoint": [],
+                        "master_user_secret": [],
+                        "replicas": [],
+                        "restore_to_point_in_time": [],
+                        "s3_import": [],
+                        "tags": {},
+                        "tags_all": {},
+                        "vpc_security_group_ids": []
+                    },
+                    "identity_schema_version": 0,
+                    "identity": {
+                        "account_id": "",
+                        "identifier": "app-db",
+                        "region": "eu-west-2"
+                    }
+                },
+                {
+                    "address": "aws_db_subnet_group.app",
+                    "mode": "managed",
+                    "type": "aws_db_subnet_group",
+                    "name": "app",
+                    "provider_name": "registry.terraform.io/hashicorp/aws",
+                    "schema_version": 0,
+                    "values": {
+                        "arn": "arn:aws:rds:eu-west-2:123456789012:subgrp:app-db",
+                        "description": "Managed by Terraform",
+                        "id": "app-db",
+                        "name": "app-db",
+                        "name_prefix": "",
+                        "region": "eu-west-2",
+                        "subnet_ids": [
+                            "subnet-9a38c47712b1ff4a5",
+                            "subnet-aa6dfae76799048bd"
+                        ],
+                        "supported_network_types": [],
+                        "tags": null,
+                        "tags_all": {
+                            "CostCentre": "platform",
+                            "Project": "fixture"
+                        },
+                        "vpc_id": "vpc-929ddc2029faa10d7"
+                    },
+                    "sensitive_values": {
+                        "subnet_ids": [
+                            false,
+                            false
+                        ],
+                        "supported_network_types": [],
+                        "tags_all": {}
+                    },
+                    "identity_schema_version": 0,
+                    "identity": {
+                        "account_id": "",
+                        "name": "app-db",
+                        "region": "eu-west-2"
+                    }
+                },
+                {
+                    "address": "aws_subnet.a",
+                    "mode": "managed",
+                    "type": "aws_subnet",
+                    "name": "a",
+                    "provider_name": "registry.terraform.io/hashicorp/aws",
+                    "schema_version": 1,
+                    "values": {
+                        "arn": "arn:aws:ec2:eu-west-2:123456789012:subnet/subnet-9a38c47712b1ff4a5",
+                        "assign_ipv6_address_on_creation": false,
+                        "availability_zone": "eu-west-2a",
+                        "availability_zone_id": "euw2-az2",
+                        "cidr_block": "10.0.1.0/24",
+                        "customer_owned_ipv4_pool": "",
+                        "enable_dns64": false,
+                        "enable_lni_at_device_index": 0,
+                        "enable_resource_name_dns_a_record_on_launch": false,
+                        "enable_resource_name_dns_aaaa_record_on_launch": false,
+                        "id": "subnet-9a38c47712b1ff4a5",
+                        "ipv4_ipam_pool_id": null,
+                        "ipv4_netmask_length": null,
+                        "ipv6_cidr_block": "",
+                        "ipv6_cidr_block_association_id": "",
+                        "ipv6_ipam_pool_id": null,
+                        "ipv6_native": false,
+                        "ipv6_netmask_length": null,
+                        "map_customer_owned_ip_on_launch": false,
+                        "map_public_ip_on_launch": false,
+                        "outpost_arn": "",
+                        "owner_id": "123456789012",
+                        "private_dns_hostname_type_on_launch": "ip-name",
+                        "region": "eu-west-2",
+                        "tags": null,
+                        "tags_all": {
+                            "CostCentre": "platform",
+                            "Project": "fixture"
+                        },
+                        "timeouts": null,
+                        "vpc_id": "vpc-929ddc2029faa10d7"
+                    },
+                    "sensitive_values": {
+                        "tags_all": {}
+                    },
+                    "identity_schema_version": 0,
+                    "identity": {
+                        "account_id": "",
+                        "id": "subnet-9a38c47712b1ff4a5",
+                        "region": "eu-west-2"
+                    }
+                },
+                {
+                    "address": "aws_subnet.b",
+                    "mode": "managed",
+                    "type": "aws_subnet",
+                    "name": "b",
+                    "provider_name": "registry.terraform.io/hashicorp/aws",
+                    "schema_version": 1,
+                    "values": {
+                        "arn": "arn:aws:ec2:eu-west-2:123456789012:subnet/subnet-aa6dfae76799048bd",
+                        "assign_ipv6_address_on_creation": false,
+                        "availability_zone": "eu-west-2b",
+                        "availability_zone_id": "euw2-az3",
+                        "cidr_block": "10.0.2.0/24",
+                        "customer_owned_ipv4_pool": "",
+                        "enable_dns64": false,
+                        "enable_lni_at_device_index": 0,
+                        "enable_resource_name_dns_a_record_on_launch": false,
+                        "enable_resource_name_dns_aaaa_record_on_launch": false,
+                        "id": "subnet-aa6dfae76799048bd",
+                        "ipv4_ipam_pool_id": null,
+                        "ipv4_netmask_length": null,
+                        "ipv6_cidr_block": "",
+                        "ipv6_cidr_block_association_id": "",
+                        "ipv6_ipam_pool_id": null,
+                        "ipv6_native": false,
+                        "ipv6_netmask_length": null,
+                        "map_customer_owned_ip_on_launch": false,
+                        "map_public_ip_on_launch": false,
+                        "outpost_arn": "",
+                        "owner_id": "123456789012",
+                        "private_dns_hostname_type_on_launch": "ip-name",
+                        "region": "eu-west-2",
+                        "tags": null,
+                        "tags_all": {
+                            "CostCentre": "platform",
+                            "Project": "fixture"
+                        },
+                        "timeouts": null,
+                        "vpc_id": "vpc-929ddc2029faa10d7"
+                    },
+                    "sensitive_values": {
+                        "tags_all": {}
+                    },
+                    "identity_schema_version": 0,
+                    "identity": {
+                        "account_id": "",
+                        "id": "subnet-aa6dfae76799048bd",
+                        "region": "eu-west-2"
+                    }
+                },
+                {
+                    "address": "aws_vpc.main",
+                    "mode": "managed",
+                    "type": "aws_vpc",
+                    "name": "main",
+                    "provider_name": "registry.terraform.io/hashicorp/aws",
+                    "schema_version": 1,
+                    "values": {
+                        "arn": "arn:aws:ec2:eu-west-2:123456789012:vpc/vpc-929ddc2029faa10d7",
+                        "assign_generated_ipv6_cidr_block": false,
+                        "cidr_block": "10.0.0.0/16",
+                        "default_network_acl_id": "acl-b4843df24f21fd6b5",
+                        "default_route_table_id": "rtb-44551534548bf6715",
+                        "default_security_group_id": "sg-c60c18ee0c19b7f20",
+                        "dhcp_options_id": "default",
+                        "enable_dns_hostnames": false,
+                        "enable_dns_support": true,
+                        "enable_network_address_usage_metrics": false,
+                        "id": "vpc-929ddc2029faa10d7",
+                        "instance_tenancy": "default",
+                        "ipv4_ipam_pool_id": null,
+                        "ipv4_netmask_length": null,
+                        "ipv6_association_id": "",
+                        "ipv6_cidr_block": "",
+                        "ipv6_cidr_block_network_border_group": "",
+                        "ipv6_ipam_pool_id": "",
+                        "ipv6_netmask_length": 0,
+                        "main_route_table_id": "rtb-44551534548bf6715",
+                        "owner_id": "123456789012",
+                        "region": "eu-west-2",
+                        "tags": null,
+                        "tags_all": {
+                            "CostCentre": "platform",
+                            "Project": "fixture"
+                        }
+                    },
+                    "sensitive_values": {
+                        "tags_all": {}
+                    },
+                    "identity_schema_version": 0,
+                    "identity": {
+                        "account_id": "",
+                        "id": "vpc-929ddc2029faa10d7",
+                        "region": "eu-west-2"
+                    }
+                }
+            ]
+        }
+    },
+    "resource_changes": [
+        {
+            "address": "aws_db_instance.app",
+            "mode": "managed",
+            "type": "aws_db_instance",
+            "name": "app",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "change": {
+                "actions": [
+                    "delete",
+                    "create"
+                ],
+                "before": {
+                    "address": "app-db.aaaaaaaaaa.eu-west-2.rds.amazonaws.com",
+                    "allocated_storage": 100,
+                    "allow_major_version_upgrade": null,
+                    "apply_immediately": false,
+                    "arn": "arn:aws:rds:eu-west-2:123456789012:db:app-db",
+                    "auto_minor_version_upgrade": true,
+                    "availability_zone": "eu-west-2a",
+                    "backup_retention_period": 7,
+                    "backup_target": "",
+                    "backup_window": "13:14-13:44",
+                    "blue_green_update": [],
+                    "ca_cert_identifier": "rds-ca-default",
+                    "character_set_name": "",
+                    "copy_tags_to_snapshot": false,
+                    "custom_iam_instance_profile": "",
+                    "customer_owned_ip_enabled": false,
+                    "database_insights_mode": "",
+                    "db_name": "",
+                    "db_subnet_group_name": "app-db",
+                    "dedicated_log_volume": false,
+                    "delete_automated_backups": true,
+                    "deletion_protection": false,
+                    "domain": "",
+                    "domain_auth_secret_arn": "",
+                    "domain_dns_ips": null,
+                    "domain_fqdn": "",
+                    "domain_iam_role_name": "",
+                    "domain_ou": "",
+                    "enabled_cloudwatch_logs_exports": null,
+                    "endpoint": "app-db.aaaaaaaaaa.eu-west-2.rds.amazonaws.com:5432",
+                    "engine": "postgres",
+                    "engine_lifecycle_support": "",
+                    "engine_version": "15.4",
+                    "engine_version_actual": "15.4",
+                    "final_snapshot_identifier": null,
+                    "hosted_zone_id": "",
+                    "iam_database_authentication_enabled": false,
+                    "id": "db-M5ENSHXFPU6XHZ4G4ZEI5QIO2U",
+                    "identifier": "app-db",
+                    "identifier_prefix": "",
+                    "instance_class": "db.t3.medium",
+                    "iops": 0,
+                    "kms_key_id": "",
+                    "latest_restorable_time": "2026-10-10T07:58:09Z",
+                    "license_model": "general-public-license",
+                    "listener_endpoint": [],
+                    "maintenance_window": "wed:06:38-wed:07:08",
+                    "manage_master_user_password": null,
+                    "master_user_secret": [],
+                    "master_user_secret_kms_key_id": null,
+                    "max_allocated_storage": 0,
+                    "monitoring_interval": 0,
+                    "monitoring_role_arn": "",
+                    "multi_az": false,
+                    "nchar_character_set_name": "",
+                    "network_type": "",
+                    "option_group_name": "default:postgres-15-4",
+                    "parameter_group_name": "default.postgres15",
+                    "password": "fixture-password-not-real",
+                    "password_wo": null,
+                    "password_wo_version": null,
+                    "performance_insights_enabled": false,
+                    "performance_insights_kms_key_id": "",
+                    "performance_insights_retention_period": 0,
+                    "port": 5432,
+                    "publicly_accessible": false,
+                    "region": "eu-west-2",
+                    "replica_mode": "",
+                    "replicas": [],
+                    "replicate_source_db": "",
+                    "resource_id": "db-M5ENSHXFPU6XHZ4G4ZEI5QIO2U",
+                    "restore_to_point_in_time": [],
+                    "s3_import": [],
+                    "skip_final_snapshot": true,
+                    "snapshot_identifier": null,
+                    "status": "available",
+                    "storage_encrypted": false,
+                    "storage_throughput": 0,
+                    "storage_type": "gp2",
+                    "tags": {
+                        "Name": "app-db"
+                    },
+                    "tags_all": {
+                        "CostCentre": "platform",
+                        "Name": "app-db",
+                        "Project": "fixture"
+                    },
+                    "timeouts": null,
+                    "timezone": "",
+                    "upgrade_rollout_order": "",
+                    "upgrade_storage_config": null,
+                    "username": "app",
+                    "vpc_security_group_ids": [
+                        "sg-75b78da45d1f97fa6"
+                    ],
+                    "warning_event_categories": null
+                },
+                "after": {
+                    "allocated_storage": 100,
+                    "allow_major_version_upgrade": null,
+                    "apply_immediately": false,
+                    "auto_minor_version_upgrade": true,
+                    "backup_retention_period": 7,
+                    "blue_green_update": [],
+                    "copy_tags_to_snapshot": false,
+                    "custom_iam_instance_profile": null,
+                    "customer_owned_ip_enabled": null,
+                    "db_subnet_group_name": "app-db",
+                    "dedicated_log_volume": false,
+                    "delete_automated_backups": true,
+                    "deletion_protection": false,
+                    "domain": null,
+                    "domain_auth_secret_arn": null,
+                    "domain_dns_ips": null,
+                    "domain_iam_role_name": null,
+                    "domain_ou": null,
+                    "enabled_cloudwatch_logs_exports": null,
+                    "engine": "postgres",
+                    "engine_version": "15.4",
+                    "final_snapshot_identifier": null,
+                    "iam_database_authentication_enabled": null,
+                    "identifier": "app-db-eu",
+                    "instance_class": "db.m6g.large",
+                    "manage_master_user_password": null,
+                    "max_allocated_storage": null,
+                    "monitoring_interval": 0,
+                    "password": "fixture-password-not-real",
+                    "password_wo": null,
+                    "password_wo_version": null,
+                    "performance_insights_enabled": false,
+                    "publicly_accessible": false,
+                    "region": "eu-west-2",
+                    "replicate_source_db": null,
+                    "restore_to_point_in_time": [],
+                    "s3_import": [],
+                    "skip_final_snapshot": true,
+                    "storage_encrypted": true,
+                    "tags": {
+                        "Name": "app-db"
+                    },
+                    "tags_all": {
+                        "CostCentre": "platform",
+                        "Name": "app-db",
+                        "Project": "fixture"
+                    },
+                    "timeouts": null,
+                    "upgrade_storage_config": null,
+                    "username": "app",
+                    "warning_event_categories": null
+                },
+                "after_unknown": {
+                    "address": true,
+                    "arn": true,
+                    "availability_zone": true,
+                    "backup_target": true,
+                    "backup_window": true,
+                    "blue_green_update": [],
+                    "ca_cert_identifier": true,
+                    "character_set_name": true,
+                    "database_insights_mode": true,
+                    "db_name": true,
+                    "domain_fqdn": true,
+                    "endpoint": true,
+                    "engine_lifecycle_support": true,
+                    "engine_version_actual": true,
+                    "hosted_zone_id": true,
+                    "id": true,
+                    "identifier_prefix": true,
+                    "iops": true,
+                    "kms_key_id": true,
+                    "latest_restorable_time": true,
+                    "license_model": true,
+                    "listener_endpoint": true,
+                    "maintenance_window": true,
+                    "master_user_secret": true,
+                    "master_user_secret_kms_key_id": true,
+                    "monitoring_role_arn": true,
+                    "multi_az": true,
+                    "nchar_character_set_name": true,
+                    "network_type": true,
+                    "option_group_name": true,
+                    "parameter_group_name": true,
+                    "performance_insights_kms_key_id": true,
+                    "performance_insights_retention_period": true,
+                    "port": true,
+                    "replica_mode": true,
+                    "replicas": true,
+                    "resource_id": true,
+                    "restore_to_point_in_time": [],
+                    "s3_import": [],
+                    "snapshot_identifier": true,
+                    "status": true,
+                    "storage_throughput": true,
+                    "storage_type": true,
+                    "tags": {},
+                    "tags_all": {},
+                    "timezone": true,
+                    "upgrade_rollout_order": true,
+                    "vpc_security_group_ids": true
+                },
+                "before_sensitive": {
+                    "blue_green_update": [],
+                    "listener_endpoint": [],
+                    "master_user_secret": [],
+                    "password": true,
+                    "password_wo": true,
+                    "replicas": [],
+                    "restore_to_point_in_time": [],
+                    "s3_import": [],
+                    "tags": {},
+                    "tags_all": {},
+                    "vpc_security_group_ids": [
+                        false
+                    ]
+                },
+                "after_sensitive": {
+                    "blue_green_update": [],
+                    "listener_endpoint": [],
+                    "master_user_secret": [],
+                    "password": true,
+                    "password_wo": true,
+                    "replicas": [],
+                    "restore_to_point_in_time": [],
+                    "s3_import": [],
+                    "tags": {},
+                    "tags_all": {},
+                    "vpc_security_group_ids": []
+                },
+                "replace_paths": [
+                    [
+                        "storage_encrypted"
+                    ]
+                ],
+                "before_identity": {
+                    "account_id": "",
+                    "identifier": "app-db",
+                    "region": "eu-west-2"
+                },
+                "after_identity": {
+                    "account_id": "",
+                    "identifier": "app-db",
+                    "region": "eu-west-2"
+                }
+            },
+            "action_reason": "replace_because_cannot_update"
+        },
+        {
+            "address": "aws_db_subnet_group.app",
+            "mode": "managed",
+            "type": "aws_db_subnet_group",
+            "name": "app",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "change": {
+                "actions": [
+                    "no-op"
+                ],
+                "before": {
+                    "arn": "arn:aws:rds:eu-west-2:123456789012:subgrp:app-db",
+                    "description": "Managed by Terraform",
+                    "id": "app-db",
+                    "name": "app-db",
+                    "name_prefix": "",
+                    "region": "eu-west-2",
+                    "subnet_ids": [
+                        "subnet-9a38c47712b1ff4a5",
+                        "subnet-aa6dfae76799048bd"
+                    ],
+                    "supported_network_types": [],
+                    "tags": null,
+                    "tags_all": {
+                        "CostCentre": "platform",
+                        "Project": "fixture"
+                    },
+                    "vpc_id": "vpc-929ddc2029faa10d7"
+                },
+                "after": {
+                    "arn": "arn:aws:rds:eu-west-2:123456789012:subgrp:app-db",
+                    "description": "Managed by Terraform",
+                    "id": "app-db",
+                    "name": "app-db",
+                    "name_prefix": "",
+                    "region": "eu-west-2",
+                    "subnet_ids": [
+                        "subnet-9a38c47712b1ff4a5",
+                        "subnet-aa6dfae76799048bd"
+                    ],
+                    "supported_network_types": [],
+                    "tags": null,
+                    "tags_all": {
+                        "CostCentre": "platform",
+                        "Project": "fixture"
+                    },
+                    "vpc_id": "vpc-929ddc2029faa10d7"
+                },
+                "after_unknown": {},
+                "before_sensitive": {
+                    "subnet_ids": [
+                        false,
+                        false
+                    ],
+                    "supported_network_types": [],
+                    "tags_all": {}
+                },
+                "after_sensitive": {
+                    "subnet_ids": [
+                        false,
+                        false
+                    ],
+                    "supported_network_types": [],
+                    "tags_all": {}
+                },
+                "before_identity": {
+                    "account_id": "",
+                    "name": "app-db",
+                    "region": "eu-west-2"
+                },
+                "after_identity": {
+                    "account_id": "",
+                    "name": "app-db",
+                    "region": "eu-west-2"
+                }
+            }
+        },
+        {
+            "address": "aws_subnet.a",
+            "mode": "managed",
+            "type": "aws_subnet",
+            "name": "a",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "change": {
+                "actions": [
+                    "no-op"
+                ],
+                "before": {
+                    "arn": "arn:aws:ec2:eu-west-2:123456789012:subnet/subnet-9a38c47712b1ff4a5",
+                    "assign_ipv6_address_on_creation": false,
+                    "availability_zone": "eu-west-2a",
+                    "availability_zone_id": "euw2-az2",
+                    "cidr_block": "10.0.1.0/24",
+                    "customer_owned_ipv4_pool": "",
+                    "enable_dns64": false,
+                    "enable_lni_at_device_index": 0,
+                    "enable_resource_name_dns_a_record_on_launch": false,
+                    "enable_resource_name_dns_aaaa_record_on_launch": false,
+                    "id": "subnet-9a38c47712b1ff4a5",
+                    "ipv4_ipam_pool_id": null,
+                    "ipv4_netmask_length": null,
+                    "ipv6_cidr_block": "",
+                    "ipv6_cidr_block_association_id": "",
+                    "ipv6_ipam_pool_id": null,
+                    "ipv6_native": false,
+                    "ipv6_netmask_length": null,
+                    "map_customer_owned_ip_on_launch": false,
+                    "map_public_ip_on_launch": false,
+                    "outpost_arn": "",
+                    "owner_id": "123456789012",
+                    "private_dns_hostname_type_on_launch": "ip-name",
+                    "region": "eu-west-2",
+                    "tags": null,
+                    "tags_all": {
+                        "CostCentre": "platform",
+                        "Project": "fixture"
+                    },
+                    "timeouts": null,
+                    "vpc_id": "vpc-929ddc2029faa10d7"
+                },
+                "after": {
+                    "arn": "arn:aws:ec2:eu-west-2:123456789012:subnet/subnet-9a38c47712b1ff4a5",
+                    "assign_ipv6_address_on_creation": false,
+                    "availability_zone": "eu-west-2a",
+                    "availability_zone_id": "euw2-az2",
+                    "cidr_block": "10.0.1.0/24",
+                    "customer_owned_ipv4_pool": "",
+                    "enable_dns64": false,
+                    "enable_lni_at_device_index": 0,
+                    "enable_resource_name_dns_a_record_on_launch": false,
+                    "enable_resource_name_dns_aaaa_record_on_launch": false,
+                    "id": "subnet-9a38c47712b1ff4a5",
+                    "ipv4_ipam_pool_id": null,
+                    "ipv4_netmask_length": null,
+                    "ipv6_cidr_block": "",
+                    "ipv6_cidr_block_association_id": "",
+                    "ipv6_ipam_pool_id": null,
+                    "ipv6_native": false,
+                    "ipv6_netmask_length": null,
+                    "map_customer_owned_ip_on_launch": false,
+                    "map_public_ip_on_launch": false,
+                    "outpost_arn": "",
+                    "owner_id": "123456789012",
+                    "private_dns_hostname_type_on_launch": "ip-name",
+                    "region": "eu-west-2",
+                    "tags": null,
+                    "tags_all": {
+                        "CostCentre": "platform",
+                        "Project": "fixture"
+                    },
+                    "timeouts": null,
+                    "vpc_id": "vpc-929ddc2029faa10d7"
+                },
+                "after_unknown": {},
+                "before_sensitive": {
+                    "tags_all": {}
+                },
+                "after_sensitive": {
+                    "tags_all": {}
+                },
+                "before_identity": {
+                    "account_id": "",
+                    "id": "subnet-9a38c47712b1ff4a5",
+                    "region": "eu-west-2"
+                },
+                "after_identity": {
+                    "account_id": "",
+                    "id": "subnet-9a38c47712b1ff4a5",
+                    "region": "eu-west-2"
+                }
+            }
+        },
+        {
+            "address": "aws_subnet.b",
+            "mode": "managed",
+            "type": "aws_subnet",
+            "name": "b",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "change": {
+                "actions": [
+                    "no-op"
+                ],
+                "before": {
+                    "arn": "arn:aws:ec2:eu-west-2:123456789012:subnet/subnet-aa6dfae76799048bd",
+                    "assign_ipv6_address_on_creation": false,
+                    "availability_zone": "eu-west-2b",
+                    "availability_zone_id": "euw2-az3",
+                    "cidr_block": "10.0.2.0/24",
+                    "customer_owned_ipv4_pool": "",
+                    "enable_dns64": false,
+                    "enable_lni_at_device_index": 0,
+                    "enable_resource_name_dns_a_record_on_launch": false,
+                    "enable_resource_name_dns_aaaa_record_on_launch": false,
+                    "id": "subnet-aa6dfae76799048bd",
+                    "ipv4_ipam_pool_id": null,
+                    "ipv4_netmask_length": null,
+                    "ipv6_cidr_block": "",
+                    "ipv6_cidr_block_association_id": "",
+                    "ipv6_ipam_pool_id": null,
+                    "ipv6_native": false,
+                    "ipv6_netmask_length": null,
+                    "map_customer_owned_ip_on_launch": false,
+                    "map_public_ip_on_launch": false,
+                    "outpost_arn": "",
+                    "owner_id": "123456789012",
+                    "private_dns_hostname_type_on_launch": "ip-name",
+                    "region": "eu-west-2",
+                    "tags": null,
+                    "tags_all": {
+                        "CostCentre": "platform",
+                        "Project": "fixture"
+                    },
+                    "timeouts": null,
+                    "vpc_id": "vpc-929ddc2029faa10d7"
+                },
+                "after": {
+                    "arn": "arn:aws:ec2:eu-west-2:123456789012:subnet/subnet-aa6dfae76799048bd",
+                    "assign_ipv6_address_on_creation": false,
+                    "availability_zone": "eu-west-2b",
+                    "availability_zone_id": "euw2-az3",
+                    "cidr_block": "10.0.2.0/24",
+                    "customer_owned_ipv4_pool": "",
+                    "enable_dns64": false,
+                    "enable_lni_at_device_index": 0,
+                    "enable_resource_name_dns_a_record_on_launch": false,
+                    "enable_resource_name_dns_aaaa_record_on_launch": false,
+                    "id": "subnet-aa6dfae76799048bd",
+                    "ipv4_ipam_pool_id": null,
+                    "ipv4_netmask_length": null,
+                    "ipv6_cidr_block": "",
+                    "ipv6_cidr_block_association_id": "",
+                    "ipv6_ipam_pool_id": null,
+                    "ipv6_native": false,
+                    "ipv6_netmask_length": null,
+                    "map_customer_owned_ip_on_launch": false,
+                    "map_public_ip_on_launch": false,
+                    "outpost_arn": "",
+                    "owner_id": "123456789012",
+                    "private_dns_hostname_type_on_launch": "ip-name",
+                    "region": "eu-west-2",
+                    "tags": null,
+                    "tags_all": {
+                        "CostCentre": "platform",
+                        "Project": "fixture"
+                    },
+                    "timeouts": null,
+                    "vpc_id": "vpc-929ddc2029faa10d7"
+                },
+                "after_unknown": {},
+                "before_sensitive": {
+                    "tags_all": {}
+                },
+                "after_sensitive": {
+                    "tags_all": {}
+                },
+                "before_identity": {
+                    "account_id": "",
+                    "id": "subnet-aa6dfae76799048bd",
+                    "region": "eu-west-2"
+                },
+                "after_identity": {
+                    "account_id": "",
+                    "id": "subnet-aa6dfae76799048bd",
+                    "region": "eu-west-2"
+                }
+            }
+        },
+        {
+            "address": "aws_vpc.main",
+            "mode": "managed",
+            "type": "aws_vpc",
+            "name": "main",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "change": {
+                "actions": [
+                    "no-op"
+                ],
+                "before": {
+                    "arn": "arn:aws:ec2:eu-west-2:123456789012:vpc/vpc-929ddc2029faa10d7",
+                    "assign_generated_ipv6_cidr_block": false,
+                    "cidr_block": "10.0.0.0/16",
+                    "default_network_acl_id": "acl-b4843df24f21fd6b5",
+                    "default_route_table_id": "rtb-44551534548bf6715",
+                    "default_security_group_id": "sg-c60c18ee0c19b7f20",
+                    "dhcp_options_id": "default",
+                    "enable_dns_hostnames": false,
+                    "enable_dns_support": true,
+                    "enable_network_address_usage_metrics": false,
+                    "id": "vpc-929ddc2029faa10d7",
+                    "instance_tenancy": "default",
+                    "ipv4_ipam_pool_id": null,
+                    "ipv4_netmask_length": null,
+                    "ipv6_association_id": "",
+                    "ipv6_cidr_block": "",
+                    "ipv6_cidr_block_network_border_group": "",
+                    "ipv6_ipam_pool_id": "",
+                    "ipv6_netmask_length": 0,
+                    "main_route_table_id": "rtb-44551534548bf6715",
+                    "owner_id": "123456789012",
+                    "region": "eu-west-2",
+                    "tags": null,
+                    "tags_all": {
+                        "CostCentre": "platform",
+                        "Project": "fixture"
+                    }
+                },
+                "after": {
+                    "arn": "arn:aws:ec2:eu-west-2:123456789012:vpc/vpc-929ddc2029faa10d7",
+                    "assign_generated_ipv6_cidr_block": false,
+                    "cidr_block": "10.0.0.0/16",
+                    "default_network_acl_id": "acl-b4843df24f21fd6b5",
+                    "default_route_table_id": "rtb-44551534548bf6715",
+                    "default_security_group_id": "sg-c60c18ee0c19b7f20",
+                    "dhcp_options_id": "default",
+                    "enable_dns_hostnames": false,
+                    "enable_dns_support": true,
+                    "enable_network_address_usage_metrics": false,
+                    "id": "vpc-929ddc2029faa10d7",
+                    "instance_tenancy": "default",
+                    "ipv4_ipam_pool_id": null,
+                    "ipv4_netmask_length": null,
+                    "ipv6_association_id": "",
+                    "ipv6_cidr_block": "",
+                    "ipv6_cidr_block_network_border_group": "",
+                    "ipv6_ipam_pool_id": "",
+                    "ipv6_netmask_length": 0,
+                    "main_route_table_id": "rtb-44551534548bf6715",
+                    "owner_id": "123456789012",
+                    "region": "eu-west-2",
+                    "tags": null,
+                    "tags_all": {
+                        "CostCentre": "platform",
+                        "Project": "fixture"
+                    }
+                },
+                "after_unknown": {},
+                "before_sensitive": {
+                    "tags_all": {}
+                },
+                "after_sensitive": {
+                    "tags_all": {}
+                },
+                "before_identity": {
+                    "account_id": "",
+                    "id": "vpc-929ddc2029faa10d7",
+                    "region": "eu-west-2"
+                },
+                "after_identity": {
+                    "account_id": "",
+                    "id": "vpc-929ddc2029faa10d7",
+                    "region": "eu-west-2"
+                }
+            }
+        }
+    ],
+    "prior_state": {
+        "format_version": "1.0",
+        "terraform_version": "1.15.5",
+        "values": {
+            "root_module": {
+                "resources": [
+                    {
+                        "address": "aws_db_instance.app",
+                        "mode": "managed",
+                        "type": "aws_db_instance",
+                        "name": "app",
+                        "provider_name": "registry.terraform.io/hashicorp/aws",
+                        "schema_version": 2,
+                        "values": {
+                            "address": "app-db.aaaaaaaaaa.eu-west-2.rds.amazonaws.com",
+                            "allocated_storage": 100,
+                            "allow_major_version_upgrade": null,
+                            "apply_immediately": false,
+                            "arn": "arn:aws:rds:eu-west-2:123456789012:db:app-db",
+                            "auto_minor_version_upgrade": true,
+                            "availability_zone": "eu-west-2a",
+                            "backup_retention_period": 7,
+                            "backup_target": "",
+                            "backup_window": "13:14-13:44",
+                            "blue_green_update": [],
+                            "ca_cert_identifier": "rds-ca-default",
+                            "character_set_name": "",
+                            "copy_tags_to_snapshot": false,
+                            "custom_iam_instance_profile": "",
+                            "customer_owned_ip_enabled": false,
+                            "database_insights_mode": "",
+                            "db_name": "",
+                            "db_subnet_group_name": "app-db",
+                            "dedicated_log_volume": false,
+                            "delete_automated_backups": true,
+                            "deletion_protection": false,
+                            "domain": "",
+                            "domain_auth_secret_arn": "",
+                            "domain_dns_ips": null,
+                            "domain_fqdn": "",
+                            "domain_iam_role_name": "",
+                            "domain_ou": "",
+                            "enabled_cloudwatch_logs_exports": null,
+                            "endpoint": "app-db.aaaaaaaaaa.eu-west-2.rds.amazonaws.com:5432",
+                            "engine": "postgres",
+                            "engine_lifecycle_support": "",
+                            "engine_version": "15.4",
+                            "engine_version_actual": "15.4",
+                            "final_snapshot_identifier": null,
+                            "hosted_zone_id": "",
+                            "iam_database_authentication_enabled": false,
+                            "id": "db-M5ENSHXFPU6XHZ4G4ZEI5QIO2U",
+                            "identifier": "app-db",
+                            "identifier_prefix": "",
+                            "instance_class": "db.t3.medium",
+                            "iops": 0,
+                            "kms_key_id": "",
+                            "latest_restorable_time": "2026-10-10T07:58:09Z",
+                            "license_model": "general-public-license",
+                            "listener_endpoint": [],
+                            "maintenance_window": "wed:06:38-wed:07:08",
+                            "manage_master_user_password": null,
+                            "master_user_secret": [],
+                            "master_user_secret_kms_key_id": null,
+                            "max_allocated_storage": 0,
+                            "monitoring_interval": 0,
+                            "monitoring_role_arn": "",
+                            "multi_az": false,
+                            "nchar_character_set_name": "",
+                            "network_type": "",
+                            "option_group_name": "default:postgres-15-4",
+                            "parameter_group_name": "default.postgres15",
+                            "password": "fixture-password-not-real",
+                            "password_wo": null,
+                            "password_wo_version": null,
+                            "performance_insights_enabled": false,
+                            "performance_insights_kms_key_id": "",
+                            "performance_insights_retention_period": 0,
+                            "port": 5432,
+                            "publicly_accessible": false,
+                            "region": "eu-west-2",
+                            "replica_mode": "",
+                            "replicas": [],
+                            "replicate_source_db": "",
+                            "resource_id": "db-M5ENSHXFPU6XHZ4G4ZEI5QIO2U",
+                            "restore_to_point_in_time": [],
+                            "s3_import": [],
+                            "skip_final_snapshot": true,
+                            "snapshot_identifier": null,
+                            "status": "available",
+                            "storage_encrypted": false,
+                            "storage_throughput": 0,
+                            "storage_type": "gp2",
+                            "tags": {
+                                "Name": "app-db"
+                            },
+                            "tags_all": {
+                                "CostCentre": "platform",
+                                "Name": "app-db",
+                                "Project": "fixture"
+                            },
+                            "timeouts": null,
+                            "timezone": "",
+                            "upgrade_rollout_order": "",
+                            "upgrade_storage_config": null,
+                            "username": "app",
+                            "vpc_security_group_ids": [
+                                "sg-75b78da45d1f97fa6"
+                            ],
+                            "warning_event_categories": null
+                        },
+                        "sensitive_values": {
+                            "blue_green_update": [],
+                            "listener_endpoint": [],
+                            "master_user_secret": [],
+                            "password": true,
+                            "password_wo": true,
+                            "replicas": [],
+                            "restore_to_point_in_time": [],
+                            "s3_import": [],
+                            "tags": {},
+                            "tags_all": {},
+                            "vpc_security_group_ids": [
+                                false
+                            ]
+                        },
+                        "depends_on": [
+                            "aws_db_subnet_group.app",
+                            "aws_subnet.a",
+                            "aws_subnet.b",
+                            "aws_vpc.main"
+                        ],
+                        "identity_schema_version": 0,
+                        "identity": {
+                            "account_id": "",
+                            "identifier": "app-db",
+                            "region": "eu-west-2"
+                        }
+                    },
+                    {
+                        "address": "aws_db_subnet_group.app",
+                        "mode": "managed",
+                        "type": "aws_db_subnet_group",
+                        "name": "app",
+                        "provider_name": "registry.terraform.io/hashicorp/aws",
+                        "schema_version": 0,
+                        "values": {
+                            "arn": "arn:aws:rds:eu-west-2:123456789012:subgrp:app-db",
+                            "description": "Managed by Terraform",
+                            "id": "app-db",
+                            "name": "app-db",
+                            "name_prefix": "",
+                            "region": "eu-west-2",
+                            "subnet_ids": [
+                                "subnet-9a38c47712b1ff4a5",
+                                "subnet-aa6dfae76799048bd"
+                            ],
+                            "supported_network_types": [],
+                            "tags": null,
+                            "tags_all": {
+                                "CostCentre": "platform",
+                                "Project": "fixture"
+                            },
+                            "vpc_id": "vpc-929ddc2029faa10d7"
+                        },
+                        "sensitive_values": {
+                            "subnet_ids": [
+                                false,
+                                false
+                            ],
+                            "supported_network_types": [],
+                            "tags_all": {}
+                        },
+                        "depends_on": [
+                            "aws_subnet.a",
+                            "aws_subnet.b",
+                            "aws_vpc.main"
+                        ],
+                        "identity_schema_version": 0,
+                        "identity": {
+                            "account_id": "",
+                            "name": "app-db",
+                            "region": "eu-west-2"
+                        }
+                    },
+                    {
+                        "address": "aws_subnet.a",
+                        "mode": "managed",
+                        "type": "aws_subnet",
+                        "name": "a",
+                        "provider_name": "registry.terraform.io/hashicorp/aws",
+                        "schema_version": 1,
+                        "values": {
+                            "arn": "arn:aws:ec2:eu-west-2:123456789012:subnet/subnet-9a38c47712b1ff4a5",
+                            "assign_ipv6_address_on_creation": false,
+                            "availability_zone": "eu-west-2a",
+                            "availability_zone_id": "euw2-az2",
+                            "cidr_block": "10.0.1.0/24",
+                            "customer_owned_ipv4_pool": "",
+                            "enable_dns64": false,
+                            "enable_lni_at_device_index": 0,
+                            "enable_resource_name_dns_a_record_on_launch": false,
+                            "enable_resource_name_dns_aaaa_record_on_launch": false,
+                            "id": "subnet-9a38c47712b1ff4a5",
+                            "ipv4_ipam_pool_id": null,
+                            "ipv4_netmask_length": null,
+                            "ipv6_cidr_block": "",
+                            "ipv6_cidr_block_association_id": "",
+                            "ipv6_ipam_pool_id": null,
+                            "ipv6_native": false,
+                            "ipv6_netmask_length": null,
+                            "map_customer_owned_ip_on_launch": false,
+                            "map_public_ip_on_launch": false,
+                            "outpost_arn": "",
+                            "owner_id": "123456789012",
+                            "private_dns_hostname_type_on_launch": "ip-name",
+                            "region": "eu-west-2",
+                            "tags": null,
+                            "tags_all": {
+                                "CostCentre": "platform",
+                                "Project": "fixture"
+                            },
+                            "timeouts": null,
+                            "vpc_id": "vpc-929ddc2029faa10d7"
+                        },
+                        "sensitive_values": {
+                            "tags_all": {}
+                        },
+                        "depends_on": [
+                            "aws_vpc.main"
+                        ],
+                        "identity_schema_version": 0,
+                        "identity": {
+                            "account_id": "",
+                            "id": "subnet-9a38c47712b1ff4a5",
+                            "region": "eu-west-2"
+                        }
+                    },
+                    {
+                        "address": "aws_subnet.b",
+                        "mode": "managed",
+                        "type": "aws_subnet",
+                        "name": "b",
+                        "provider_name": "registry.terraform.io/hashicorp/aws",
+                        "schema_version": 1,
+                        "values": {
+                            "arn": "arn:aws:ec2:eu-west-2:123456789012:subnet/subnet-aa6dfae76799048bd",
+                            "assign_ipv6_address_on_creation": false,
+                            "availability_zone": "eu-west-2b",
+                            "availability_zone_id": "euw2-az3",
+                            "cidr_block": "10.0.2.0/24",
+                            "customer_owned_ipv4_pool": "",
+                            "enable_dns64": false,
+                            "enable_lni_at_device_index": 0,
+                            "enable_resource_name_dns_a_record_on_launch": false,
+                            "enable_resource_name_dns_aaaa_record_on_launch": false,
+                            "id": "subnet-aa6dfae76799048bd",
+                            "ipv4_ipam_pool_id": null,
+                            "ipv4_netmask_length": null,
+                            "ipv6_cidr_block": "",
+                            "ipv6_cidr_block_association_id": "",
+                            "ipv6_ipam_pool_id": null,
+                            "ipv6_native": false,
+                            "ipv6_netmask_length": null,
+                            "map_customer_owned_ip_on_launch": false,
+                            "map_public_ip_on_launch": false,
+                            "outpost_arn": "",
+                            "owner_id": "123456789012",
+                            "private_dns_hostname_type_on_launch": "ip-name",
+                            "region": "eu-west-2",
+                            "tags": null,
+                            "tags_all": {
+                                "CostCentre": "platform",
+                                "Project": "fixture"
+                            },
+                            "timeouts": null,
+                            "vpc_id": "vpc-929ddc2029faa10d7"
+                        },
+                        "sensitive_values": {
+                            "tags_all": {}
+                        },
+                        "depends_on": [
+                            "aws_vpc.main"
+                        ],
+                        "identity_schema_version": 0,
+                        "identity": {
+                            "account_id": "",
+                            "id": "subnet-aa6dfae76799048bd",
+                            "region": "eu-west-2"
+                        }
+                    },
+                    {
+                        "address": "aws_vpc.main",
+                        "mode": "managed",
+                        "type": "aws_vpc",
+                        "name": "main",
+                        "provider_name": "registry.terraform.io/hashicorp/aws",
+                        "schema_version": 1,
+                        "values": {
+                            "arn": "arn:aws:ec2:eu-west-2:123456789012:vpc/vpc-929ddc2029faa10d7",
+                            "assign_generated_ipv6_cidr_block": false,
+                            "cidr_block": "10.0.0.0/16",
+                            "default_network_acl_id": "acl-b4843df24f21fd6b5",
+                            "default_route_table_id": "rtb-44551534548bf6715",
+                            "default_security_group_id": "sg-c60c18ee0c19b7f20",
+                            "dhcp_options_id": "default",
+                            "enable_dns_hostnames": false,
+                            "enable_dns_support": true,
+                            "enable_network_address_usage_metrics": false,
+                            "id": "vpc-929ddc2029faa10d7",
+                            "instance_tenancy": "default",
+                            "ipv4_ipam_pool_id": null,
+                            "ipv4_netmask_length": null,
+                            "ipv6_association_id": "",
+                            "ipv6_cidr_block": "",
+                            "ipv6_cidr_block_network_border_group": "",
+                            "ipv6_ipam_pool_id": "",
+                            "ipv6_netmask_length": 0,
+                            "main_route_table_id": "rtb-44551534548bf6715",
+                            "owner_id": "123456789012",
+                            "region": "eu-west-2",
+                            "tags": null,
+                            "tags_all": {
+                                "CostCentre": "platform",
+                                "Project": "fixture"
+                            }
+                        },
+                        "sensitive_values": {
+                            "tags_all": {}
+                        },
+                        "identity_schema_version": 0,
+                        "identity": {
+                            "account_id": "",
+                            "id": "vpc-929ddc2029faa10d7",
+                            "region": "eu-west-2"
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "configuration": {
+        "provider_config": {
+            "aws": {
+                "name": "aws",
+                "full_name": "registry.terraform.io/hashicorp/aws",
+                "version_constraint": "~> 6.0",
+                "expressions": {
+                    "access_key": {
+                        "constant_value": "testing"
+                    },
+                    "default_tags": [
+                        {
+                            "tags": {
+                                "references": [
+                                    "var.cost_centre"
+                                ]
+                            }
+                        }
+                    ],
+                    "region": {
+                        "constant_value": "eu-west-2"
+                    },
+                    "s3_use_path_style": {
+                        "constant_value": true
+                    },
+                    "secret_key": {
+                        "constant_value": "testing"
+                    },
+                    "skip_credentials_validation": {
+                        "constant_value": true
+                    },
+                    "skip_metadata_api_check": {
+                        "constant_value": true
+                    },
+                    "skip_requesting_account_id": {
+                        "constant_value": true
+                    }
+                }
+            }
+        },
+        "root_module": {
+            "resources": [
+                {
+                    "address": "aws_db_instance.app",
+                    "mode": "managed",
+                    "type": "aws_db_instance",
+                    "name": "app",
+                    "provider_config_key": "aws",
+                    "expressions": {
+                        "allocated_storage": {
+                            "constant_value": 100
+                        },
+                        "backup_retention_period": {
+                            "constant_value": 7
+                        },
+                        "db_subnet_group_name": {
+                            "references": [
+                                "aws_db_subnet_group.app.name",
+                                "aws_db_subnet_group.app"
+                            ]
+                        },
+                        "deletion_protection": {
+                            "constant_value": false
+                        },
+                        "engine": {
+                            "constant_value": "postgres"
+                        },
+                        "engine_version": {
+                            "constant_value": "15.4"
+                        },
+                        "identifier": {
+                            "constant_value": "app-db-eu"
+                        },
+                        "instance_class": {
+                            "constant_value": "db.m6g.large"
+                        },
+                        "password": {
+                            "constant_value": "fixture-password-not-real"
+                        },
+                        "skip_final_snapshot": {
+                            "constant_value": true
+                        },
+                        "storage_encrypted": {
+                            "constant_value": true
+                        },
+                        "tags": {
+                            "constant_value": {
+                                "Name": "app-db"
+                            }
+                        },
+                        "username": {
+                            "constant_value": "app"
+                        }
+                    },
+                    "schema_version": 2
+                },
+                {
+                    "address": "aws_db_subnet_group.app",
+                    "mode": "managed",
+                    "type": "aws_db_subnet_group",
+                    "name": "app",
+                    "provider_config_key": "aws",
+                    "expressions": {
+                        "name": {
+                            "constant_value": "app-db"
+                        },
+                        "subnet_ids": {
+                            "references": [
+                                "aws_subnet.a.id",
+                                "aws_subnet.a",
+                                "aws_subnet.b.id",
+                                "aws_subnet.b"
+                            ]
+                        }
+                    },
+                    "schema_version": 0
+                },
+                {
+                    "address": "aws_subnet.a",
+                    "mode": "managed",
+                    "type": "aws_subnet",
+                    "name": "a",
+                    "provider_config_key": "aws",
+                    "expressions": {
+                        "availability_zone": {
+                            "constant_value": "eu-west-2a"
+                        },
+                        "cidr_block": {
+                            "constant_value": "10.0.1.0/24"
+                        },
+                        "vpc_id": {
+                            "references": [
+                                "aws_vpc.main.id",
+                                "aws_vpc.main"
+                            ]
+                        }
+                    },
+                    "schema_version": 1
+                },
+                {
+                    "address": "aws_subnet.b",
+                    "mode": "managed",
+                    "type": "aws_subnet",
+                    "name": "b",
+                    "provider_config_key": "aws",
+                    "expressions": {
+                        "availability_zone": {
+                            "constant_value": "eu-west-2b"
+                        },
+                        "cidr_block": {
+                            "constant_value": "10.0.2.0/24"
+                        },
+                        "vpc_id": {
+                            "references": [
+                                "aws_vpc.main.id",
+                                "aws_vpc.main"
+                            ]
+                        }
+                    },
+                    "schema_version": 1
+                },
+                {
+                    "address": "aws_vpc.main",
+                    "mode": "managed",
+                    "type": "aws_vpc",
+                    "name": "main",
+                    "provider_config_key": "aws",
+                    "expressions": {
+                        "cidr_block": {
+                            "constant_value": "10.0.0.0/16"
+                        }
+                    },
+                    "schema_version": 1
+                }
+            ],
+            "variables": {
+                "cost_centre": {
+                    "default": "platform"
+                }
+            }
+        }
+    },
+    "relevant_attributes": [
+        {
+            "resource": "aws_db_subnet_group.app",
+            "attribute": [
+                "name"
+            ]
+        }
+    ],
+    "timestamp": "2026-10-10T07:58:11Z",
+    "applyable": true,
+    "complete": true,
+    "errored": false
+}

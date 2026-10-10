@@ -1,0 +1,53 @@
+type = "aws_dynamodb_table"
+display = "DynamoDB table"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/dynamodb_table"
+holds_data = true
+data = "every item in the table"
+identity = ["name"]
+
+[[mitigation]]
+attr = "deletion_protection_enabled"
+equals = false
+message = "deletion protection is off"
+
+[[mitigation]]
+attr = "point_in_time_recovery[0].enabled"
+equals = false
+message = "point-in-time recovery is off, so there is no automatic backup to restore from"
+
+[[mitigation]]
+attr = "point_in_time_recovery[0].enabled"
+absent = true
+message = "point-in-time recovery is not configured, so there is no automatic backup to restore from"
+
+[[safeguard]]
+attr = "deletion_protection_enabled"
+equals = true
+message = "deletion protection is on, so AWS will refuse the delete and the apply will fail before anything is lost"
+
+[[safeguard]]
+attr = "point_in_time_recovery[0].enabled"
+equals = true
+message = "point-in-time recovery is on, so AWS keeps a system backup for 35 days after deletion that can be restored to a new table"
+
+[[disruptive]]
+attr = "billing_mode"
+effect = "switching between on-demand and provisioned capacity; it can only be done once per 24 hours"
+severity = "low"
+
+[[disruptive]]
+attr = "table_class"
+effect = "the table migrates storage class in the background"
+severity = "low"
+
+[[flag]]
+attr = "deletion_protection_enabled"
+unsafe = false
+message = "deletion protection is being turned off"
+severity = "medium"
+
+[[flag]]
+attr = "point_in_time_recovery[0].enabled"
+unsafe = false
+message = "point-in-time recovery is being turned off"
+severity = "medium"

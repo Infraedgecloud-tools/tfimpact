@@ -1,0 +1,7 @@
+type = "aws_config_configuration_recorder"
+display = "AWS Config recorder"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/config_configuration_recorder"
+
+[delete]
+severity = "high"
+message = "configuration change recording stops, so Config rules and the resource history no longer update"

@@ -1,0 +1,26 @@
+type = "aws_cloudtrail"
+display = "CloudTrail trail"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudtrail"
+identity = ["name"]
+
+[delete]
+severity = "high"
+message = "API activity logging through this trail stops"
+
+[[flag]]
+attr = "enable_logging"
+unsafe = false
+message = "logging is being turned off"
+severity = "high"
+
+[[flag]]
+attr = "is_multi_region_trail"
+unsafe = false
+message = "the trail stops covering other regions"
+severity = "medium"
+
+[[flag]]
+attr = "enable_log_file_validation"
+unsafe = false
+message = "log file integrity validation is being turned off"
+severity = "medium"

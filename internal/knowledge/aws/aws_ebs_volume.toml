@@ -1,0 +1,36 @@
+type = "aws_ebs_volume"
+display = "EBS volume"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ebs_volume"
+holds_data = true
+data = "the volume contents"
+
+[[mitigation]]
+attr = "final_snapshot"
+equals = false
+message = "no final snapshot will be taken (final_snapshot = false)"
+
+[[mitigation]]
+attr = "final_snapshot"
+absent = true
+message = "no final snapshot will be taken (final_snapshot is not set)"
+
+[[safeguard]]
+attr = "final_snapshot"
+equals = true
+message = "a final snapshot will be taken first, so the data can be restored"
+
+[[disruptive]]
+attr = "type"
+effect = "the volume is modified online, but cannot be modified again for about six hours"
+severity = "low"
+
+[[disruptive]]
+attr = "iops"
+effect = "the volume is modified online, but cannot be modified again for about six hours"
+severity = "low"
+
+[[flag]]
+attr = "encrypted"
+unsafe = false
+message = "encryption at rest is off"
+severity = "high"

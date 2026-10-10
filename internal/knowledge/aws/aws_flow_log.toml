@@ -1,0 +1,7 @@
+type = "aws_flow_log"
+display = "VPC flow log"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/flow_log"
+
+[delete]
+severity = "medium"
+message = "network flow logging for the VPC, subnet or interface stops"

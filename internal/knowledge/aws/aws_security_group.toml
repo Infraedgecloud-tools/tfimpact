@@ -1,0 +1,6 @@
+type = "aws_security_group"
+display = "security group"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group"
+identity = ["name"]
+downtime_on_replace = true
+downtime = "every network interface using the group must be re-pointed; the replacement often fails with DependencyViolation because the old group is still attached"

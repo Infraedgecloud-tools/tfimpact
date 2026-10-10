@@ -1,0 +1,87 @@
+{
+  "drift": [],
+  "findings": [
+    {
+      "domain": "data",
+      "id": "fnd_a43109ee451771ed",
+      "line": null,
+      "metadata": {
+        "action_reason": "replace_because_cannot_update",
+        "mitigations": [
+          "no final snapshot will be taken (skip_final_snapshot = true)",
+          "deletion protection is off"
+        ],
+        "replace_paths": [
+          "storage_encrypted"
+        ],
+        "resource_type": "aws_db_instance",
+        "safeguards": null
+      },
+      "observed": "The RDS database instance is replaced because `storage_encrypted` (false → true) cannot be changed in place. No final snapshot will be taken (skip_final_snapshot = true); deletion protection is off.",
+      "path": "aws_db_instance.app",
+      "product": "tfimpact",
+      "recommendation": "If the change is intended, take a snapshot or backup first and plan the cutover. If the replacement is a surprise, revert `storage_encrypted`. `lifecycle { prevent_destroy = true }` makes Terraform refuse a plan like this.",
+      "rule_id": "PLAN-DATA-002",
+      "severity": "critical",
+      "suppressed": false,
+      "suppression_expires": null,
+      "suppression_reason": null,
+      "tags": [
+        "aws_db_instance",
+        "data-loss",
+        "replace"
+      ],
+      "title": "`aws_db_instance.app` will be destroyed and recreated; the database and everything stored in it is lost"
+    }
+  ],
+  "generated_at": "2026-10-10T12:00:00Z",
+  "moves": [],
+  "policy": {
+    "configured": false,
+    "exclusions": [],
+    "path": null
+  },
+  "privacy": {
+    "note": "tfimpact runs locally. Nothing is sent anywhere; sensitive values are masked.",
+    "telemetry": false,
+    "uploaded": false
+  },
+  "routine": [],
+  "schema_version": "1.1",
+  "source": {
+    "format_version": "1.2",
+    "kind": "terraform-plan",
+    "root": "../../testdata/plans/rds-replacement/plan.json",
+    "terraform_version": "1.15.5"
+  },
+  "summary": {
+    "changes": {
+      "create": 0,
+      "update": 0,
+      "delete": 0,
+      "replace": 1,
+      "no_op": 4,
+      "read": 0,
+      "forget": 0,
+      "move": 0,
+      "import": 0,
+      "drift": 0,
+      "tag_only": 0
+    },
+    "excluded_files": 0,
+    "findings": 1,
+    "resources": 5,
+    "scanned_files": 1,
+    "severity": {
+      "critical": 1,
+      "high": 0,
+      "low": 0,
+      "medium": 0
+    },
+    "skipped_files": 0,
+    "suppressed_findings": 0,
+    "total_findings": 1
+  },
+  "tool": "tfimpact",
+  "tool_version": "test"
+}

@@ -1,0 +1,41 @@
+name: Bug report
+description: tfimpact crashed, gave a wrong exit code, or printed something it should not
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        `terraform show -json` and `tofu show -json` print sensitive values in plain text. Redact secrets, account IDs, ARNs and other real identifiers before attaching anything.
+        If tfimpact printed a sensitive value or called a destructive change safe, do not file it here. Follow SECURITY.md.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Output of `tfimpact version`
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Command run
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: plan
+    attributes:
+      label: Redacted plan or minimal fixture
+      description: Optional. Prefer a fixture generated with moto.
+  - type: checkboxes
+    id: redaction
+    attributes:
+      label: Confirmation
+      options:
+      - label: I have removed secrets and real identifiers from any plan JSON I am attaching.
+        required: true

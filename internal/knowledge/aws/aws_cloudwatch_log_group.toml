@@ -1,0 +1,11 @@
+type = "aws_cloudwatch_log_group"
+display = "CloudWatch log group"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_log_group"
+holds_data = true
+data = "every stored log event"
+identity = ["name"]
+
+[[safeguard]]
+attr = "skip_destroy"
+equals = true
+message = "skip_destroy = true, so the log group is only removed from state and its events stay in AWS"

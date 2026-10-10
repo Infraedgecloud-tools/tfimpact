@@ -1,0 +1,11 @@
+type = "aws_subnet"
+display = "subnet"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/subnet"
+downtime_on_replace = true
+downtime = "every network interface in the subnet must be recreated, so instances, databases and endpoints in it are replaced or fail to be destroyed"
+
+[[flag]]
+attr = "map_public_ip_on_launch"
+unsafe = true
+message = "instances launched in this subnet get public IP addresses by default"
+severity = "medium"

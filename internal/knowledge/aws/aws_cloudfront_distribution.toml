@@ -1,0 +1,11 @@
+type = "aws_cloudfront_distribution"
+display = "CloudFront distribution"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_distribution"
+downtime_on_replace = true
+downtime = "the distribution's domain name (xxxx.cloudfront.net) changes, so CNAME and alias records break; deployment takes many minutes and the cache starts empty"
+
+[[flag]]
+attr = "enabled"
+unsafe = false
+message = "the distribution is being disabled and stops serving traffic"
+severity = "high"

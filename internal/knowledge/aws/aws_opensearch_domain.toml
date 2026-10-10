@@ -1,0 +1,27 @@
+type = "aws_opensearch_domain"
+display = "OpenSearch domain"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/opensearch_domain"
+holds_data = true
+data = "every index and document; the automated snapshots are deleted with the domain"
+identity = ["domain_name"]
+
+[[disruptive]]
+attr = "engine_version"
+effect = "a blue/green engine upgrade; it takes a long time and cannot be reversed"
+severity = "medium"
+
+[[flag]]
+attr = "encrypt_at_rest[0].enabled"
+unsafe = false
+message = "encryption at rest is off"
+severity = "high"
+
+[[flag]]
+attr = "node_to_node_encryption[0].enabled"
+unsafe = false
+message = "node-to-node encryption is off"
+severity = "medium"
+
+[[policy]]
+attr = "access_policies"
+kind = "resource"

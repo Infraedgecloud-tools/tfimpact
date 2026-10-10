@@ -1,0 +1,10 @@
+type = "aws_sns_topic"
+display = "SNS topic"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sns_topic"
+identity = ["name"]
+downtime_on_replace = true
+downtime = "the topic ARN changes, so every subscription and every publisher holding the old ARN stops working"
+
+[[policy]]
+attr = "policy"
+kind = "resource"

@@ -1,0 +1,5 @@
+type = "aws_nat_gateway"
+display = "NAT gateway"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/nat_gateway"
+downtime_on_replace = true
+downtime = "outbound internet traffic from the private subnets routed through it stops until the new gateway is up, and the public IP changes unless the same allocation_id is reused, breaking partner allow-lists"

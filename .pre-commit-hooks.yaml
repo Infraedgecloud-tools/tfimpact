@@ -1,0 +1,15 @@
+- id: tfimpact-explain
+  name: tfimpact explain
+  description: Explain what a Terraform or OpenTofu plan JSON will do to AWS resources
+  language: golang
+  entry: tfimpact explain
+  files: (^|/)(tf)?plan\.json$
+  pass_filenames: true
+  additional_dependencies: []
+- id: tfimpact-explain-system
+  name: tfimpact explain (installed binary)
+  description: Same as tfimpact-explain, using a tfimpact already on PATH
+  language: system
+  entry: tfimpact explain
+  files: (^|/)(tf)?plan\.json$
+  pass_filenames: true

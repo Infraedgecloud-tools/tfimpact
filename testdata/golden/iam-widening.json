@@ -1,0 +1,137 @@
+{
+  "drift": [],
+  "findings": [
+    {
+      "domain": "security",
+      "id": "fnd_f24f1b51899e0c81",
+      "line": null,
+      "metadata": {
+        "opened": [
+          "tcp port 22 from 0.0.0.0/0"
+        ],
+        "resource_type": "aws_security_group"
+      },
+      "observed": "The security group gains ingress for tcp port 22 from 0.0.0.0/0.",
+      "path": "aws_security_group.admin",
+      "product": "tfimpact",
+      "recommendation": "Restrict the source to known CIDR ranges or a security group. If public access is intended, limit it to the listening port and say so in the change.",
+      "rule_id": "PLAN-NET-001",
+      "severity": "critical",
+      "suppressed": false,
+      "suppression_expires": null,
+      "suppression_reason": null,
+      "tags": [
+        "aws_security_group",
+        "network",
+        "public-ingress"
+      ],
+      "title": "`aws_security_group.admin` opens SSH to the internet"
+    },
+    {
+      "domain": "security",
+      "id": "fnd_1fcedb36351486b8",
+      "line": null,
+      "metadata": {
+        "attribute": "policy",
+        "policy_kind": "identity",
+        "resource_type": "aws_iam_policy",
+        "widenings": [
+          "grants `s3:*` on all resources"
+        ]
+      },
+      "observed": "`policy` now grants `s3:*` on all resources.",
+      "path": "aws_iam_policy.deploy",
+      "product": "tfimpact",
+      "recommendation": "Scope actions, resources and principals to what the workload needs and keep the conditions. If the widening is intended, say why in the change.",
+      "rule_id": "PLAN-IAM-001",
+      "severity": "high",
+      "suppressed": false,
+      "suppression_expires": null,
+      "suppression_reason": null,
+      "tags": [
+        "aws_iam_policy",
+        "iam",
+        "identity"
+      ],
+      "title": "`aws_iam_policy.deploy`: the policy is widened"
+    },
+    {
+      "domain": "security",
+      "id": "fnd_ba46921d166dba44",
+      "line": null,
+      "metadata": {
+        "attribute": "assume_role_policy",
+        "policy_kind": "trust",
+        "resource_type": "aws_iam_role",
+        "widenings": [
+          "widens the `token.actions.githubusercontent.com:sub` condition from `repo:acme/platform:ref:refs/heads/main` to `repo:acme/*`"
+        ]
+      },
+      "observed": "`assume_role_policy` now widens the `token.actions.githubusercontent.com:sub` condition from `repo:acme/platform:ref:refs/heads/main` to `repo:acme/*`.",
+      "path": "aws_iam_role.deploy",
+      "product": "tfimpact",
+      "recommendation": "Scope actions, resources and principals to what the workload needs and keep the conditions. If the widening is intended, say why in the change.",
+      "rule_id": "PLAN-IAM-001",
+      "severity": "high",
+      "suppressed": false,
+      "suppression_expires": null,
+      "suppression_reason": null,
+      "tags": [
+        "aws_iam_role",
+        "iam",
+        "trust"
+      ],
+      "title": "`aws_iam_role.deploy`: the trust policy is widened"
+    }
+  ],
+  "generated_at": "2026-10-10T12:00:00Z",
+  "moves": [],
+  "policy": {
+    "configured": false,
+    "exclusions": [],
+    "path": null
+  },
+  "privacy": {
+    "note": "tfimpact runs locally. Nothing is sent anywhere; sensitive values are masked.",
+    "telemetry": false,
+    "uploaded": false
+  },
+  "routine": [],
+  "schema_version": "1.1",
+  "source": {
+    "format_version": "1.2",
+    "kind": "terraform-plan",
+    "root": "../../testdata/plans/iam-widening/plan.json",
+    "terraform_version": "1.15.5"
+  },
+  "summary": {
+    "changes": {
+      "create": 0,
+      "update": 3,
+      "delete": 0,
+      "replace": 0,
+      "no_op": 3,
+      "read": 0,
+      "forget": 0,
+      "move": 0,
+      "import": 0,
+      "drift": 0,
+      "tag_only": 0
+    },
+    "excluded_files": 0,
+    "findings": 3,
+    "resources": 6,
+    "scanned_files": 1,
+    "severity": {
+      "critical": 1,
+      "high": 2,
+      "low": 0,
+      "medium": 0
+    },
+    "skipped_files": 0,
+    "suppressed_findings": 0,
+    "total_findings": 3
+  },
+  "tool": "tfimpact",
+  "tool_version": "test"
+}

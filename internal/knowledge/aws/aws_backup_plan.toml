@@ -1,0 +1,8 @@
+type = "aws_backup_plan"
+display = "AWS Backup plan"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/backup_plan"
+identity = ["name"]
+
+[delete]
+severity = "medium"
+message = "scheduled backups under this plan stop"

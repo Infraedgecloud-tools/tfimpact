@@ -1,0 +1,17 @@
+# Add this job after the job that produces plan.json as an artifact.
+# Pin the image to a version tag (for example :1.2.3) rather than :latest.
+tfimpact:
+  stage: test
+  image:
+    name: ghcr.io/infraedge-tools/tfimpact:latest
+    entrypoint: [""]
+  needs:
+    - job: plan
+      artifacts: true
+  script:
+    - /tfimpact explain plan.json --format markdown --output summary.md --json findings.json --fail-on high
+  artifacts:
+    when: always
+    paths:
+      - summary.md
+      - findings.json

@@ -1,0 +1,35 @@
+name: New resource knowledge
+description: Ask for, or propose, rules for an AWS resource type
+labels: [resource-knowledge]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Resource knowledge is one TOML file per type under internal/knowledge/aws/, plus a fixture under testdata/plans/. See CONTRIBUTING.md.
+        `terraform show -json` and `tofu show -json` print sensitive values in plain text. Redact secrets, account IDs, ARNs and other real identifiers before attaching anything.
+  - type: input
+    id: resource
+    attributes:
+      label: Resource type
+      placeholder: aws_elasticache_replication_group
+    validations:
+      required: true
+  - type: textarea
+    id: behaviour
+    attributes:
+      label: Changes that destroy data, replace the resource, restart it, or widen access
+      description: Link the AWS or provider documentation for each attribute.
+    validations:
+      required: true
+  - type: textarea
+    id: fixture
+    attributes:
+      label: Fixture idea
+      description: Configuration that moto can apply, if you have one.
+  - type: checkboxes
+    id: redaction
+    attributes:
+      label: Confirmation
+      options:
+      - label: I have removed secrets and real identifiers from any plan JSON I am attaching.
+        required: true

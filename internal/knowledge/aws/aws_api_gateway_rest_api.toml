@@ -1,0 +1,10 @@
+type = "aws_api_gateway_rest_api"
+display = "API Gateway REST API"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/api_gateway_rest_api"
+identity = ["name"]
+downtime_on_replace = true
+downtime = "the API ID and therefore the default invoke URL change; stages, deployments and custom domain mappings must be recreated"
+
+[[policy]]
+attr = "policy"
+kind = "resource"

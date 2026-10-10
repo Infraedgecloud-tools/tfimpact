@@ -1,0 +1,5 @@
+type = "aws_vpc"
+display = "VPC"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc"
+downtime_on_replace = true
+downtime = "everything inside the VPC (subnets, gateways, interfaces, instances, databases) must be recreated; this is a rebuild of the environment"

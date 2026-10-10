@@ -1,0 +1,16 @@
+type = "aws_eks_node_group"
+display = "EKS managed node group"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_node_group"
+identity = ["node_group_name"]
+downtime_on_replace = true
+downtime = "every node in the group is terminated and pods are rescheduled; services without spare capacity elsewhere are interrupted"
+
+[[disruptive]]
+attr = "version"
+effect = "a rolling node replacement; pods are drained and rescheduled"
+severity = "medium"
+
+[[disruptive]]
+attr = "release_version"
+effect = "a rolling node replacement onto the new AMI; pods are drained and rescheduled"
+severity = "medium"

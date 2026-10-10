@@ -1,0 +1,85 @@
+type = "aws_db_instance"
+display = "RDS database instance"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/db_instance"
+holds_data = true
+data = "the database and everything stored in it"
+identity = ["identifier"]
+
+[[mitigation]]
+attr = "skip_final_snapshot"
+equals = true
+message = "no final snapshot will be taken (skip_final_snapshot = true)"
+
+[[mitigation]]
+attr = "deletion_protection"
+equals = false
+message = "deletion protection is off"
+
+[[mitigation]]
+attr = "backup_retention_period"
+equals = 0
+message = "automated backups are disabled (backup_retention_period = 0)"
+
+[[safeguard]]
+attr = "deletion_protection"
+equals = true
+message = "deletion protection is on, so AWS will refuse the delete and the apply will fail before anything is lost"
+
+[[safeguard]]
+attr = "final_snapshot_identifier"
+present = true
+message = "a final snapshot will be taken first, so the data can be restored"
+
+[[disruptive]]
+attr = "instance_class"
+effect = "the instance restarts on the new class; expect a short outage unless apply_immediately is false, in which case it waits for the maintenance window"
+severity = "medium"
+
+[[disruptive]]
+attr = "identifier"
+effect = "the endpoint hostname changes; anything connecting by the old address will fail until it is updated"
+severity = "high"
+
+[[disruptive]]
+attr = "engine_version"
+effect = "an engine upgrade with a restart; a major version change can take much longer and cannot be rolled back"
+severity = "medium"
+
+[[disruptive]]
+attr = "allocated_storage"
+effect = "storage is resized online, but the instance cannot be modified again for several hours afterwards"
+severity = "low"
+
+[[disruptive]]
+attr = "multi_az"
+effect = "a Multi-AZ change provisions or removes the standby and causes a brief interruption"
+severity = "medium"
+
+[[disruptive]]
+attr = "username"
+effect = "the master username cannot change in place; the provider should force replacement here, so check why it did not"
+severity = "high"
+
+[[flag]]
+attr = "publicly_accessible"
+unsafe = true
+message = "the database becomes reachable from the internet (publicly_accessible = true)"
+severity = "critical"
+
+[[flag]]
+attr = "storage_encrypted"
+unsafe = false
+message = "storage encryption is off"
+severity = "high"
+
+[[flag]]
+attr = "deletion_protection"
+unsafe = false
+message = "deletion protection is being turned off, which removes the last guard against an accidental destroy"
+severity = "medium"
+
+[[flag]]
+attr = "backup_retention_period"
+unsafe = 0
+message = "automated backups are being disabled"
+severity = "high"

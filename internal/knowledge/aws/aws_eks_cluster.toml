@@ -1,0 +1,17 @@
+type = "aws_eks_cluster"
+display = "EKS cluster"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_cluster"
+identity = ["name"]
+downtime_on_replace = true
+downtime = "the entire cluster is destroyed: every workload, node group, add-on and the API endpoint are gone and must be recreated"
+
+[[disruptive]]
+attr = "version"
+effect = "a control plane upgrade; it cannot be downgraded, node groups and add-ons must follow, and deprecated APIs in the new version stop working"
+severity = "high"
+
+[[flag]]
+attr = "vpc_config[0].endpoint_public_access"
+unsafe = true
+message = "the Kubernetes API endpoint becomes reachable from the internet; check public_access_cidrs"
+severity = "high"

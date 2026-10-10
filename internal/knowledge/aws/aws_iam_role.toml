@@ -1,0 +1,8 @@
+type = "aws_iam_role"
+display = "IAM role"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role"
+identity = ["name"]
+
+[[policy]]
+attr = "assume_role_policy"
+kind = "trust"

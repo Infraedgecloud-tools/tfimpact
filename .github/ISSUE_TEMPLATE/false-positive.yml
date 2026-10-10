@@ -1,0 +1,44 @@
+name: False positive
+description: A rule fired on a change that is safe
+labels: [false-positive]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A rule that fires on a safe change is a bug. A fixture that reproduces it makes the fix quick.
+        `terraform show -json` and `tofu show -json` print sensitive values in plain text. Redact secrets, account IDs, ARNs and other real identifiers before attaching anything.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Output of `tfimpact version`
+    validations:
+      required: true
+  - type: input
+    id: resource
+    attributes:
+      label: Resource type and rule
+      placeholder: aws_db_instance, rule id from the report
+    validations:
+      required: true
+  - type: textarea
+    id: why-safe
+    attributes:
+      label: Why this change is safe
+    validations:
+      required: true
+  - type: textarea
+    id: fixture
+    attributes:
+      label: Redacted plan excerpt or fixture
+      description: The resource_changes entry that triggers the finding, with values removed.
+      render: json
+    validations:
+      required: true
+  - type: checkboxes
+    id: redaction
+    attributes:
+      label: Confirmation
+      options:
+      - label: I have removed secrets and real identifiers from any plan JSON I am attaching.
+        required: true

@@ -1,0 +1,90 @@
+{
+  "drift": [],
+  "findings": [],
+  "generated_at": "2026-10-10T12:00:00Z",
+  "moves": [],
+  "policy": {
+    "configured": false,
+    "exclusions": [],
+    "path": null
+  },
+  "privacy": {
+    "note": "tfimpact runs locally. Nothing is sent anywhere; sensitive values are masked.",
+    "telemetry": false,
+    "uploaded": false
+  },
+  "routine": [
+    {
+      "type": "aws_cloudwatch_log_group",
+      "addresses": [
+        "aws_cloudwatch_log_group.app"
+      ],
+      "summary": "tags only"
+    },
+    {
+      "type": "aws_dynamodb_table",
+      "addresses": [
+        "aws_dynamodb_table.sessions"
+      ],
+      "summary": "tags only"
+    },
+    {
+      "type": "aws_s3_bucket",
+      "addresses": [
+        "aws_s3_bucket.artifacts"
+      ],
+      "summary": "tags only"
+    },
+    {
+      "type": "aws_sqs_queue",
+      "addresses": [
+        "aws_sqs_queue.jobs"
+      ],
+      "summary": "tags only"
+    },
+    {
+      "type": "aws_ssm_parameter",
+      "addresses": [
+        "aws_ssm_parameter.feature_flag"
+      ],
+      "summary": "tags only"
+    }
+  ],
+  "schema_version": "1.1",
+  "source": {
+    "format_version": "1.2",
+    "kind": "terraform-plan",
+    "root": "../../testdata/plans/tag-only/plan.json",
+    "terraform_version": "1.15.5"
+  },
+  "summary": {
+    "changes": {
+      "create": 0,
+      "update": 5,
+      "delete": 0,
+      "replace": 0,
+      "no_op": 0,
+      "read": 0,
+      "forget": 0,
+      "move": 0,
+      "import": 0,
+      "drift": 0,
+      "tag_only": 5
+    },
+    "excluded_files": 0,
+    "findings": 0,
+    "resources": 5,
+    "scanned_files": 1,
+    "severity": {
+      "critical": 0,
+      "high": 0,
+      "low": 0,
+      "medium": 0
+    },
+    "skipped_files": 0,
+    "suppressed_findings": 0,
+    "total_findings": 0
+  },
+  "tool": "tfimpact",
+  "tool_version": "test"
+}

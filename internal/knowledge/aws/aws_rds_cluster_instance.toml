@@ -1,0 +1,22 @@
+type = "aws_rds_cluster_instance"
+display = "Aurora cluster instance"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/rds_cluster_instance"
+identity = ["identifier"]
+downtime_on_replace = true
+downtime = "the instance is recreated; if it is the cluster's only instance or its writer, the cluster is unavailable until the new instance is ready"
+
+[[disruptive]]
+attr = "instance_class"
+effect = "the instance restarts on the new class; a writer restart fails over or pauses connections"
+severity = "medium"
+
+[[disruptive]]
+attr = "identifier"
+effect = "the instance endpoint hostname changes"
+severity = "medium"
+
+[[flag]]
+attr = "publicly_accessible"
+unsafe = true
+message = "the instance becomes reachable from the internet (publicly_accessible = true)"
+severity = "critical"

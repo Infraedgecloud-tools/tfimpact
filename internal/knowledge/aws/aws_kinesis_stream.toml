@@ -1,0 +1,11 @@
+type = "aws_kinesis_stream"
+display = "Kinesis data stream"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kinesis_stream"
+holds_data = true
+data = "every record still within the retention period"
+identity = ["name"]
+
+[[disruptive]]
+attr = "shard_count"
+effect = "the stream is resharded; producers and consumers see shards split or merge"
+severity = "low"

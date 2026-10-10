@@ -1,0 +1,16 @@
+type = "aws_cognito_user_pool"
+display = "Cognito user pool"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cognito_user_pool"
+holds_data = true
+data = "every user account, with passwords and attributes; users cannot be exported with their passwords and would have to sign up again"
+identity = ["name"]
+
+[[mitigation]]
+attr = "deletion_protection"
+equals = "INACTIVE"
+message = "deletion protection is inactive"
+
+[[safeguard]]
+attr = "deletion_protection"
+equals = "ACTIVE"
+message = "deletion protection is active, so AWS will refuse the delete"

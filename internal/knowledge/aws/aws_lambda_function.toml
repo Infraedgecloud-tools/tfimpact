@@ -1,0 +1,11 @@
+type = "aws_lambda_function"
+display = "Lambda function"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_function"
+identity = ["function_name"]
+downtime_on_replace = true
+downtime = "the function ARN stays the same only if the name does; event source mappings, permissions and aliases pointing at the old function are recreated"
+
+[[disruptive]]
+attr = "reserved_concurrent_executions"
+effect = "concurrency is capped; a value of 0 stops the function being invoked at all"
+severity = "medium"

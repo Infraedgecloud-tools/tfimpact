@@ -1,0 +1,11 @@
+type = "aws_route53_zone"
+display = "Route 53 hosted zone"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_zone"
+holds_data = true
+data = "every record in the zone; a recreated zone gets different name servers, so DNS for the domain breaks until the registrar or parent zone is updated"
+identity = ["name"]
+
+[[mitigation]]
+attr = "force_destroy"
+equals = true
+message = "force_destroy = true, so all records are deleted first"

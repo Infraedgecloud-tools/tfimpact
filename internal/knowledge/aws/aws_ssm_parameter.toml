@@ -1,0 +1,4 @@
+type = "aws_ssm_parameter"
+display = "SSM parameter"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_parameter"
+identity = ["name"]

@@ -1,0 +1,200 @@
+{
+  "drift": [],
+  "findings": [
+    {
+      "domain": "data",
+      "id": "fnd_a16167fba7d75f69",
+      "line": null,
+      "metadata": {
+        "action_reason": "replace_because_cannot_update",
+        "mitigations": [
+          "deletion protection is off",
+          "point-in-time recovery is off, so there is no automatic backup to restore from"
+        ],
+        "replace_paths": [
+          "hash_key"
+        ],
+        "resource_type": "aws_dynamodb_table",
+        "safeguards": null
+      },
+      "observed": "The DynamoDB table is replaced because `hash_key` (\"session_id\" → \"user_id\") cannot be changed in place. Deletion protection is off; point-in-time recovery is off, so there is no automatic backup to restore from.",
+      "path": "aws_dynamodb_table.sessions",
+      "product": "tfimpact",
+      "recommendation": "If the change is intended, take a snapshot or backup first and plan the cutover. If the replacement is a surprise, revert `hash_key`. `lifecycle { prevent_destroy = true }` makes Terraform refuse a plan like this.",
+      "rule_id": "PLAN-DATA-002",
+      "severity": "critical",
+      "suppressed": false,
+      "suppression_expires": null,
+      "suppression_reason": null,
+      "tags": [
+        "aws_dynamodb_table",
+        "data-loss",
+        "replace"
+      ],
+      "title": "`aws_dynamodb_table.sessions` will be destroyed and recreated; every item in the table is lost"
+    },
+    {
+      "domain": "security",
+      "id": "fnd_84a0186167a33669",
+      "line": null,
+      "metadata": {
+        "opened": [
+          "tcp port 22 from 0.0.0.0/0"
+        ],
+        "resource_type": "aws_security_group"
+      },
+      "observed": "The security group gains ingress for tcp port 22 from 0.0.0.0/0.",
+      "path": "aws_security_group.bastion",
+      "product": "tfimpact",
+      "recommendation": "Restrict the source to known CIDR ranges or a security group. If public access is intended, limit it to the listening port and say so in the change.",
+      "rule_id": "PLAN-NET-001",
+      "severity": "critical",
+      "suppressed": false,
+      "suppression_expires": null,
+      "suppression_reason": null,
+      "tags": [
+        "aws_security_group",
+        "network",
+        "public-ingress"
+      ],
+      "title": "`aws_security_group.bastion` opens SSH to the internet"
+    },
+    {
+      "domain": "availability",
+      "id": "fnd_5cb717849a9195ba",
+      "line": null,
+      "metadata": {
+        "attribute": "user_data",
+        "resource_type": "aws_instance"
+      },
+      "observed": "`user_data` changes (value hidden): the instance is stopped and started to apply the new user data (user_data_replace_on_change is false); it keeps its ID but gets a new public IP unless it has an Elastic IP, and the script only re-runs if the AMI's cloud-init is configured to.",
+      "path": "aws_instance.bastion",
+      "product": "tfimpact",
+      "recommendation": "Apply in a maintenance window or confirm that clients tolerate the interruption.",
+      "rule_id": "PLAN-DISRUPT-001",
+      "severity": "high",
+      "suppressed": false,
+      "suppression_expires": null,
+      "suppression_reason": null,
+      "tags": [
+        "aws_instance",
+        "disruptive",
+        "user_data"
+      ],
+      "title": "`aws_instance.bastion`: changing `user_data` in place has a service effect"
+    }
+  ],
+  "generated_at": "2026-10-10T12:00:00Z",
+  "moves": [],
+  "policy": {
+    "configured": false,
+    "exclusions": [],
+    "path": null
+  },
+  "privacy": {
+    "note": "tfimpact runs locally. Nothing is sent anywhere; sensitive values are masked.",
+    "telemetry": false,
+    "uploaded": false
+  },
+  "routine": [
+    {
+      "type": "aws_cloudwatch_log_group",
+      "addresses": [
+        "aws_cloudwatch_log_group.service[\"api\"]",
+        "aws_cloudwatch_log_group.service[\"auth\"]",
+        "aws_cloudwatch_log_group.service[\"billing\"]",
+        "aws_cloudwatch_log_group.service[\"catalog\"]",
+        "aws_cloudwatch_log_group.service[\"checkout\"]",
+        "aws_cloudwatch_log_group.service[\"gateway\"]",
+        "aws_cloudwatch_log_group.service[\"orders\"]",
+        "aws_cloudwatch_log_group.service[\"payments\"]",
+        "aws_cloudwatch_log_group.service[\"search\"]",
+        "aws_cloudwatch_log_group.service[\"shipping\"]"
+      ],
+      "summary": "`retention_in_days` 30 → 90"
+    },
+    {
+      "type": "aws_lb",
+      "addresses": [
+        "aws_lb.public"
+      ],
+      "summary": "`subnet_mapping`, `subnets`"
+    },
+    {
+      "type": "aws_sqs_queue",
+      "addresses": [
+        "aws_sqs_queue.work[\"notify\"]",
+        "aws_sqs_queue.work[\"orders\"]",
+        "aws_sqs_queue.work[\"payments\"]"
+      ],
+      "summary": "`visibility_timeout_seconds` 60 → 120"
+    },
+    {
+      "type": "aws_ssm_parameter",
+      "addresses": [
+        "aws_ssm_parameter.service_version[\"api\"]",
+        "aws_ssm_parameter.service_version[\"auth\"]",
+        "aws_ssm_parameter.service_version[\"billing\"]",
+        "aws_ssm_parameter.service_version[\"catalog\"]",
+        "aws_ssm_parameter.service_version[\"checkout\"]",
+        "aws_ssm_parameter.service_version[\"email\"]",
+        "aws_ssm_parameter.service_version[\"export\"]",
+        "aws_ssm_parameter.service_version[\"feed\"]",
+        "aws_ssm_parameter.service_version[\"gateway\"]",
+        "aws_ssm_parameter.service_version[\"ingest\"]",
+        "aws_ssm_parameter.service_version[\"inventory\"]",
+        "aws_ssm_parameter.service_version[\"jobs\"]",
+        "aws_ssm_parameter.service_version[\"ledger\"]",
+        "aws_ssm_parameter.service_version[\"media\"]",
+        "aws_ssm_parameter.service_version[\"notify\"]",
+        "aws_ssm_parameter.service_version[\"orders\"]",
+        "aws_ssm_parameter.service_version[\"payments\"]",
+        "aws_ssm_parameter.service_version[\"pricing\"]",
+        "aws_ssm_parameter.service_version[\"profile\"]",
+        "aws_ssm_parameter.service_version[\"reports\"]",
+        "aws_ssm_parameter.service_version[\"search\"]",
+        "aws_ssm_parameter.service_version[\"shipping\"]",
+        "aws_ssm_parameter.service_version[\"tax\"]",
+        "aws_ssm_parameter.service_version[\"webhooks\"]"
+      ],
+      "summary": "tags only"
+    }
+  ],
+  "schema_version": "1.1",
+  "source": {
+    "format_version": "1.2",
+    "kind": "terraform-plan",
+    "root": "../../testdata/plans/noisy/plan.json",
+    "terraform_version": "1.15.5"
+  },
+  "summary": {
+    "changes": {
+      "create": 0,
+      "update": 40,
+      "delete": 0,
+      "replace": 1,
+      "no_op": 6,
+      "read": 0,
+      "forget": 0,
+      "move": 0,
+      "import": 0,
+      "drift": 0,
+      "tag_only": 24
+    },
+    "excluded_files": 0,
+    "findings": 3,
+    "resources": 47,
+    "scanned_files": 1,
+    "severity": {
+      "critical": 2,
+      "high": 1,
+      "low": 0,
+      "medium": 0
+    },
+    "skipped_files": 0,
+    "suppressed_findings": 0,
+    "total_findings": 3
+  },
+  "tool": "tfimpact",
+  "tool_version": "test"
+}

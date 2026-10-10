@@ -1,0 +1,16 @@
+type = "aws_backup_vault"
+display = "AWS Backup vault"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/backup_vault"
+holds_data = true
+data = "every recovery point stored in the vault"
+identity = ["name"]
+
+[[mitigation]]
+attr = "force_destroy"
+equals = true
+message = "force_destroy = true, so all recovery points are deleted first"
+
+[[safeguard]]
+attr = "force_destroy"
+absent = true
+message = "force_destroy is not set, so the delete fails while recovery points remain"

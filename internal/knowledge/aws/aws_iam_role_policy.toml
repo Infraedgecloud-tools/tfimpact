@@ -1,0 +1,8 @@
+type = "aws_iam_role_policy"
+display = "IAM role inline policy"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy"
+identity = ["name"]
+
+[[policy]]
+attr = "policy"
+kind = "identity"

@@ -1,0 +1,12 @@
+type = "aws_s3_bucket_policy"
+display = "S3 bucket policy"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_policy"
+identity = ["bucket"]
+
+[delete]
+severity = "medium"
+message = "the bucket policy is removed, including any Deny statements that enforced TLS or restricted access"
+
+[[policy]]
+attr = "policy"
+kind = "resource"

@@ -1,0 +1,32 @@
+type = "aws_s3_bucket_public_access_block"
+display = "S3 public access block"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_public_access_block"
+identity = ["bucket"]
+
+[delete]
+severity = "high"
+message = "the bucket loses its public access block, so a public ACL or bucket policy would take effect"
+
+[[flag]]
+attr = "block_public_acls"
+unsafe = false
+message = "public ACLs are no longer blocked"
+severity = "high"
+
+[[flag]]
+attr = "block_public_policy"
+unsafe = false
+message = "public bucket policies are no longer blocked"
+severity = "high"
+
+[[flag]]
+attr = "ignore_public_acls"
+unsafe = false
+message = "existing public ACLs are no longer ignored"
+severity = "high"
+
+[[flag]]
+attr = "restrict_public_buckets"
+unsafe = false
+message = "cross-account access to a public bucket is no longer restricted"
+severity = "high"

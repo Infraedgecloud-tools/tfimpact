@@ -1,0 +1,618 @@
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  ~ update in-place
+-/+ destroy and then create replacement
+
+Terraform will perform the following actions:
+
+  # aws_cloudwatch_log_group.service["api"] will be updated in-place
+  ~ resource "aws_cloudwatch_log_group" "service" {
+        id                          = "/fixture/api"
+        name                        = "/fixture/api"
+      ~ retention_in_days           = 30 -> 90
+        # (8 unchanged attributes hidden)
+    }
+
+  # aws_cloudwatch_log_group.service["auth"] will be updated in-place
+  ~ resource "aws_cloudwatch_log_group" "service" {
+        id                          = "/fixture/auth"
+        name                        = "/fixture/auth"
+      ~ retention_in_days           = 30 -> 90
+        # (8 unchanged attributes hidden)
+    }
+
+  # aws_cloudwatch_log_group.service["billing"] will be updated in-place
+  ~ resource "aws_cloudwatch_log_group" "service" {
+        id                          = "/fixture/billing"
+        name                        = "/fixture/billing"
+      ~ retention_in_days           = 30 -> 90
+        # (8 unchanged attributes hidden)
+    }
+
+  # aws_cloudwatch_log_group.service["catalog"] will be updated in-place
+  ~ resource "aws_cloudwatch_log_group" "service" {
+        id                          = "/fixture/catalog"
+        name                        = "/fixture/catalog"
+      ~ retention_in_days           = 30 -> 90
+        # (8 unchanged attributes hidden)
+    }
+
+  # aws_cloudwatch_log_group.service["checkout"] will be updated in-place
+  ~ resource "aws_cloudwatch_log_group" "service" {
+        id                          = "/fixture/checkout"
+        name                        = "/fixture/checkout"
+      ~ retention_in_days           = 30 -> 90
+        # (8 unchanged attributes hidden)
+    }
+
+  # aws_cloudwatch_log_group.service["gateway"] will be updated in-place
+  ~ resource "aws_cloudwatch_log_group" "service" {
+        id                          = "/fixture/gateway"
+        name                        = "/fixture/gateway"
+      ~ retention_in_days           = 30 -> 90
+        # (8 unchanged attributes hidden)
+    }
+
+  # aws_cloudwatch_log_group.service["orders"] will be updated in-place
+  ~ resource "aws_cloudwatch_log_group" "service" {
+        id                          = "/fixture/orders"
+        name                        = "/fixture/orders"
+      ~ retention_in_days           = 30 -> 90
+        # (8 unchanged attributes hidden)
+    }
+
+  # aws_cloudwatch_log_group.service["payments"] will be updated in-place
+  ~ resource "aws_cloudwatch_log_group" "service" {
+        id                          = "/fixture/payments"
+        name                        = "/fixture/payments"
+      ~ retention_in_days           = 30 -> 90
+        # (8 unchanged attributes hidden)
+    }
+
+  # aws_cloudwatch_log_group.service["search"] will be updated in-place
+  ~ resource "aws_cloudwatch_log_group" "service" {
+        id                          = "/fixture/search"
+        name                        = "/fixture/search"
+      ~ retention_in_days           = 30 -> 90
+        # (8 unchanged attributes hidden)
+    }
+
+  # aws_cloudwatch_log_group.service["shipping"] will be updated in-place
+  ~ resource "aws_cloudwatch_log_group" "service" {
+        id                          = "/fixture/shipping"
+        name                        = "/fixture/shipping"
+      ~ retention_in_days           = 30 -> 90
+        # (8 unchanged attributes hidden)
+    }
+
+  # aws_dynamodb_table.sessions must be replaced
+-/+ resource "aws_dynamodb_table" "sessions" {
+      ~ arn                         = "arn:aws:dynamodb:eu-west-2:123456789012:table/fixture-sessions" -> (known after apply)
+      - deletion_protection_enabled = false -> null
+      ~ hash_key                    = "session_id" -> "user_id" # forces replacement
+      ~ id                          = "fixture-sessions" -> (known after apply)
+        name                        = "fixture-sessions"
+      ~ read_capacity               = 0 -> (known after apply)
+      + stream_arn                  = (known after apply)
+      - stream_enabled              = false -> null
+      + stream_label                = (known after apply)
+      + stream_view_type            = (known after apply)
+      - table_class                 = "STANDARD" -> null
+      ~ write_capacity              = 0 -> (known after apply)
+        # (3 unchanged attributes hidden)
+
+      - attribute {
+          - name = "session_id" -> null
+          - type = "S" -> null
+        }
+      + attribute {
+          + name = "user_id"
+          + type = "S"
+        }
+
+      ~ global_secondary_index (known after apply)
+
+      ~ global_table_witness (known after apply)
+
+      ~ point_in_time_recovery (known after apply)
+      - point_in_time_recovery {
+          - enabled                 = false -> null
+          - recovery_period_in_days = 0 -> null
+        }
+
+      ~ server_side_encryption (known after apply)
+
+      ~ ttl (known after apply)
+      - ttl {
+          - enabled        = false -> null
+            # (1 unchanged attribute hidden)
+        }
+
+      ~ warm_throughput (known after apply)
+    }
+
+  # aws_instance.bastion will be updated in-place
+  ~ resource "aws_instance" "bastion" {
+        id                                   = "i-dcbfe32ebe407f132"
+        tags                                 = {
+            "Name" = "bastion"
+        }
+      ~ user_data                            = <<-EOT
+            #!/bin/bash
+          - echo fixture v1
+          + echo fixture v2
+        EOT
+        # (40 unchanged attributes hidden)
+
+        # (4 unchanged blocks hidden)
+    }
+
+  # aws_lb.public will be updated in-place
+  ~ resource "aws_lb" "public" {
+        id                                                           = "arn:aws:elasticloadbalancing:eu-west-2:123456789012:loadbalancer/app/fixture-public/ce8bcd9a7d834a8b"
+        name                                                         = "fixture-public"
+      ~ subnets                                                      = [
+          - "subnet-80e4d1ab9e9ff0550",
+          + "subnet-d2df6b39a23c9f98a",
+            # (1 unchanged element hidden)
+        ]
+        # (28 unchanged attributes hidden)
+
+      ~ subnet_mapping (known after apply)
+      - subnet_mapping {
+          - subnet_id            = "subnet-80e4d1ab9e9ff0550" -> null
+            # (4 unchanged attributes hidden)
+        }
+      - subnet_mapping {
+          - subnet_id            = "subnet-9bea0ab41bade47c2" -> null
+            # (4 unchanged attributes hidden)
+        }
+
+        # (3 unchanged blocks hidden)
+    }
+
+  # aws_security_group.bastion will be updated in-place
+  ~ resource "aws_security_group" "bastion" {
+        id                     = "sg-e86a294401793314a"
+      ~ ingress                = [
+          - {
+              - cidr_blocks      = [
+                  - "10.0.0.0/8",
+                ]
+              - from_port        = 22
+              - ipv6_cidr_blocks = []
+              - prefix_list_ids  = []
+              - protocol         = "tcp"
+              - security_groups  = []
+              - self             = false
+              - to_port          = 22
+                # (1 unchanged attribute hidden)
+            },
+          + {
+              + cidr_blocks      = [
+                  + "0.0.0.0/0",
+                ]
+              + from_port        = 22
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "tcp"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 22
+                # (1 unchanged attribute hidden)
+            },
+        ]
+        name                   = "fixture-bastion"
+        # (9 unchanged attributes hidden)
+    }
+
+  # aws_sqs_queue.work["notify"] will be updated in-place
+  ~ resource "aws_sqs_queue" "work" {
+        id                                = "http://localhost:5000/123456789012/fixture-notify"
+        name                              = "fixture-notify"
+      ~ visibility_timeout_seconds        = 60 -> 120
+        # (19 unchanged attributes hidden)
+    }
+
+  # aws_sqs_queue.work["orders"] will be updated in-place
+  ~ resource "aws_sqs_queue" "work" {
+        id                                = "http://localhost:5000/123456789012/fixture-orders"
+        name                              = "fixture-orders"
+      ~ visibility_timeout_seconds        = 60 -> 120
+        # (19 unchanged attributes hidden)
+    }
+
+  # aws_sqs_queue.work["payments"] will be updated in-place
+  ~ resource "aws_sqs_queue" "work" {
+        id                                = "http://localhost:5000/123456789012/fixture-payments"
+        name                              = "fixture-payments"
+      ~ visibility_timeout_seconds        = 60 -> 120
+        # (19 unchanged attributes hidden)
+    }
+
+  # aws_ssm_parameter.service_version["api"] will be updated in-place
+  ~ resource "aws_ssm_parameter" "service_version" {
+        id              = "/fixture/api/version"
+        name            = "/fixture/api/version"
+      ~ tags            = {
+          + "Owner"   = "platform-team"
+            "Service" = "api"
+            "Tier"    = "backend"
+        }
+      ~ tags_all        = {
+          + "Owner"      = "platform-team"
+            # (4 unchanged elements hidden)
+        }
+        # (12 unchanged attributes hidden)
+    }
+
+  # aws_ssm_parameter.service_version["auth"] will be updated in-place
+  ~ resource "aws_ssm_parameter" "service_version" {
+        id              = "/fixture/auth/version"
+        name            = "/fixture/auth/version"
+      ~ tags            = {
+          + "Owner"   = "platform-team"
+            "Service" = "auth"
+            "Tier"    = "backend"
+        }
+      ~ tags_all        = {
+          + "Owner"      = "platform-team"
+            # (4 unchanged elements hidden)
+        }
+        # (12 unchanged attributes hidden)
+    }
+
+  # aws_ssm_parameter.service_version["billing"] will be updated in-place
+  ~ resource "aws_ssm_parameter" "service_version" {
+        id              = "/fixture/billing/version"
+        name            = "/fixture/billing/version"
+      ~ tags            = {
+          + "Owner"   = "platform-team"
+            "Service" = "billing"
+            "Tier"    = "backend"
+        }
+      ~ tags_all        = {
+          + "Owner"      = "platform-team"
+            # (4 unchanged elements hidden)
+        }
+        # (12 unchanged attributes hidden)
+    }
+
+  # aws_ssm_parameter.service_version["catalog"] will be updated in-place
+  ~ resource "aws_ssm_parameter" "service_version" {
+        id              = "/fixture/catalog/version"
+        name            = "/fixture/catalog/version"
+      ~ tags            = {
+          + "Owner"   = "platform-team"
+            "Service" = "catalog"
+            "Tier"    = "backend"
+        }
+      ~ tags_all        = {
+          + "Owner"      = "platform-team"
+            # (4 unchanged elements hidden)
+        }
+        # (12 unchanged attributes hidden)
+    }
+
+  # aws_ssm_parameter.service_version["checkout"] will be updated in-place
+  ~ resource "aws_ssm_parameter" "service_version" {
+        id              = "/fixture/checkout/version"
+        name            = "/fixture/checkout/version"
+      ~ tags            = {
+          + "Owner"   = "platform-team"
+            "Service" = "checkout"
+            "Tier"    = "backend"
+        }
+      ~ tags_all        = {
+          + "Owner"      = "platform-team"
+            # (4 unchanged elements hidden)
+        }
+        # (12 unchanged attributes hidden)
+    }
+
+  # aws_ssm_parameter.service_version["email"] will be updated in-place
+  ~ resource "aws_ssm_parameter" "service_version" {
+        id              = "/fixture/email/version"
+        name            = "/fixture/email/version"
+      ~ tags            = {
+          + "Owner"   = "platform-team"
+            "Service" = "email"
+            "Tier"    = "backend"
+        }
+      ~ tags_all        = {
+          + "Owner"      = "platform-team"
+            # (4 unchanged elements hidden)
+        }
+        # (12 unchanged attributes hidden)
+    }
+
+  # aws_ssm_parameter.service_version["export"] will be updated in-place
+  ~ resource "aws_ssm_parameter" "service_version" {
+        id              = "/fixture/export/version"
+        name            = "/fixture/export/version"
+      ~ tags            = {
+          + "Owner"   = "platform-team"
+            "Service" = "export"
+            "Tier"    = "backend"
+        }
+      ~ tags_all        = {
+          + "Owner"      = "platform-team"
+            # (4 unchanged elements hidden)
+        }
+        # (12 unchanged attributes hidden)
+    }
+
+  # aws_ssm_parameter.service_version["feed"] will be updated in-place
+  ~ resource "aws_ssm_parameter" "service_version" {
+        id              = "/fixture/feed/version"
+        name            = "/fixture/feed/version"
+      ~ tags            = {
+          + "Owner"   = "platform-team"
+            "Service" = "feed"
+            "Tier"    = "backend"
+        }
+      ~ tags_all        = {
+          + "Owner"      = "platform-team"
+            # (4 unchanged elements hidden)
+        }
+        # (12 unchanged attributes hidden)
+    }
+
+  # aws_ssm_parameter.service_version["gateway"] will be updated in-place
+  ~ resource "aws_ssm_parameter" "service_version" {
+        id              = "/fixture/gateway/version"
+        name            = "/fixture/gateway/version"
+      ~ tags            = {
+          + "Owner"   = "platform-team"
+            "Service" = "gateway"
+            "Tier"    = "backend"
+        }
+      ~ tags_all        = {
+          + "Owner"      = "platform-team"
+            # (4 unchanged elements hidden)
+        }
+        # (12 unchanged attributes hidden)
+    }
+
+  # aws_ssm_parameter.service_version["ingest"] will be updated in-place
+  ~ resource "aws_ssm_parameter" "service_version" {
+        id              = "/fixture/ingest/version"
+        name            = "/fixture/ingest/version"
+      ~ tags            = {
+          + "Owner"   = "platform-team"
+            "Service" = "ingest"
+            "Tier"    = "backend"
+        }
+      ~ tags_all        = {
+          + "Owner"      = "platform-team"
+            # (4 unchanged elements hidden)
+        }
+        # (12 unchanged attributes hidden)
+    }
+
+  # aws_ssm_parameter.service_version["inventory"] will be updated in-place
+  ~ resource "aws_ssm_parameter" "service_version" {
+        id              = "/fixture/inventory/version"
+        name            = "/fixture/inventory/version"
+      ~ tags            = {
+          + "Owner"   = "platform-team"
+            "Service" = "inventory"
+            "Tier"    = "backend"
+        }
+      ~ tags_all        = {
+          + "Owner"      = "platform-team"
+            # (4 unchanged elements hidden)
+        }
+        # (12 unchanged attributes hidden)
+    }
+
+  # aws_ssm_parameter.service_version["jobs"] will be updated in-place
+  ~ resource "aws_ssm_parameter" "service_version" {
+        id              = "/fixture/jobs/version"
+        name            = "/fixture/jobs/version"
+      ~ tags            = {
+          + "Owner"   = "platform-team"
+            "Service" = "jobs"
+            "Tier"    = "backend"
+        }
+      ~ tags_all        = {
+          + "Owner"      = "platform-team"
+            # (4 unchanged elements hidden)
+        }
+        # (12 unchanged attributes hidden)
+    }
+
+  # aws_ssm_parameter.service_version["ledger"] will be updated in-place
+  ~ resource "aws_ssm_parameter" "service_version" {
+        id              = "/fixture/ledger/version"
+        name            = "/fixture/ledger/version"
+      ~ tags            = {
+          + "Owner"   = "platform-team"
+            "Service" = "ledger"
+            "Tier"    = "backend"
+        }
+      ~ tags_all        = {
+          + "Owner"      = "platform-team"
+            # (4 unchanged elements hidden)
+        }
+        # (12 unchanged attributes hidden)
+    }
+
+  # aws_ssm_parameter.service_version["media"] will be updated in-place
+  ~ resource "aws_ssm_parameter" "service_version" {
+        id              = "/fixture/media/version"
+        name            = "/fixture/media/version"
+      ~ tags            = {
+          + "Owner"   = "platform-team"
+            "Service" = "media"
+            "Tier"    = "backend"
+        }
+      ~ tags_all        = {
+          + "Owner"      = "platform-team"
+            # (4 unchanged elements hidden)
+        }
+        # (12 unchanged attributes hidden)
+    }
+
+  # aws_ssm_parameter.service_version["notify"] will be updated in-place
+  ~ resource "aws_ssm_parameter" "service_version" {
+        id              = "/fixture/notify/version"
+        name            = "/fixture/notify/version"
+      ~ tags            = {
+          + "Owner"   = "platform-team"
+            "Service" = "notify"
+            "Tier"    = "backend"
+        }
+      ~ tags_all        = {
+          + "Owner"      = "platform-team"
+            # (4 unchanged elements hidden)
+        }
+        # (12 unchanged attributes hidden)
+    }
+
+  # aws_ssm_parameter.service_version["orders"] will be updated in-place
+  ~ resource "aws_ssm_parameter" "service_version" {
+        id              = "/fixture/orders/version"
+        name            = "/fixture/orders/version"
+      ~ tags            = {
+          + "Owner"   = "platform-team"
+            "Service" = "orders"
+            "Tier"    = "backend"
+        }
+      ~ tags_all        = {
+          + "Owner"      = "platform-team"
+            # (4 unchanged elements hidden)
+        }
+        # (12 unchanged attributes hidden)
+    }
+
+  # aws_ssm_parameter.service_version["payments"] will be updated in-place
+  ~ resource "aws_ssm_parameter" "service_version" {
+        id              = "/fixture/payments/version"
+        name            = "/fixture/payments/version"
+      ~ tags            = {
+          + "Owner"   = "platform-team"
+            "Service" = "payments"
+            "Tier"    = "backend"
+        }
+      ~ tags_all        = {
+          + "Owner"      = "platform-team"
+            # (4 unchanged elements hidden)
+        }
+        # (12 unchanged attributes hidden)
+    }
+
+  # aws_ssm_parameter.service_version["pricing"] will be updated in-place
+  ~ resource "aws_ssm_parameter" "service_version" {
+        id              = "/fixture/pricing/version"
+        name            = "/fixture/pricing/version"
+      ~ tags            = {
+          + "Owner"   = "platform-team"
+            "Service" = "pricing"
+            "Tier"    = "backend"
+        }
+      ~ tags_all        = {
+          + "Owner"      = "platform-team"
+            # (4 unchanged elements hidden)
+        }
+        # (12 unchanged attributes hidden)
+    }
+
+  # aws_ssm_parameter.service_version["profile"] will be updated in-place
+  ~ resource "aws_ssm_parameter" "service_version" {
+        id              = "/fixture/profile/version"
+        name            = "/fixture/profile/version"
+      ~ tags            = {
+          + "Owner"   = "platform-team"
+            "Service" = "profile"
+            "Tier"    = "backend"
+        }
+      ~ tags_all        = {
+          + "Owner"      = "platform-team"
+            # (4 unchanged elements hidden)
+        }
+        # (12 unchanged attributes hidden)
+    }
+
+  # aws_ssm_parameter.service_version["reports"] will be updated in-place
+  ~ resource "aws_ssm_parameter" "service_version" {
+        id              = "/fixture/reports/version"
+        name            = "/fixture/reports/version"
+      ~ tags            = {
+          + "Owner"   = "platform-team"
+            "Service" = "reports"
+            "Tier"    = "backend"
+        }
+      ~ tags_all        = {
+          + "Owner"      = "platform-team"
+            # (4 unchanged elements hidden)
+        }
+        # (12 unchanged attributes hidden)
+    }
+
+  # aws_ssm_parameter.service_version["search"] will be updated in-place
+  ~ resource "aws_ssm_parameter" "service_version" {
+        id              = "/fixture/search/version"
+        name            = "/fixture/search/version"
+      ~ tags            = {
+          + "Owner"   = "platform-team"
+            "Service" = "search"
+            "Tier"    = "backend"
+        }
+      ~ tags_all        = {
+          + "Owner"      = "platform-team"
+            # (4 unchanged elements hidden)
+        }
+        # (12 unchanged attributes hidden)
+    }
+
+  # aws_ssm_parameter.service_version["shipping"] will be updated in-place
+  ~ resource "aws_ssm_parameter" "service_version" {
+        id              = "/fixture/shipping/version"
+        name            = "/fixture/shipping/version"
+      ~ tags            = {
+          + "Owner"   = "platform-team"
+            "Service" = "shipping"
+            "Tier"    = "backend"
+        }
+      ~ tags_all        = {
+          + "Owner"      = "platform-team"
+            # (4 unchanged elements hidden)
+        }
+        # (12 unchanged attributes hidden)
+    }
+
+  # aws_ssm_parameter.service_version["tax"] will be updated in-place
+  ~ resource "aws_ssm_parameter" "service_version" {
+        id              = "/fixture/tax/version"
+        name            = "/fixture/tax/version"
+      ~ tags            = {
+          + "Owner"   = "platform-team"
+            "Service" = "tax"
+            "Tier"    = "backend"
+        }
+      ~ tags_all        = {
+          + "Owner"      = "platform-team"
+            # (4 unchanged elements hidden)
+        }
+        # (12 unchanged attributes hidden)
+    }
+
+  # aws_ssm_parameter.service_version["webhooks"] will be updated in-place
+  ~ resource "aws_ssm_parameter" "service_version" {
+        id              = "/fixture/webhooks/version"
+        name            = "/fixture/webhooks/version"
+      ~ tags            = {
+          + "Owner"   = "platform-team"
+            "Service" = "webhooks"
+            "Tier"    = "backend"
+        }
+      ~ tags_all        = {
+          + "Owner"      = "platform-team"
+            # (4 unchanged elements hidden)
+        }
+        # (12 unchanged attributes hidden)
+    }
+
+Plan: 1 to add, 40 to change, 1 to destroy.

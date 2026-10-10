@@ -1,0 +1,21 @@
+type = "aws_s3_bucket"
+display = "S3 bucket"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket"
+holds_data = true
+data = "every object and object version in the bucket"
+identity = ["bucket"]
+
+[[mitigation]]
+attr = "force_destroy"
+equals = true
+message = "force_destroy = true, so all objects and versions are deleted first without asking"
+
+[[safeguard]]
+attr = "force_destroy"
+equals = false
+message = "force_destroy is false, so the delete fails if the bucket still holds objects"
+
+[[safeguard]]
+attr = "force_destroy"
+absent = true
+message = "force_destroy is not set, so the delete fails if the bucket still holds objects"

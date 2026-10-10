@@ -1,0 +1,6 @@
+type = "aws_acm_certificate"
+display = "ACM certificate"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/acm_certificate"
+identity = ["domain_name"]
+downtime_on_replace = true
+downtime = "the certificate ARN changes; every listener and distribution referencing the old ARN must be updated, and DNS or email validation must complete before the new certificate is issued"

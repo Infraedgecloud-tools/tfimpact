@@ -1,0 +1,12 @@
+type = "aws_efs_file_system"
+display = "EFS file system"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/efs_file_system"
+holds_data = true
+data = "the file system and every file in it; EFS takes no final snapshot"
+identity = ["creation_token"]
+
+[[flag]]
+attr = "encrypted"
+unsafe = false
+message = "encryption at rest is off"
+severity = "high"
