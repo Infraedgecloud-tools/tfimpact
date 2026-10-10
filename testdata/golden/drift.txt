@@ -1,0 +1,13 @@
+tfimpact: no consequences found, 3 routine changes
+Plan: 1 to add, 2 to change, 0 to destroy. Terraform/OpenTofu 1.15.5 · 3 resources.
+
+ROUTINE (3)
+  * aws_cloudwatch_log_group.app: retention_in_days 30 → 90
+  * aws_sqs_queue.events: visibility_timeout_seconds 120 → 30
+  * aws_ssm_parameter.flag: created
+
+CHANGED OUTSIDE TERRAFORM (2)
+  * aws_sqs_queue.events: changed outside Terraform: visibility_timeout_seconds
+  * aws_ssm_parameter.flag: deleted outside Terraform
+
+tfimpact test by InfraEdge · deterministic, runs on the runner, sends nothing anywhere · sensitive values masked

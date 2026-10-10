@@ -2,13 +2,14 @@ type = "aws_elasticache_replication_group"
 display = "ElastiCache (Redis/Valkey) replication group"
 doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/elasticache_replication_group"
 holds_data = true
-data = "every key in the cache; applications treating it as a store lose that data"
+data = "every key in the cache"
+loss_note = "Applications treating the cache as a store lose that data."
 identity = ["replication_group_id"]
 
 [[mitigation]]
 attr = "final_snapshot_identifier"
 absent = true
-message = "no final snapshot will be taken (final_snapshot_identifier is not set)"
+message = "no final snapshot will be taken (`final_snapshot_identifier` is not set)"
 
 [[safeguard]]
 attr = "final_snapshot_identifier"

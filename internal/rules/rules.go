@@ -204,7 +204,7 @@ func (a *analysis) renameFinding(del, cr change, attr string) {
 	loss := ""
 	if del.know != nil && del.know.HoldsData {
 		sev = findings.Critical
-		loss = fmt.Sprintf(" %s would be lost with the %s.", capitalise(del.know.Data), display)
+		loss = fmt.Sprintf(" The %s would be destroyed with it, losing %s.", display, del.know.Data)
 	}
 	why := "it left the configuration"
 	switch del.rc.ActionReason {
@@ -261,7 +261,21 @@ func (a *analysis) deleted(c change) {
 	before := c.rc.Change.BeforeMap()
 	why := deleteReason(c.rc.ActionReason)
 	if c.know != nil && c.know.HoldsData {
-		mit, safe := conditions(c.know, before)
+		mit, safe, kept := conditions(c.know, before)
+		if kept != "" {
+			a.add(findings.Finding{
+				RuleID:         RuleDataDestroyed,
+				Severity:       findings.Low,
+				Title:          fmt.Sprintf("`%s` is removed from Terraform state; %s stays in AWS", c.rc.Address, c.know.Data),
+				Observed:       joinSentences(fmt.Sprintf("The %s leaves this configuration%s.", c.know.Display, why), capitalise(kept)+"."),
+				Recommendation: "Nothing is deleted, but the resource is no longer managed here. Import it elsewhere or delete it by hand when it is no longer needed.",
+				Domain:         "data",
+				Path:           ptr(c.rc.Address),
+				Tags:           []string{c.rc.Type, "state-removal"},
+				Metadata:       map[string]any{"resource_type": c.rc.Type, "action_reason": c.rc.ActionReason, "keeps_data": kept},
+			})
+			return
+		}
 		sev := findings.Critical
 		if len(safe) > 0 {
 			sev = findings.High
@@ -269,8 +283,8 @@ func (a *analysis) deleted(c change) {
 		a.add(findings.Finding{
 			RuleID:         RuleDataDestroyed,
 			Severity:       sev,
-			Title:          fmt.Sprintf("`%s` will be destroyed; %s is lost", c.rc.Address, c.know.Data),
-			Observed:       strings.TrimSpace(fmt.Sprintf("The %s is destroyed%s. %s %s", c.know.Display, why, sentence(mit), sentence(safe))),
+			Title:          fmt.Sprintf("`%s` will be destroyed, losing %s", c.rc.Address, c.know.Data),
+			Observed:       joinSentences(fmt.Sprintf("The %s is destroyed%s.", c.know.Display, why), c.know.LossNote, sentence(mit), sentence(safe)),
 			Recommendation: "If removing it is intended, take a backup or snapshot first and keep it until the change has settled. If it was renamed or moved in code, add a `moved` block instead of recreating it.",
 			Domain:         "data",
 			Path:           ptr(c.rc.Address),
@@ -281,23 +295,28 @@ func (a *analysis) deleted(c change) {
 	}
 	sev := findings.Low
 	effect := ""
+	domain := "change"
+	recommendation := "Confirm nothing outside this configuration still depends on it."
 	if c.know != nil && c.know.DowntimeOnReplace {
 		sev = findings.Medium
-		effect = " " + capitalise(c.know.Downtime) + "."
+		domain = "availability"
+		effect = " Anything still pointing at it (DNS names, clients, attachments, dependants in other configurations) stops working."
 	}
 	if c.know != nil && c.know.Delete != nil {
 		if s, ok := findings.Parse(c.know.Delete.Severity); ok {
 			sev = s
 		}
 		effect = " " + capitalise(c.know.Delete.Message) + "."
+		domain = "security"
+		recommendation = "This removes a control. If that is intended, say who approved it in the change; otherwise keep the resource or move it with a moved block."
 	}
 	a.add(findings.Finding{
 		RuleID:         RuleDeleted,
 		Severity:       sev,
 		Title:          fmt.Sprintf("`%s` will be destroyed", c.rc.Address),
 		Observed:       strings.TrimSpace(fmt.Sprintf("The %s is destroyed%s.%s", displayName(c), why, effect)),
-		Recommendation: "Confirm nothing outside this configuration still depends on it.",
-		Domain:         "change",
+		Recommendation: recommendation,
+		Domain:         domain,
 		Path:           ptr(c.rc.Address),
 		Tags:           []string{c.rc.Type, "destroy"},
 		Metadata:       map[string]any{"resource_type": c.rc.Type, "action_reason": c.rc.ActionReason},
@@ -330,16 +349,19 @@ func (a *analysis) replaced(c change) {
 		order = " The new object is created before the old one is destroyed (create_before_destroy)."
 	}
 	if c.know != nil && c.know.HoldsData {
-		mit, safe := conditions(c.know, before)
+		mit, safe, kept := conditions(c.know, before)
 		sev := findings.Critical
-		if len(safe) > 0 {
+		if len(safe) > 0 || kept != "" {
 			sev = findings.High
+		}
+		if kept != "" {
+			safe = append(safe, kept)
 		}
 		a.add(findings.Finding{
 			RuleID:         RuleDataReplaced,
 			Severity:       sev,
-			Title:          fmt.Sprintf("`%s` will be destroyed and recreated; %s is lost", c.rc.Address, c.know.Data),
-			Observed:       strings.TrimSpace(fmt.Sprintf("%s%s %s %s", reason, order, sentence(mit), sentence(safe))),
+			Title:          fmt.Sprintf("`%s` will be destroyed and recreated, losing %s", c.rc.Address, c.know.Data),
+			Observed:       joinSentences(reason+order, c.know.LossNote, sentence(mit), sentence(safe)),
 			Recommendation: fmt.Sprintf("If the change is intended, take a snapshot or backup first and plan the cutover. If the replacement is a surprise, revert %s. `lifecycle { prevent_destroy = true }` makes Terraform refuse a plan like this.", attrList(c.rc.Change.ReplacePathStrings())),
 			Domain:         "data",
 			Path:           ptr(c.rc.Address),
@@ -404,7 +426,9 @@ func (a *analysis) valueChange(c change, path string) string {
 	return "changed"
 }
 
-func conditions(k *knowledge.Resource, attrs map[string]any) (mitigations, safeguards []string) {
+// conditions evaluates mitigations and safeguards; kept is the message of a
+// safeguard that keeps the data entirely (skip_destroy and the like).
+func conditions(k *knowledge.Resource, attrs map[string]any) (mitigations, safeguards []string, kept string) {
 	for _, m := range k.Mitigations {
 		if m.Matches(attrs) {
 			mitigations = append(mitigations, m.Message)
@@ -412,6 +436,10 @@ func conditions(k *knowledge.Resource, attrs map[string]any) (mitigations, safeg
 	}
 	for _, s := range k.Safeguards {
 		if s.Matches(attrs) {
+			if s.KeepsData {
+				kept = s.Message
+				continue
+			}
 			safeguards = append(safeguards, s.Message)
 		}
 	}
@@ -437,7 +465,7 @@ func sentence(parts []string) string {
 }
 
 func capitalise(s string) string {
-	if s == "" {
+	if s == "" || s[0] == '`' {
 		return s
 	}
 	return strings.ToUpper(s[:1]) + s[1:]
@@ -516,11 +544,20 @@ func (a *analysis) exposure(c change, f knowledge.Flag, prefix string) {
 	if s, ok := findings.Parse(f.Severity); ok {
 		sev = s
 	}
+	observed := fmt.Sprintf("`%s` changes %s.", f.Attr, a.pathChange(c, f.Attr))
+	if c.kind == plan.Create {
+		v, _ := knowledge.LookupPath(c.rc.Change.AfterMap(), f.Attr)
+		shown := "(value hidden)"
+		if !a.opts.NoValues {
+			shown = sensitive.Format(sensitive.Mask(v, nil))
+		}
+		observed = fmt.Sprintf("`%s` is set to %s on creation.", f.Attr, shown)
+	}
 	a.add(findings.Finding{
 		RuleID:         RuleExposure,
 		Severity:       sev,
-		Title:          fmt.Sprintf("`%s`: %s%s", c.rc.Address, prefix, f.Message),
-		Observed:       fmt.Sprintf("`%s` %s%s.", f.Attr, prefixVerb(prefix), a.pathChange(c, f.Attr)),
+		Title:          fmt.Sprintf("`%s`: %s", c.rc.Address, f.Message),
+		Observed:       observed,
 		Recommendation: "Confirm this is intended and recorded in the change; if not, revert it.",
 		Domain:         "security",
 		Path:           ptr(c.rc.Address),
@@ -543,13 +580,6 @@ func (a *analysis) pathChange(c change, path string) string {
 		return sensitive.Format(sensitive.Mask(v, nil))
 	}
 	return a.topChange(c, knowledge.Top(path))
-}
-
-func prefixVerb(prefix string) string {
-	if prefix != "" {
-		return "is set to "
-	}
-	return "changes "
 }
 
 func (a *analysis) topChange(c change, top string) string {
@@ -625,14 +655,16 @@ func (a *analysis) policy(c change, pa knowledge.PolicyAttr, beforeV, afterV any
 	}
 	kindName := map[string]string{iampolicy.Identity: "policy", iampolicy.Resource: "resource policy", iampolicy.Trust: "trust policy"}[pa.Kind]
 	verb := "is widened"
+	observed := fmt.Sprintf("`%s` now %s.", pa.Attr, strings.Join(lines, "; "))
 	if beforeP == nil {
 		verb = "is created with broad access"
+		observed = fmt.Sprintf("`%s` %s.", pa.Attr, strings.Join(lines, "; "))
 	}
 	a.add(findings.Finding{
 		RuleID:         RulePolicyWidened,
 		Severity:       sev,
 		Title:          fmt.Sprintf("`%s`: the %s %s", c.rc.Address, kindName, verb),
-		Observed:       fmt.Sprintf("`%s` now %s.", pa.Attr, strings.Join(lines, "; ")),
+		Observed:       observed,
 		Recommendation: "Scope actions, resources and principals to what the workload needs and keep the conditions. If the widening is intended, say why in the change.",
 		Domain:         "security",
 		Path:           ptr(c.rc.Address),
@@ -930,6 +962,9 @@ func (a *analysis) drift() {
 			}
 		}
 		sort.Strings(changed)
+		if len(changed) == 0 && rc.Change.Kind() == plan.Update {
+			continue // refresh noise: nothing visible changed
+		}
 		a.res.Counts.Drift++
 		a.res.Drift = append(a.res.Drift, findings.Drift{Address: rc.Address, Actions: rc.Change.Actions, Changed: changed})
 	}

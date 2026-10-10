@@ -1,0 +1,1008 @@
+{
+    "format_version": "1.2",
+    "terraform_version": "1.15.5",
+    "variables": {
+        "cost_centre": {
+            "value": "platform"
+        }
+    },
+    "planned_values": {
+        "root_module": {
+            "resources": [
+                {
+                    "address": "aws_cloudwatch_log_group.app",
+                    "mode": "managed",
+                    "type": "aws_cloudwatch_log_group",
+                    "name": "app",
+                    "provider_name": "registry.terraform.io/hashicorp/aws",
+                    "schema_version": 0,
+                    "values": {
+                        "kms_key_id": null,
+                        "name": "/fixture/fresh/app",
+                        "region": "eu-west-2",
+                        "retention_in_days": 14,
+                        "skip_destroy": false,
+                        "tags": null,
+                        "tags_all": {
+                            "CostCentre": "platform",
+                            "Project": "fixture"
+                        }
+                    },
+                    "sensitive_values": {
+                        "tags_all": {}
+                    },
+                    "identity_schema_version": 0,
+                    "identity": {
+                        "account_id": null,
+                        "name": null,
+                        "region": null
+                    }
+                },
+                {
+                    "address": "aws_iam_role.app",
+                    "mode": "managed",
+                    "type": "aws_iam_role",
+                    "name": "app",
+                    "provider_name": "registry.terraform.io/hashicorp/aws",
+                    "schema_version": 0,
+                    "values": {
+                        "assume_role_policy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}",
+                        "description": null,
+                        "force_detach_policies": false,
+                        "max_session_duration": 3600,
+                        "name": "fixture-app",
+                        "path": "/",
+                        "permissions_boundary": null,
+                        "tags": null,
+                        "tags_all": {
+                            "CostCentre": "platform",
+                            "Project": "fixture"
+                        }
+                    },
+                    "sensitive_values": {
+                        "inline_policy": [],
+                        "managed_policy_arns": [],
+                        "tags_all": {}
+                    },
+                    "identity_schema_version": 0,
+                    "identity": {
+                        "account_id": null,
+                        "name": null
+                    }
+                },
+                {
+                    "address": "aws_iam_role_policy.app",
+                    "mode": "managed",
+                    "type": "aws_iam_role_policy",
+                    "name": "app",
+                    "provider_name": "registry.terraform.io/hashicorp/aws",
+                    "schema_version": 0,
+                    "values": {
+                        "name": "fixture-app",
+                        "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Action\":\"*\",\"Effect\":\"Allow\",\"Resource\":\"*\"}]}"
+                    },
+                    "sensitive_values": {},
+                    "identity_schema_version": 0,
+                    "identity": {
+                        "account_id": null,
+                        "name": null,
+                        "role": null
+                    }
+                },
+                {
+                    "address": "aws_s3_bucket.assets",
+                    "mode": "managed",
+                    "type": "aws_s3_bucket",
+                    "name": "assets",
+                    "provider_name": "registry.terraform.io/hashicorp/aws",
+                    "schema_version": 0,
+                    "values": {
+                        "bucket": "fixture-assets-eu-west-2",
+                        "force_destroy": false,
+                        "region": "eu-west-2",
+                        "tags": null,
+                        "tags_all": {
+                            "CostCentre": "platform",
+                            "Project": "fixture"
+                        },
+                        "timeouts": null
+                    },
+                    "sensitive_values": {
+                        "cors_rule": [],
+                        "grant": [],
+                        "lifecycle_rule": [],
+                        "logging": [],
+                        "object_lock_configuration": [],
+                        "replication_configuration": [],
+                        "server_side_encryption_configuration": [],
+                        "tags_all": {},
+                        "versioning": [],
+                        "website": []
+                    },
+                    "identity_schema_version": 0,
+                    "identity": {
+                        "account_id": null,
+                        "bucket": null,
+                        "region": null
+                    }
+                },
+                {
+                    "address": "aws_security_group.web",
+                    "mode": "managed",
+                    "type": "aws_security_group",
+                    "name": "web",
+                    "provider_name": "registry.terraform.io/hashicorp/aws",
+                    "schema_version": 1,
+                    "values": {
+                        "description": "Managed by Terraform",
+                        "ingress": [
+                            {
+                                "cidr_blocks": [
+                                    "0.0.0.0/0"
+                                ],
+                                "description": "",
+                                "from_port": 3389,
+                                "ipv6_cidr_blocks": [],
+                                "prefix_list_ids": [],
+                                "protocol": "tcp",
+                                "security_groups": [],
+                                "self": false,
+                                "to_port": 3389
+                            },
+                            {
+                                "cidr_blocks": [
+                                    "0.0.0.0/0"
+                                ],
+                                "description": "",
+                                "from_port": 443,
+                                "ipv6_cidr_blocks": [],
+                                "prefix_list_ids": [],
+                                "protocol": "tcp",
+                                "security_groups": [],
+                                "self": false,
+                                "to_port": 443
+                            }
+                        ],
+                        "name": "fixture-web",
+                        "region": "eu-west-2",
+                        "revoke_rules_on_delete": false,
+                        "tags": null,
+                        "tags_all": {
+                            "CostCentre": "platform",
+                            "Project": "fixture"
+                        },
+                        "timeouts": null
+                    },
+                    "sensitive_values": {
+                        "egress": [],
+                        "ingress": [
+                            {
+                                "cidr_blocks": [
+                                    false
+                                ],
+                                "ipv6_cidr_blocks": [],
+                                "prefix_list_ids": [],
+                                "security_groups": []
+                            },
+                            {
+                                "cidr_blocks": [
+                                    false
+                                ],
+                                "ipv6_cidr_blocks": [],
+                                "prefix_list_ids": [],
+                                "security_groups": []
+                            }
+                        ],
+                        "tags_all": {}
+                    },
+                    "identity_schema_version": 0,
+                    "identity": {
+                        "account_id": null,
+                        "id": null,
+                        "region": null
+                    }
+                },
+                {
+                    "address": "aws_sqs_queue.jobs",
+                    "mode": "managed",
+                    "type": "aws_sqs_queue",
+                    "name": "jobs",
+                    "provider_name": "registry.terraform.io/hashicorp/aws",
+                    "schema_version": 0,
+                    "values": {
+                        "content_based_deduplication": false,
+                        "delay_seconds": 0,
+                        "fifo_queue": false,
+                        "kms_master_key_id": null,
+                        "max_message_size": 262144,
+                        "message_retention_seconds": 345600,
+                        "name": "fixture-fresh-jobs",
+                        "receive_wait_time_seconds": 0,
+                        "region": "eu-west-2",
+                        "tags": null,
+                        "tags_all": {
+                            "CostCentre": "platform",
+                            "Project": "fixture"
+                        },
+                        "timeouts": null,
+                        "visibility_timeout_seconds": 30
+                    },
+                    "sensitive_values": {
+                        "tags_all": {}
+                    },
+                    "identity_schema_version": 1,
+                    "identity": {
+                        "url": null
+                    }
+                },
+                {
+                    "address": "aws_subnet.public",
+                    "mode": "managed",
+                    "type": "aws_subnet",
+                    "name": "public",
+                    "provider_name": "registry.terraform.io/hashicorp/aws",
+                    "schema_version": 1,
+                    "values": {
+                        "assign_ipv6_address_on_creation": false,
+                        "availability_zone": "eu-west-2a",
+                        "cidr_block": "10.1.1.0/24",
+                        "customer_owned_ipv4_pool": null,
+                        "enable_dns64": false,
+                        "enable_lni_at_device_index": null,
+                        "enable_resource_name_dns_a_record_on_launch": false,
+                        "enable_resource_name_dns_aaaa_record_on_launch": false,
+                        "ipv4_ipam_pool_id": null,
+                        "ipv4_netmask_length": null,
+                        "ipv6_ipam_pool_id": null,
+                        "ipv6_native": false,
+                        "ipv6_netmask_length": null,
+                        "map_customer_owned_ip_on_launch": null,
+                        "map_public_ip_on_launch": true,
+                        "outpost_arn": null,
+                        "region": "eu-west-2",
+                        "tags": null,
+                        "tags_all": {
+                            "CostCentre": "platform",
+                            "Project": "fixture"
+                        },
+                        "timeouts": null
+                    },
+                    "sensitive_values": {
+                        "tags_all": {}
+                    },
+                    "identity_schema_version": 0,
+                    "identity": {
+                        "account_id": null,
+                        "id": null,
+                        "region": null
+                    }
+                },
+                {
+                    "address": "aws_vpc.main",
+                    "mode": "managed",
+                    "type": "aws_vpc",
+                    "name": "main",
+                    "provider_name": "registry.terraform.io/hashicorp/aws",
+                    "schema_version": 1,
+                    "values": {
+                        "assign_generated_ipv6_cidr_block": null,
+                        "cidr_block": "10.1.0.0/16",
+                        "enable_dns_support": true,
+                        "instance_tenancy": "default",
+                        "ipv4_ipam_pool_id": null,
+                        "ipv4_netmask_length": null,
+                        "ipv6_ipam_pool_id": null,
+                        "ipv6_netmask_length": null,
+                        "region": "eu-west-2",
+                        "tags": null,
+                        "tags_all": {
+                            "CostCentre": "platform",
+                            "Project": "fixture"
+                        }
+                    },
+                    "sensitive_values": {
+                        "tags_all": {}
+                    },
+                    "identity_schema_version": 0,
+                    "identity": {
+                        "account_id": null,
+                        "id": null,
+                        "region": null
+                    }
+                }
+            ]
+        }
+    },
+    "resource_changes": [
+        {
+            "address": "aws_cloudwatch_log_group.app",
+            "mode": "managed",
+            "type": "aws_cloudwatch_log_group",
+            "name": "app",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "kms_key_id": null,
+                    "name": "/fixture/fresh/app",
+                    "region": "eu-west-2",
+                    "retention_in_days": 14,
+                    "skip_destroy": false,
+                    "tags": null,
+                    "tags_all": {
+                        "CostCentre": "platform",
+                        "Project": "fixture"
+                    }
+                },
+                "after_unknown": {
+                    "arn": true,
+                    "deletion_protection_enabled": true,
+                    "id": true,
+                    "log_group_class": true,
+                    "name_prefix": true,
+                    "tags_all": {}
+                },
+                "before_sensitive": false,
+                "after_sensitive": {
+                    "tags_all": {}
+                },
+                "after_identity": {
+                    "account_id": null,
+                    "name": null,
+                    "region": null
+                }
+            }
+        },
+        {
+            "address": "aws_iam_role.app",
+            "mode": "managed",
+            "type": "aws_iam_role",
+            "name": "app",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "assume_role_policy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"ec2.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}",
+                    "description": null,
+                    "force_detach_policies": false,
+                    "max_session_duration": 3600,
+                    "name": "fixture-app",
+                    "path": "/",
+                    "permissions_boundary": null,
+                    "tags": null,
+                    "tags_all": {
+                        "CostCentre": "platform",
+                        "Project": "fixture"
+                    }
+                },
+                "after_unknown": {
+                    "arn": true,
+                    "create_date": true,
+                    "id": true,
+                    "inline_policy": true,
+                    "managed_policy_arns": true,
+                    "name_prefix": true,
+                    "tags_all": {},
+                    "unique_id": true
+                },
+                "before_sensitive": false,
+                "after_sensitive": {
+                    "inline_policy": [],
+                    "managed_policy_arns": [],
+                    "tags_all": {}
+                },
+                "after_identity": {
+                    "account_id": null,
+                    "name": null
+                }
+            }
+        },
+        {
+            "address": "aws_iam_role_policy.app",
+            "mode": "managed",
+            "type": "aws_iam_role_policy",
+            "name": "app",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "name": "fixture-app",
+                    "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Action\":\"*\",\"Effect\":\"Allow\",\"Resource\":\"*\"}]}"
+                },
+                "after_unknown": {
+                    "id": true,
+                    "name_prefix": true,
+                    "role": true
+                },
+                "before_sensitive": false,
+                "after_sensitive": {},
+                "after_identity": {
+                    "account_id": null,
+                    "name": null,
+                    "role": null
+                }
+            }
+        },
+        {
+            "address": "aws_s3_bucket.assets",
+            "mode": "managed",
+            "type": "aws_s3_bucket",
+            "name": "assets",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "bucket": "fixture-assets-eu-west-2",
+                    "force_destroy": false,
+                    "region": "eu-west-2",
+                    "tags": null,
+                    "tags_all": {
+                        "CostCentre": "platform",
+                        "Project": "fixture"
+                    },
+                    "timeouts": null
+                },
+                "after_unknown": {
+                    "acceleration_status": true,
+                    "acl": true,
+                    "arn": true,
+                    "bucket_domain_name": true,
+                    "bucket_namespace": true,
+                    "bucket_prefix": true,
+                    "bucket_region": true,
+                    "bucket_regional_domain_name": true,
+                    "cors_rule": true,
+                    "grant": true,
+                    "hosted_zone_id": true,
+                    "id": true,
+                    "lifecycle_rule": true,
+                    "logging": true,
+                    "object_lock_configuration": true,
+                    "object_lock_enabled": true,
+                    "policy": true,
+                    "replication_configuration": true,
+                    "request_payer": true,
+                    "server_side_encryption_configuration": true,
+                    "tags_all": {},
+                    "versioning": true,
+                    "website": true,
+                    "website_domain": true,
+                    "website_endpoint": true
+                },
+                "before_sensitive": false,
+                "after_sensitive": {
+                    "cors_rule": [],
+                    "grant": [],
+                    "lifecycle_rule": [],
+                    "logging": [],
+                    "object_lock_configuration": [],
+                    "replication_configuration": [],
+                    "server_side_encryption_configuration": [],
+                    "tags_all": {},
+                    "versioning": [],
+                    "website": []
+                },
+                "after_identity": {
+                    "account_id": null,
+                    "bucket": null,
+                    "region": null
+                }
+            }
+        },
+        {
+            "address": "aws_security_group.web",
+            "mode": "managed",
+            "type": "aws_security_group",
+            "name": "web",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "description": "Managed by Terraform",
+                    "ingress": [
+                        {
+                            "cidr_blocks": [
+                                "0.0.0.0/0"
+                            ],
+                            "description": "",
+                            "from_port": 3389,
+                            "ipv6_cidr_blocks": [],
+                            "prefix_list_ids": [],
+                            "protocol": "tcp",
+                            "security_groups": [],
+                            "self": false,
+                            "to_port": 3389
+                        },
+                        {
+                            "cidr_blocks": [
+                                "0.0.0.0/0"
+                            ],
+                            "description": "",
+                            "from_port": 443,
+                            "ipv6_cidr_blocks": [],
+                            "prefix_list_ids": [],
+                            "protocol": "tcp",
+                            "security_groups": [],
+                            "self": false,
+                            "to_port": 443
+                        }
+                    ],
+                    "name": "fixture-web",
+                    "region": "eu-west-2",
+                    "revoke_rules_on_delete": false,
+                    "tags": null,
+                    "tags_all": {
+                        "CostCentre": "platform",
+                        "Project": "fixture"
+                    },
+                    "timeouts": null
+                },
+                "after_unknown": {
+                    "arn": true,
+                    "egress": true,
+                    "id": true,
+                    "ingress": [
+                        {
+                            "cidr_blocks": [
+                                false
+                            ],
+                            "ipv6_cidr_blocks": [],
+                            "prefix_list_ids": [],
+                            "security_groups": []
+                        },
+                        {
+                            "cidr_blocks": [
+                                false
+                            ],
+                            "ipv6_cidr_blocks": [],
+                            "prefix_list_ids": [],
+                            "security_groups": []
+                        }
+                    ],
+                    "name_prefix": true,
+                    "owner_id": true,
+                    "tags_all": {},
+                    "vpc_id": true
+                },
+                "before_sensitive": false,
+                "after_sensitive": {
+                    "egress": [],
+                    "ingress": [
+                        {
+                            "cidr_blocks": [
+                                false
+                            ],
+                            "ipv6_cidr_blocks": [],
+                            "prefix_list_ids": [],
+                            "security_groups": []
+                        },
+                        {
+                            "cidr_blocks": [
+                                false
+                            ],
+                            "ipv6_cidr_blocks": [],
+                            "prefix_list_ids": [],
+                            "security_groups": []
+                        }
+                    ],
+                    "tags_all": {}
+                },
+                "after_identity": {
+                    "account_id": null,
+                    "id": null,
+                    "region": null
+                }
+            }
+        },
+        {
+            "address": "aws_sqs_queue.jobs",
+            "mode": "managed",
+            "type": "aws_sqs_queue",
+            "name": "jobs",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "content_based_deduplication": false,
+                    "delay_seconds": 0,
+                    "fifo_queue": false,
+                    "kms_master_key_id": null,
+                    "max_message_size": 262144,
+                    "message_retention_seconds": 345600,
+                    "name": "fixture-fresh-jobs",
+                    "receive_wait_time_seconds": 0,
+                    "region": "eu-west-2",
+                    "tags": null,
+                    "tags_all": {
+                        "CostCentre": "platform",
+                        "Project": "fixture"
+                    },
+                    "timeouts": null,
+                    "visibility_timeout_seconds": 30
+                },
+                "after_unknown": {
+                    "arn": true,
+                    "deduplication_scope": true,
+                    "fifo_throughput_limit": true,
+                    "id": true,
+                    "kms_data_key_reuse_period_seconds": true,
+                    "name_prefix": true,
+                    "policy": true,
+                    "redrive_allow_policy": true,
+                    "redrive_policy": true,
+                    "sqs_managed_sse_enabled": true,
+                    "tags_all": {},
+                    "url": true
+                },
+                "before_sensitive": false,
+                "after_sensitive": {
+                    "tags_all": {}
+                },
+                "after_identity": {
+                    "url": null
+                }
+            }
+        },
+        {
+            "address": "aws_subnet.public",
+            "mode": "managed",
+            "type": "aws_subnet",
+            "name": "public",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "assign_ipv6_address_on_creation": false,
+                    "availability_zone": "eu-west-2a",
+                    "cidr_block": "10.1.1.0/24",
+                    "customer_owned_ipv4_pool": null,
+                    "enable_dns64": false,
+                    "enable_lni_at_device_index": null,
+                    "enable_resource_name_dns_a_record_on_launch": false,
+                    "enable_resource_name_dns_aaaa_record_on_launch": false,
+                    "ipv4_ipam_pool_id": null,
+                    "ipv4_netmask_length": null,
+                    "ipv6_ipam_pool_id": null,
+                    "ipv6_native": false,
+                    "ipv6_netmask_length": null,
+                    "map_customer_owned_ip_on_launch": null,
+                    "map_public_ip_on_launch": true,
+                    "outpost_arn": null,
+                    "region": "eu-west-2",
+                    "tags": null,
+                    "tags_all": {
+                        "CostCentre": "platform",
+                        "Project": "fixture"
+                    },
+                    "timeouts": null
+                },
+                "after_unknown": {
+                    "arn": true,
+                    "availability_zone_id": true,
+                    "id": true,
+                    "ipv6_cidr_block": true,
+                    "ipv6_cidr_block_association_id": true,
+                    "owner_id": true,
+                    "private_dns_hostname_type_on_launch": true,
+                    "tags_all": {},
+                    "vpc_id": true
+                },
+                "before_sensitive": false,
+                "after_sensitive": {
+                    "tags_all": {}
+                },
+                "after_identity": {
+                    "account_id": null,
+                    "id": null,
+                    "region": null
+                }
+            }
+        },
+        {
+            "address": "aws_vpc.main",
+            "mode": "managed",
+            "type": "aws_vpc",
+            "name": "main",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "assign_generated_ipv6_cidr_block": null,
+                    "cidr_block": "10.1.0.0/16",
+                    "enable_dns_support": true,
+                    "instance_tenancy": "default",
+                    "ipv4_ipam_pool_id": null,
+                    "ipv4_netmask_length": null,
+                    "ipv6_ipam_pool_id": null,
+                    "ipv6_netmask_length": null,
+                    "region": "eu-west-2",
+                    "tags": null,
+                    "tags_all": {
+                        "CostCentre": "platform",
+                        "Project": "fixture"
+                    }
+                },
+                "after_unknown": {
+                    "arn": true,
+                    "default_network_acl_id": true,
+                    "default_route_table_id": true,
+                    "default_security_group_id": true,
+                    "dhcp_options_id": true,
+                    "enable_dns_hostnames": true,
+                    "enable_network_address_usage_metrics": true,
+                    "id": true,
+                    "ipv6_association_id": true,
+                    "ipv6_cidr_block": true,
+                    "ipv6_cidr_block_network_border_group": true,
+                    "main_route_table_id": true,
+                    "owner_id": true,
+                    "tags_all": {}
+                },
+                "before_sensitive": false,
+                "after_sensitive": {
+                    "tags_all": {}
+                },
+                "after_identity": {
+                    "account_id": null,
+                    "id": null,
+                    "region": null
+                }
+            }
+        }
+    ],
+    "configuration": {
+        "provider_config": {
+            "aws": {
+                "name": "aws",
+                "full_name": "registry.terraform.io/hashicorp/aws",
+                "version_constraint": "~> 6.0",
+                "expressions": {
+                    "access_key": {
+                        "constant_value": "testing"
+                    },
+                    "default_tags": [
+                        {
+                            "tags": {
+                                "references": [
+                                    "var.cost_centre"
+                                ]
+                            }
+                        }
+                    ],
+                    "region": {
+                        "constant_value": "eu-west-2"
+                    },
+                    "s3_use_path_style": {
+                        "constant_value": true
+                    },
+                    "secret_key": {
+                        "constant_value": "testing"
+                    },
+                    "skip_credentials_validation": {
+                        "constant_value": true
+                    },
+                    "skip_metadata_api_check": {
+                        "constant_value": true
+                    },
+                    "skip_requesting_account_id": {
+                        "constant_value": true
+                    }
+                }
+            }
+        },
+        "root_module": {
+            "resources": [
+                {
+                    "address": "aws_cloudwatch_log_group.app",
+                    "mode": "managed",
+                    "type": "aws_cloudwatch_log_group",
+                    "name": "app",
+                    "provider_config_key": "aws",
+                    "expressions": {
+                        "name": {
+                            "constant_value": "/fixture/fresh/app"
+                        },
+                        "retention_in_days": {
+                            "constant_value": 14
+                        }
+                    },
+                    "schema_version": 0
+                },
+                {
+                    "address": "aws_iam_role.app",
+                    "mode": "managed",
+                    "type": "aws_iam_role",
+                    "name": "app",
+                    "provider_config_key": "aws",
+                    "expressions": {
+                        "assume_role_policy": {},
+                        "name": {
+                            "constant_value": "fixture-app"
+                        }
+                    },
+                    "schema_version": 0
+                },
+                {
+                    "address": "aws_iam_role_policy.app",
+                    "mode": "managed",
+                    "type": "aws_iam_role_policy",
+                    "name": "app",
+                    "provider_config_key": "aws",
+                    "expressions": {
+                        "name": {
+                            "constant_value": "fixture-app"
+                        },
+                        "policy": {},
+                        "role": {
+                            "references": [
+                                "aws_iam_role.app.id",
+                                "aws_iam_role.app"
+                            ]
+                        }
+                    },
+                    "schema_version": 0
+                },
+                {
+                    "address": "aws_s3_bucket.assets",
+                    "mode": "managed",
+                    "type": "aws_s3_bucket",
+                    "name": "assets",
+                    "provider_config_key": "aws",
+                    "expressions": {
+                        "bucket": {
+                            "constant_value": "fixture-assets-eu-west-2"
+                        }
+                    },
+                    "schema_version": 0
+                },
+                {
+                    "address": "aws_security_group.web",
+                    "mode": "managed",
+                    "type": "aws_security_group",
+                    "name": "web",
+                    "provider_config_key": "aws",
+                    "expressions": {
+                        "ingress": {
+                            "constant_value": [
+                                {
+                                    "cidr_blocks": [
+                                        "0.0.0.0/0"
+                                    ],
+                                    "description": null,
+                                    "from_port": 443,
+                                    "ipv6_cidr_blocks": null,
+                                    "prefix_list_ids": null,
+                                    "protocol": "tcp",
+                                    "security_groups": null,
+                                    "self": null,
+                                    "to_port": 443
+                                },
+                                {
+                                    "cidr_blocks": [
+                                        "0.0.0.0/0"
+                                    ],
+                                    "description": null,
+                                    "from_port": 3389,
+                                    "ipv6_cidr_blocks": null,
+                                    "prefix_list_ids": null,
+                                    "protocol": "tcp",
+                                    "security_groups": null,
+                                    "self": null,
+                                    "to_port": 3389
+                                }
+                            ]
+                        },
+                        "name": {
+                            "constant_value": "fixture-web"
+                        },
+                        "vpc_id": {
+                            "references": [
+                                "aws_vpc.main.id",
+                                "aws_vpc.main"
+                            ]
+                        }
+                    },
+                    "schema_version": 1
+                },
+                {
+                    "address": "aws_sqs_queue.jobs",
+                    "mode": "managed",
+                    "type": "aws_sqs_queue",
+                    "name": "jobs",
+                    "provider_config_key": "aws",
+                    "expressions": {
+                        "name": {
+                            "constant_value": "fixture-fresh-jobs"
+                        }
+                    },
+                    "schema_version": 0
+                },
+                {
+                    "address": "aws_subnet.public",
+                    "mode": "managed",
+                    "type": "aws_subnet",
+                    "name": "public",
+                    "provider_config_key": "aws",
+                    "expressions": {
+                        "availability_zone": {
+                            "constant_value": "eu-west-2a"
+                        },
+                        "cidr_block": {
+                            "constant_value": "10.1.1.0/24"
+                        },
+                        "map_public_ip_on_launch": {
+                            "constant_value": true
+                        },
+                        "vpc_id": {
+                            "references": [
+                                "aws_vpc.main.id",
+                                "aws_vpc.main"
+                            ]
+                        }
+                    },
+                    "schema_version": 1
+                },
+                {
+                    "address": "aws_vpc.main",
+                    "mode": "managed",
+                    "type": "aws_vpc",
+                    "name": "main",
+                    "provider_config_key": "aws",
+                    "expressions": {
+                        "cidr_block": {
+                            "constant_value": "10.1.0.0/16"
+                        }
+                    },
+                    "schema_version": 1
+                }
+            ],
+            "variables": {
+                "cost_centre": {
+                    "default": "platform"
+                }
+            }
+        }
+    },
+    "relevant_attributes": [
+        {
+            "resource": "aws_iam_role.app",
+            "attribute": [
+                "id"
+            ]
+        },
+        {
+            "resource": "aws_vpc.main",
+            "attribute": [
+                "id"
+            ]
+        }
+    ],
+    "timestamp": "2026-10-10T12:12:46Z",
+    "applyable": true,
+    "complete": true,
+    "errored": false
+}

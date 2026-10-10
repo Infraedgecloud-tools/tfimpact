@@ -2,7 +2,8 @@ type = "aws_sqs_queue"
 display = "SQS queue"
 doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sqs_queue"
 holds_data = true
-data = "every message still in the queue; the queue name cannot be reused for 60 seconds afterwards"
+data = "every message still in the queue"
+loss_note = "The queue name cannot be reused for 60 seconds afterwards."
 identity = ["name"]
 
 [[policy]]

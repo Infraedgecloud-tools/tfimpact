@@ -1,0 +1,18 @@
+<!-- tfimpact -->
+## tfimpact: 1 change destroys data, 1 change interrupts service, 1 routine
+
+**Plan:** 2 to add, 0 to change, 2 to destroy (1 replacement, 1 forgotten, 2 unchanged) · Terraform/OpenTofu 1.15.5 · 6 resources
+
+### 🔴 Critical (1)
+
+- **`aws_sqs_queue.work["orders"]` is renamed to `aws_sqs_queue.work["order_events"]` without a moved block, so it will be destroyed and recreated.** `aws_sqs_queue.work["orders"]` will be destroyed because its for_each key changed, and `aws_sqs_queue.work["order_events"]` will be created with the same `name` ("fixture-lifecycle-orders"). Terraform does not know they are the same object. The SQS queue would be destroyed with it, losing every message still in the queue. _Add a moved block (`from = aws_sqs_queue.work["orders"]`, `to = aws_sqs_queue.work["order_events"]`) so Terraform changes the address in state instead. Applying as planned also tries to create a resource with the same name, which fails for globally named resources._ `PLAN-RENAME-001`
+
+### 🟡 Medium (1)
+
+- **`aws_iam_role.deploy` will be destroyed and recreated.** The IAM role is replaced because `name` ("fixture-lifecycle-deploy-v1" → "fixture-lifecycle-deploy-v2") cannot be changed in place. The new object is created before the old one is destroyed (create_before_destroy). _Check that the identifiers other systems hold for this resource (ARN, ID, DNS name, IP) are not referenced outside Terraform, or plan a cutover._ `PLAN-REPLACE-001`
+
+### Routine changes (1)
+
+- `aws_cloudwatch_log_group.legacy`: removed from state but not destroyed
+
+<sub>tfimpact test by [InfraEdge](https://infraedge.org) · deterministic, runs on the runner, sends nothing anywhere · sensitive values masked</sub>

@@ -1,0 +1,170 @@
+{
+  "drift": [],
+  "findings": [
+    {
+      "domain": "security",
+      "id": "fnd_14a4afebbeb4a0f8",
+      "line": null,
+      "metadata": {
+        "opened": [
+          "tcp port 3389 from 0.0.0.0/0",
+          "tcp port 443 from 0.0.0.0/0"
+        ],
+        "resource_type": "aws_security_group"
+      },
+      "observed": "The security group is created with ingress for tcp port 3389 from 0.0.0.0/0; tcp port 443 from 0.0.0.0/0.",
+      "path": "aws_security_group.web",
+      "product": "tfimpact",
+      "recommendation": "Restrict the source to known CIDR ranges or a security group. If public access is intended, limit it to the listening port and say so in the change.",
+      "rule_id": "PLAN-NET-001",
+      "severity": "critical",
+      "suppressed": false,
+      "suppression_expires": null,
+      "suppression_reason": null,
+      "tags": [
+        "aws_security_group",
+        "network",
+        "public-ingress"
+      ],
+      "title": "`aws_security_group.web` opens RDP to the internet"
+    },
+    {
+      "domain": "security",
+      "id": "fnd_99f3e9603ee48150",
+      "line": null,
+      "metadata": {
+        "attribute": "policy",
+        "policy_kind": "identity",
+        "resource_type": "aws_iam_role_policy",
+        "widenings": [
+          "grants `*` on all resources"
+        ]
+      },
+      "observed": "`policy` grants `*` on all resources.",
+      "path": "aws_iam_role_policy.app",
+      "product": "tfimpact",
+      "recommendation": "Scope actions, resources and principals to what the workload needs and keep the conditions. If the widening is intended, say why in the change.",
+      "rule_id": "PLAN-IAM-001",
+      "severity": "high",
+      "suppressed": false,
+      "suppression_expires": null,
+      "suppression_reason": null,
+      "tags": [
+        "aws_iam_role_policy",
+        "iam",
+        "identity"
+      ],
+      "title": "`aws_iam_role_policy.app`: the policy is created with broad access"
+    },
+    {
+      "domain": "security",
+      "id": "fnd_55f05067a3d8af5d",
+      "line": null,
+      "metadata": {
+        "attribute": "map_public_ip_on_launch",
+        "resource_type": "aws_subnet"
+      },
+      "observed": "`map_public_ip_on_launch` is set to true on creation.",
+      "path": "aws_subnet.public",
+      "product": "tfimpact",
+      "recommendation": "Confirm this is intended and recorded in the change; if not, revert it.",
+      "rule_id": "PLAN-EXPOSE-001",
+      "severity": "medium",
+      "suppressed": false,
+      "suppression_expires": null,
+      "suppression_reason": null,
+      "tags": [
+        "aws_subnet",
+        "exposure",
+        "map_public_ip_on_launch"
+      ],
+      "title": "`aws_subnet.public`: instances launched in this subnet get public IP addresses by default"
+    }
+  ],
+  "generated_at": "2026-10-10T12:00:00Z",
+  "moves": [],
+  "policy": {
+    "configured": false,
+    "exclusions": [],
+    "path": null
+  },
+  "privacy": {
+    "note": "tfimpact runs locally. Nothing is sent anywhere; sensitive values are masked.",
+    "telemetry": false,
+    "uploaded": false
+  },
+  "routine": [
+    {
+      "type": "aws_cloudwatch_log_group",
+      "addresses": [
+        "aws_cloudwatch_log_group.app"
+      ],
+      "summary": "created"
+    },
+    {
+      "type": "aws_iam_role",
+      "addresses": [
+        "aws_iam_role.app"
+      ],
+      "summary": "created"
+    },
+    {
+      "type": "aws_s3_bucket",
+      "addresses": [
+        "aws_s3_bucket.assets"
+      ],
+      "summary": "created"
+    },
+    {
+      "type": "aws_sqs_queue",
+      "addresses": [
+        "aws_sqs_queue.jobs"
+      ],
+      "summary": "created"
+    },
+    {
+      "type": "aws_vpc",
+      "addresses": [
+        "aws_vpc.main"
+      ],
+      "summary": "created"
+    }
+  ],
+  "schema_version": "1.1",
+  "source": {
+    "format_version": "1.2",
+    "kind": "terraform-plan",
+    "root": "../../testdata/plans/fresh-create/plan.json",
+    "terraform_version": "1.15.5"
+  },
+  "summary": {
+    "changes": {
+      "create": 8,
+      "update": 0,
+      "delete": 0,
+      "replace": 0,
+      "no_op": 0,
+      "read": 0,
+      "forget": 0,
+      "move": 0,
+      "import": 0,
+      "drift": 0,
+      "tag_only": 0
+    },
+    "excluded_files": 0,
+    "findings": 3,
+    "resources": 8,
+    "scanned_files": 1,
+    "severity": {
+      "critical": 1,
+      "high": 1,
+      "low": 0,
+      "medium": 1
+    },
+    "skipped_files": 0,
+    "suppressed_findings": 0,
+    "total_findings": 3
+  },
+  "tool": "tfimpact",
+  "tool_version": "test"
+}

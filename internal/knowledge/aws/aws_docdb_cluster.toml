@@ -8,7 +8,7 @@ identity = ["cluster_identifier"]
 [[mitigation]]
 attr = "skip_final_snapshot"
 equals = true
-message = "no final snapshot will be taken (skip_final_snapshot = true)"
+message = "no final snapshot will be taken (`skip_final_snapshot` = true)"
 
 [[mitigation]]
 attr = "deletion_protection"

@@ -31,7 +31,7 @@
         "data-loss",
         "replace"
       ],
-      "title": "`aws_dynamodb_table.sessions` will be destroyed and recreated; every item in the table is lost"
+      "title": "`aws_dynamodb_table.sessions` will be destroyed and recreated, losing every item in the table"
     },
     {
       "domain": "security",
@@ -61,13 +61,13 @@
     },
     {
       "domain": "availability",
-      "id": "fnd_5cb717849a9195ba",
+      "id": "fnd_74f6efe83f74ba74",
       "line": null,
       "metadata": {
         "attribute": "user_data",
         "resource_type": "aws_instance"
       },
-      "observed": "`user_data` changes (value hidden): the instance is stopped and started to apply the new user data (user_data_replace_on_change is false); it keeps its ID but gets a new public IP unless it has an Elastic IP, and the script only re-runs if the AMI's cloud-init is configured to.",
+      "observed": "`user_data` changes (value hidden): the instance is stopped and started to apply the new user data (`user_data_replace_on_change` is false); it keeps its ID but gets a new public IP unless it has an Elastic IP, and the script only re-runs if the AMI's cloud-init is configured to.",
       "path": "aws_instance.bastion",
       "product": "tfimpact",
       "recommendation": "Apply in a maintenance window or confirm that clients tolerate the interruption.",

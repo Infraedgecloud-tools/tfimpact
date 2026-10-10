@@ -169,7 +169,7 @@ func Markdown(w io.Writer, r *findings.Result) error {
 	if len(r.Drift) > 0 {
 		fmt.Fprintf(&b, "\n### Changed outside Terraform (%d)\n\n", len(r.Drift))
 		for _, d := range r.Drift {
-			fmt.Fprintf(&b, "- `%s`: %s (%s)\n", d.Address, strings.Join(d.Actions, "/"), joinCodes(d.Changed))
+			fmt.Fprintf(&b, "- `%s`: %s\n", d.Address, driftText(d, true))
 		}
 	}
 	if sup := r.Suppressed(); len(sup) > 0 {
@@ -247,7 +247,7 @@ func Text(w io.Writer, r *findings.Result) error {
 	if len(r.Drift) > 0 {
 		fmt.Fprintf(&b, "\nCHANGED OUTSIDE TERRAFORM (%d)\n", len(r.Drift))
 		for _, d := range r.Drift {
-			fmt.Fprintf(&b, "  * %s: %s (%s)\n", d.Address, strings.Join(d.Actions, "/"), strings.Join(d.Changed, ", "))
+			fmt.Fprintf(&b, "  * %s: %s\n", d.Address, strip(driftText(d, false)))
 		}
 	}
 	if sup := r.Suppressed(); len(sup) > 0 {
@@ -271,6 +271,20 @@ func JSON(w io.Writer, r *findings.Result) error {
 	enc.SetIndent("", "  ")
 	enc.SetEscapeHTML(false)
 	return enc.Encode(r.Envelope())
+}
+
+// driftText says what happened to an object outside Terraform.
+func driftText(d findings.Drift, md bool) string {
+	for _, a := range d.Actions {
+		if a == "delete" {
+			return "deleted outside Terraform"
+		}
+	}
+	attrs := strings.Join(d.Changed, ", ")
+	if md {
+		attrs = joinCodes(d.Changed)
+	}
+	return "changed outside Terraform: " + attrs
 }
 
 func engine(r *findings.Result) string {

@@ -1,0 +1,8 @@
+type = "aws_s3_bucket_lifecycle_configuration"
+display = "S3 lifecycle configuration"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_lifecycle_configuration"
+identity = ["bucket"]
+
+[delete]
+severity = "medium"
+message = "objects stop expiring or transitioning, so the bucket grows and retention rules the lifecycle enforced no longer apply"

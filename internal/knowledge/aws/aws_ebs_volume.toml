@@ -7,12 +7,12 @@ data = "the volume contents"
 [[mitigation]]
 attr = "final_snapshot"
 equals = false
-message = "no final snapshot will be taken (final_snapshot = false)"
+message = "no final snapshot will be taken (`final_snapshot` = false)"
 
 [[mitigation]]
 attr = "final_snapshot"
 absent = true
-message = "no final snapshot will be taken (final_snapshot is not set)"
+message = "no final snapshot will be taken (`final_snapshot` is not set)"
 
 [[safeguard]]
 attr = "final_snapshot"

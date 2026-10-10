@@ -8,4 +8,5 @@ identity = ["name"]
 [[safeguard]]
 attr = "skip_destroy"
 equals = true
-message = "skip_destroy = true, so the log group is only removed from state and its events stay in AWS"
+keeps_data = true
+message = "`skip_destroy` = true, so the log group is only removed from state and its events stay in AWS"

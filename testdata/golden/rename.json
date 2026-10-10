@@ -3,7 +3,7 @@
   "findings": [
     {
       "domain": "change",
-      "id": "fnd_ab77ceae02e764c4",
+      "id": "fnd_645c2317cfb4de7c",
       "line": null,
       "metadata": {
         "action_reason": "delete_because_no_resource_config",
@@ -12,7 +12,7 @@
         "identity": "bucket",
         "resource_type": "aws_s3_bucket"
       },
-      "observed": "`aws_s3_bucket.logs` will be destroyed because it left the configuration, and `aws_s3_bucket.audit_logs` will be created with the same `bucket` (\"fixture-alb-access-logs-eu-west-2\"). Terraform does not know they are the same object. Every object and object version in the bucket would be lost with the S3 bucket.",
+      "observed": "`aws_s3_bucket.logs` will be destroyed because it left the configuration, and `aws_s3_bucket.audit_logs` will be created with the same `bucket` (\"fixture-alb-access-logs-eu-west-2\"). Terraform does not know they are the same object. The S3 bucket would be destroyed with it, losing every object and object version in the bucket.",
       "path": "aws_s3_bucket.logs",
       "product": "tfimpact",
       "recommendation": "Add a moved block (`from = aws_s3_bucket.logs`, `to = aws_s3_bucket.audit_logs`) so Terraform changes the address in state instead. Applying as planned also tries to create a resource with the same bucket, which fails for globally named resources.",

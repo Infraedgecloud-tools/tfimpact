@@ -1,0 +1,306 @@
+{
+  "drift": [],
+  "findings": [
+    {
+      "domain": "data",
+      "id": "fnd_7d6643b89ad1377f",
+      "line": null,
+      "metadata": {
+        "action_reason": "delete_because_no_resource_config",
+        "mitigations": [
+          "`force_destroy` = true, so all objects and versions are deleted first without asking"
+        ],
+        "resource_type": "aws_s3_bucket",
+        "safeguards": null
+      },
+      "observed": "The S3 bucket is destroyed because it is no longer in the configuration. `force_destroy` = true, so all objects and versions are deleted first without asking.",
+      "path": "aws_s3_bucket.exports",
+      "product": "tfimpact",
+      "recommendation": "If removing it is intended, take a backup or snapshot first and keep it until the change has settled. If it was renamed or moved in code, add a `moved` block instead of recreating it.",
+      "rule_id": "PLAN-DATA-001",
+      "severity": "critical",
+      "suppressed": false,
+      "suppression_expires": null,
+      "suppression_reason": null,
+      "tags": [
+        "aws_s3_bucket",
+        "data-loss",
+        "destroy"
+      ],
+      "title": "`aws_s3_bucket.exports` will be destroyed, losing every object and object version in the bucket"
+    },
+    {
+      "domain": "data",
+      "id": "fnd_19f9eaa4b49931cd",
+      "line": null,
+      "metadata": {
+        "action_reason": "delete_because_no_resource_config",
+        "mitigations": [
+          "automated backups are disabled (`backup_retention_period` = 0)"
+        ],
+        "resource_type": "aws_db_instance",
+        "safeguards": [
+          "deletion protection is on, so AWS will refuse the delete and the apply will fail before anything is lost",
+          "a final snapshot will be taken first, so the data can be restored"
+        ]
+      },
+      "observed": "The RDS database instance is destroyed because it is no longer in the configuration. Automated backups are disabled (`backup_retention_period` = 0). Deletion protection is on, so AWS will refuse the delete and the apply will fail before anything is lost; a final snapshot will be taken first, so the data can be restored.",
+      "path": "aws_db_instance.app",
+      "product": "tfimpact",
+      "recommendation": "If removing it is intended, take a backup or snapshot first and keep it until the change has settled. If it was renamed or moved in code, add a `moved` block instead of recreating it.",
+      "rule_id": "PLAN-DATA-001",
+      "severity": "high",
+      "suppressed": false,
+      "suppression_expires": null,
+      "suppression_reason": null,
+      "tags": [
+        "aws_db_instance",
+        "data-loss",
+        "destroy"
+      ],
+      "title": "`aws_db_instance.app` will be destroyed, losing the database and everything stored in it"
+    },
+    {
+      "domain": "data",
+      "id": "fnd_f6643d83389968bc",
+      "line": null,
+      "metadata": {
+        "action_reason": "delete_because_no_resource_config",
+        "mitigations": [
+          "deletion protection is off"
+        ],
+        "resource_type": "aws_dynamodb_table",
+        "safeguards": [
+          "point-in-time recovery is on, so AWS keeps a system backup for 35 days after deletion that can be restored to a new table"
+        ]
+      },
+      "observed": "The DynamoDB table is destroyed because it is no longer in the configuration. Deletion protection is off. Point-in-time recovery is on, so AWS keeps a system backup for 35 days after deletion that can be restored to a new table.",
+      "path": "aws_dynamodb_table.orders",
+      "product": "tfimpact",
+      "recommendation": "If removing it is intended, take a backup or snapshot first and keep it until the change has settled. If it was renamed or moved in code, add a `moved` block instead of recreating it.",
+      "rule_id": "PLAN-DATA-001",
+      "severity": "high",
+      "suppressed": false,
+      "suppression_expires": null,
+      "suppression_reason": null,
+      "tags": [
+        "aws_dynamodb_table",
+        "data-loss",
+        "destroy"
+      ],
+      "title": "`aws_dynamodb_table.orders` will be destroyed, losing every item in the table"
+    },
+    {
+      "domain": "availability",
+      "id": "fnd_2b89a8882d4474de",
+      "line": null,
+      "metadata": {
+        "action_reason": "delete_because_no_resource_config",
+        "resource_type": "aws_lb"
+      },
+      "observed": "The load balancer is destroyed because it is no longer in the configuration. Anything still pointing at it (DNS names, clients, attachments, dependants in other configurations) stops working.",
+      "path": "aws_lb.public",
+      "product": "tfimpact",
+      "recommendation": "Confirm nothing outside this configuration still depends on it.",
+      "rule_id": "PLAN-DELETE-001",
+      "severity": "medium",
+      "suppressed": false,
+      "suppression_expires": null,
+      "suppression_reason": null,
+      "tags": [
+        "aws_lb",
+        "destroy"
+      ],
+      "title": "`aws_lb.public` will be destroyed"
+    },
+    {
+      "domain": "availability",
+      "id": "fnd_ce0f5d84afad59d0",
+      "line": null,
+      "metadata": {
+        "action_reason": "delete_because_no_resource_config",
+        "resource_type": "aws_sns_topic"
+      },
+      "observed": "The SNS topic is destroyed because it is no longer in the configuration. Anything still pointing at it (DNS names, clients, attachments, dependants in other configurations) stops working.",
+      "path": "aws_sns_topic.alerts",
+      "product": "tfimpact",
+      "recommendation": "Confirm nothing outside this configuration still depends on it.",
+      "rule_id": "PLAN-DELETE-001",
+      "severity": "medium",
+      "suppressed": false,
+      "suppression_expires": null,
+      "suppression_reason": null,
+      "tags": [
+        "aws_sns_topic",
+        "destroy"
+      ],
+      "title": "`aws_sns_topic.alerts` will be destroyed"
+    },
+    {
+      "domain": "availability",
+      "id": "fnd_576802fd9bb35e12",
+      "line": null,
+      "metadata": {
+        "action_reason": "delete_because_no_resource_config",
+        "resource_type": "aws_subnet"
+      },
+      "observed": "The subnet is destroyed because it is no longer in the configuration. Anything still pointing at it (DNS names, clients, attachments, dependants in other configurations) stops working.",
+      "path": "aws_subnet.a",
+      "product": "tfimpact",
+      "recommendation": "Confirm nothing outside this configuration still depends on it.",
+      "rule_id": "PLAN-DELETE-001",
+      "severity": "medium",
+      "suppressed": false,
+      "suppression_expires": null,
+      "suppression_reason": null,
+      "tags": [
+        "aws_subnet",
+        "destroy"
+      ],
+      "title": "`aws_subnet.a` will be destroyed"
+    },
+    {
+      "domain": "availability",
+      "id": "fnd_22002ff076468b21",
+      "line": null,
+      "metadata": {
+        "action_reason": "delete_because_no_resource_config",
+        "resource_type": "aws_subnet"
+      },
+      "observed": "The subnet is destroyed because it is no longer in the configuration. Anything still pointing at it (DNS names, clients, attachments, dependants in other configurations) stops working.",
+      "path": "aws_subnet.b",
+      "product": "tfimpact",
+      "recommendation": "Confirm nothing outside this configuration still depends on it.",
+      "rule_id": "PLAN-DELETE-001",
+      "severity": "medium",
+      "suppressed": false,
+      "suppression_expires": null,
+      "suppression_reason": null,
+      "tags": [
+        "aws_subnet",
+        "destroy"
+      ],
+      "title": "`aws_subnet.b` will be destroyed"
+    },
+    {
+      "domain": "availability",
+      "id": "fnd_b9c62f43b738df11",
+      "line": null,
+      "metadata": {
+        "action_reason": "delete_because_no_resource_config",
+        "resource_type": "aws_vpc"
+      },
+      "observed": "The VPC is destroyed because it is no longer in the configuration. Anything still pointing at it (DNS names, clients, attachments, dependants in other configurations) stops working.",
+      "path": "aws_vpc.main",
+      "product": "tfimpact",
+      "recommendation": "Confirm nothing outside this configuration still depends on it.",
+      "rule_id": "PLAN-DELETE-001",
+      "severity": "medium",
+      "suppressed": false,
+      "suppression_expires": null,
+      "suppression_reason": null,
+      "tags": [
+        "aws_vpc",
+        "destroy"
+      ],
+      "title": "`aws_vpc.main` will be destroyed"
+    },
+    {
+      "domain": "data",
+      "id": "fnd_1ff4c1bb5e6904cc",
+      "line": null,
+      "metadata": {
+        "action_reason": "delete_because_no_resource_config",
+        "keeps_data": "`skip_destroy` = true, so the log group is only removed from state and its events stay in AWS",
+        "resource_type": "aws_cloudwatch_log_group"
+      },
+      "observed": "The CloudWatch log group leaves this configuration because it is no longer in the configuration. `skip_destroy` = true, so the log group is only removed from state and its events stay in AWS.",
+      "path": "aws_cloudwatch_log_group.keep",
+      "product": "tfimpact",
+      "recommendation": "Nothing is deleted, but the resource is no longer managed here. Import it elsewhere or delete it by hand when it is no longer needed.",
+      "rule_id": "PLAN-DATA-001",
+      "severity": "low",
+      "suppressed": false,
+      "suppression_expires": null,
+      "suppression_reason": null,
+      "tags": [
+        "aws_cloudwatch_log_group",
+        "state-removal"
+      ],
+      "title": "`aws_cloudwatch_log_group.keep` is removed from Terraform state; every stored log event stays in AWS"
+    },
+    {
+      "domain": "change",
+      "id": "fnd_3b64830bb03e2030",
+      "line": null,
+      "metadata": {
+        "action_reason": "delete_because_no_resource_config",
+        "resource_type": "aws_db_subnet_group"
+      },
+      "observed": "The RDS subnet group is destroyed because it is no longer in the configuration.",
+      "path": "aws_db_subnet_group.app",
+      "product": "tfimpact",
+      "recommendation": "Confirm nothing outside this configuration still depends on it.",
+      "rule_id": "PLAN-DELETE-001",
+      "severity": "low",
+      "suppressed": false,
+      "suppression_expires": null,
+      "suppression_reason": null,
+      "tags": [
+        "aws_db_subnet_group",
+        "destroy"
+      ],
+      "title": "`aws_db_subnet_group.app` will be destroyed"
+    }
+  ],
+  "generated_at": "2026-10-10T12:00:00Z",
+  "moves": [],
+  "policy": {
+    "configured": false,
+    "exclusions": [],
+    "path": null
+  },
+  "privacy": {
+    "note": "tfimpact runs locally. Nothing is sent anywhere; sensitive values are masked.",
+    "telemetry": false,
+    "uploaded": false
+  },
+  "routine": [],
+  "schema_version": "1.1",
+  "source": {
+    "format_version": "1.2",
+    "kind": "terraform-plan",
+    "root": "../../testdata/plans/destroy-all/plan.json",
+    "terraform_version": "1.15.5"
+  },
+  "summary": {
+    "changes": {
+      "create": 0,
+      "update": 0,
+      "delete": 10,
+      "replace": 0,
+      "no_op": 0,
+      "read": 0,
+      "forget": 0,
+      "move": 0,
+      "import": 0,
+      "drift": 0,
+      "tag_only": 0
+    },
+    "excluded_files": 0,
+    "findings": 10,
+    "resources": 10,
+    "scanned_files": 1,
+    "severity": {
+      "critical": 1,
+      "high": 2,
+      "low": 2,
+      "medium": 5
+    },
+    "skipped_files": 0,
+    "suppressed_findings": 0,
+    "total_findings": 10
+  },
+  "tool": "tfimpact",
+  "tool_version": "test"
+}

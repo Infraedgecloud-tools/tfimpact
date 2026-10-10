@@ -8,7 +8,7 @@ identity = ["identifier"]
 [[mitigation]]
 attr = "skip_final_snapshot"
 equals = true
-message = "no final snapshot will be taken (skip_final_snapshot = true)"
+message = "no final snapshot will be taken (`skip_final_snapshot` = true)"
 
 [[mitigation]]
 attr = "deletion_protection"
@@ -18,7 +18,7 @@ message = "deletion protection is off"
 [[mitigation]]
 attr = "backup_retention_period"
 equals = 0
-message = "automated backups are disabled (backup_retention_period = 0)"
+message = "automated backups are disabled (`backup_retention_period` = 0)"
 
 [[safeguard]]
 attr = "deletion_protection"
@@ -63,7 +63,7 @@ severity = "high"
 [[flag]]
 attr = "publicly_accessible"
 unsafe = true
-message = "the database becomes reachable from the internet (publicly_accessible = true)"
+message = "the database becomes reachable from the internet (`publicly_accessible` = true)"
 severity = "critical"
 
 [[flag]]

@@ -2,7 +2,8 @@ type = "aws_msk_cluster"
 display = "MSK (Kafka) cluster"
 doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/msk_cluster"
 holds_data = true
-data = "every topic and retained message; the bootstrap broker addresses also change"
+data = "every topic and retained message"
+loss_note = "The bootstrap broker addresses also change."
 identity = ["cluster_name"]
 
 [[disruptive]]

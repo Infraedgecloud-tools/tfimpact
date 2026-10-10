@@ -2,4 +2,5 @@ type = "aws_eip"
 display = "Elastic IP"
 doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eip"
 holds_data = true
-data = "the public IP address itself; it is released to AWS and cannot be recovered, so DNS records and partner allow-lists pointing at it break"
+data = "the public IP address itself"
+loss_note = "The address is released to AWS and cannot be recovered, so DNS records and partner allow-lists pointing at it break."

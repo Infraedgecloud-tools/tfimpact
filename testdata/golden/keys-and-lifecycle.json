@@ -1,0 +1,115 @@
+{
+  "drift": [],
+  "findings": [
+    {
+      "domain": "change",
+      "id": "fnd_97e2741d22880db0",
+      "line": null,
+      "metadata": {
+        "action_reason": "delete_because_each_key",
+        "created": "aws_sqs_queue.work[\"order_events\"]",
+        "deleted": "aws_sqs_queue.work[\"orders\"]",
+        "identity": "name",
+        "resource_type": "aws_sqs_queue"
+      },
+      "observed": "`aws_sqs_queue.work[\"orders\"]` will be destroyed because its for_each key changed, and `aws_sqs_queue.work[\"order_events\"]` will be created with the same `name` (\"fixture-lifecycle-orders\"). Terraform does not know they are the same object. The SQS queue would be destroyed with it, losing every message still in the queue.",
+      "path": "aws_sqs_queue.work[\"orders\"]",
+      "product": "tfimpact",
+      "recommendation": "Add a moved block (`from = aws_sqs_queue.work[\"orders\"]`, `to = aws_sqs_queue.work[\"order_events\"]`) so Terraform changes the address in state instead. Applying as planned also tries to create a resource with the same name, which fails for globally named resources.",
+      "rule_id": "PLAN-RENAME-001",
+      "severity": "critical",
+      "suppressed": false,
+      "suppression_expires": null,
+      "suppression_reason": null,
+      "tags": [
+        "aws_sqs_queue",
+        "rename"
+      ],
+      "title": "`aws_sqs_queue.work[\"orders\"]` is renamed to `aws_sqs_queue.work[\"order_events\"]` without a moved block, so it will be destroyed and recreated"
+    },
+    {
+      "domain": "availability",
+      "id": "fnd_7da75a0f5d2cdbd8",
+      "line": null,
+      "metadata": {
+        "action_reason": "replace_because_cannot_update",
+        "replace_paths": [
+          "name"
+        ],
+        "resource_type": "aws_iam_role"
+      },
+      "observed": "The IAM role is replaced because `name` (\"fixture-lifecycle-deploy-v1\" → \"fixture-lifecycle-deploy-v2\") cannot be changed in place. The new object is created before the old one is destroyed (create_before_destroy).",
+      "path": "aws_iam_role.deploy",
+      "product": "tfimpact",
+      "recommendation": "Check that the identifiers other systems hold for this resource (ARN, ID, DNS name, IP) are not referenced outside Terraform, or plan a cutover.",
+      "rule_id": "PLAN-REPLACE-001",
+      "severity": "medium",
+      "suppressed": false,
+      "suppression_expires": null,
+      "suppression_reason": null,
+      "tags": [
+        "aws_iam_role",
+        "replace"
+      ],
+      "title": "`aws_iam_role.deploy` will be destroyed and recreated"
+    }
+  ],
+  "generated_at": "2026-10-10T12:00:00Z",
+  "moves": [],
+  "policy": {
+    "configured": false,
+    "exclusions": [],
+    "path": null
+  },
+  "privacy": {
+    "note": "tfimpact runs locally. Nothing is sent anywhere; sensitive values are masked.",
+    "telemetry": false,
+    "uploaded": false
+  },
+  "routine": [
+    {
+      "type": "aws_cloudwatch_log_group",
+      "addresses": [
+        "aws_cloudwatch_log_group.legacy"
+      ],
+      "summary": "removed from state but not destroyed"
+    }
+  ],
+  "schema_version": "1.1",
+  "source": {
+    "format_version": "1.2",
+    "kind": "terraform-plan",
+    "root": "../../testdata/plans/keys-and-lifecycle/plan.json",
+    "terraform_version": "1.15.5"
+  },
+  "summary": {
+    "changes": {
+      "create": 1,
+      "update": 0,
+      "delete": 1,
+      "replace": 1,
+      "no_op": 2,
+      "read": 0,
+      "forget": 1,
+      "move": 0,
+      "import": 0,
+      "drift": 0,
+      "tag_only": 0
+    },
+    "excluded_files": 0,
+    "findings": 2,
+    "resources": 6,
+    "scanned_files": 1,
+    "severity": {
+      "critical": 1,
+      "high": 0,
+      "low": 0,
+      "medium": 1
+    },
+    "skipped_files": 0,
+    "suppressed_findings": 0,
+    "total_findings": 2
+  },
+  "tool": "tfimpact",
+  "tool_version": "test"
+}

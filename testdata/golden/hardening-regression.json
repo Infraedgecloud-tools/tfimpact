@@ -1,0 +1,293 @@
+{
+  "drift": [],
+  "findings": [
+    {
+      "domain": "security",
+      "id": "fnd_dc423e88bf639f3a",
+      "line": null,
+      "metadata": {
+        "attribute": "publicly_accessible",
+        "resource_type": "aws_db_instance"
+      },
+      "observed": "`publicly_accessible` changes false → true.",
+      "path": "aws_db_instance.app",
+      "product": "tfimpact",
+      "recommendation": "Confirm this is intended and recorded in the change; if not, revert it.",
+      "rule_id": "PLAN-EXPOSE-001",
+      "severity": "critical",
+      "suppressed": false,
+      "suppression_expires": null,
+      "suppression_reason": null,
+      "tags": [
+        "aws_db_instance",
+        "exposure",
+        "publicly_accessible"
+      ],
+      "title": "`aws_db_instance.app`: the database becomes reachable from the internet (`publicly_accessible` = true)"
+    },
+    {
+      "domain": "security",
+      "id": "fnd_b33a6f2dd01ce1b6",
+      "line": null,
+      "metadata": {
+        "attribute": "assume_role_policy",
+        "policy_kind": "trust",
+        "resource_type": "aws_iam_role",
+        "widenings": [
+          "allows any principal (`Principal = \"*\"`) with no restricting condition"
+        ]
+      },
+      "observed": "`assume_role_policy` now allows any principal (`Principal = \"*\"`) with no restricting condition.",
+      "path": "aws_iam_role.lambda",
+      "product": "tfimpact",
+      "recommendation": "Scope actions, resources and principals to what the workload needs and keep the conditions. If the widening is intended, say why in the change.",
+      "rule_id": "PLAN-IAM-001",
+      "severity": "critical",
+      "suppressed": false,
+      "suppression_expires": null,
+      "suppression_reason": null,
+      "tags": [
+        "aws_iam_role",
+        "iam",
+        "trust"
+      ],
+      "title": "`aws_iam_role.lambda`: the trust policy is widened"
+    },
+    {
+      "domain": "data",
+      "id": "fnd_6f3cae7e9395fbf7",
+      "line": null,
+      "metadata": {
+        "action_reason": "delete_because_no_resource_config",
+        "mitigations": [
+          "the deletion window is the minimum 7 days"
+        ],
+        "resource_type": "aws_kms_key",
+        "safeguards": null
+      },
+      "observed": "The KMS key is destroyed because it is no longer in the configuration. Once the key is deleted, everything encrypted with it (volumes, snapshots, objects, secrets) can never be decrypted again. The deletion window is the minimum 7 days.",
+      "path": "aws_kms_key.data",
+      "product": "tfimpact",
+      "recommendation": "If removing it is intended, take a backup or snapshot first and keep it until the change has settled. If it was renamed or moved in code, add a `moved` block instead of recreating it.",
+      "rule_id": "PLAN-DATA-001",
+      "severity": "critical",
+      "suppressed": false,
+      "suppression_expires": null,
+      "suppression_reason": null,
+      "tags": [
+        "aws_kms_key",
+        "data-loss",
+        "destroy"
+      ],
+      "title": "`aws_kms_key.data` will be destroyed, losing the key material"
+    },
+    {
+      "domain": "security",
+      "id": "fnd_e9880a09dceceb77",
+      "line": null,
+      "metadata": {
+        "opened": [
+          "tcp port 5432 from 0.0.0.0/0"
+        ],
+        "resource_type": "aws_vpc_security_group_ingress_rule"
+      },
+      "observed": "The security group ingress rule gains ingress for tcp port 5432 from 0.0.0.0/0.",
+      "path": "aws_vpc_security_group_ingress_rule.postgres",
+      "product": "tfimpact",
+      "recommendation": "Restrict the source to known CIDR ranges or a security group. If public access is intended, limit it to the listening port and say so in the change.",
+      "rule_id": "PLAN-NET-001",
+      "severity": "critical",
+      "suppressed": false,
+      "suppression_expires": null,
+      "suppression_reason": null,
+      "tags": [
+        "aws_vpc_security_group_ingress_rule",
+        "network",
+        "public-ingress"
+      ],
+      "title": "`aws_vpc_security_group_ingress_rule.postgres` opens PostgreSQL to the internet"
+    },
+    {
+      "domain": "security",
+      "id": "fnd_3ea5703511938cd9",
+      "line": null,
+      "metadata": {
+        "attribute": "enable_logging",
+        "resource_type": "aws_cloudtrail"
+      },
+      "observed": "`enable_logging` changes true → false.",
+      "path": "aws_cloudtrail.main",
+      "product": "tfimpact",
+      "recommendation": "Confirm this is intended and recorded in the change; if not, revert it.",
+      "rule_id": "PLAN-EXPOSE-001",
+      "severity": "high",
+      "suppressed": false,
+      "suppression_expires": null,
+      "suppression_reason": null,
+      "tags": [
+        "aws_cloudtrail",
+        "exposure",
+        "enable_logging"
+      ],
+      "title": "`aws_cloudtrail.main`: logging is being turned off"
+    },
+    {
+      "domain": "security",
+      "id": "fnd_090185760e522768",
+      "line": null,
+      "metadata": {
+        "attribute": "block_public_policy",
+        "resource_type": "aws_s3_bucket_public_access_block"
+      },
+      "observed": "`block_public_policy` changes true → false.",
+      "path": "aws_s3_bucket_public_access_block.data",
+      "product": "tfimpact",
+      "recommendation": "Confirm this is intended and recorded in the change; if not, revert it.",
+      "rule_id": "PLAN-EXPOSE-001",
+      "severity": "high",
+      "suppressed": false,
+      "suppression_expires": null,
+      "suppression_reason": null,
+      "tags": [
+        "aws_s3_bucket_public_access_block",
+        "exposure",
+        "block_public_policy"
+      ],
+      "title": "`aws_s3_bucket_public_access_block.data`: public bucket policies are no longer blocked"
+    },
+    {
+      "domain": "security",
+      "id": "fnd_e1315ef895112ab1",
+      "line": null,
+      "metadata": {
+        "attribute": "restrict_public_buckets",
+        "resource_type": "aws_s3_bucket_public_access_block"
+      },
+      "observed": "`restrict_public_buckets` changes true → false.",
+      "path": "aws_s3_bucket_public_access_block.data",
+      "product": "tfimpact",
+      "recommendation": "Confirm this is intended and recorded in the change; if not, revert it.",
+      "rule_id": "PLAN-EXPOSE-001",
+      "severity": "high",
+      "suppressed": false,
+      "suppression_expires": null,
+      "suppression_reason": null,
+      "tags": [
+        "aws_s3_bucket_public_access_block",
+        "exposure",
+        "restrict_public_buckets"
+      ],
+      "title": "`aws_s3_bucket_public_access_block.data`: cross-account access to a public bucket is no longer restricted"
+    },
+    {
+      "domain": "data",
+      "id": "fnd_d75e78dce1569f83",
+      "line": null,
+      "metadata": {
+        "action_reason": "delete_because_no_resource_config",
+        "mitigations": null,
+        "resource_type": "aws_secretsmanager_secret",
+        "safeguards": [
+          "a recovery window applies (`recovery_window_in_days`), so the secret can be restored in that time"
+        ]
+      },
+      "observed": "The Secrets Manager secret is destroyed because it is no longer in the configuration. A recovery window applies (`recovery_window_in_days`), so the secret can be restored in that time.",
+      "path": "aws_secretsmanager_secret.db",
+      "product": "tfimpact",
+      "recommendation": "If removing it is intended, take a backup or snapshot first and keep it until the change has settled. If it was renamed or moved in code, add a `moved` block instead of recreating it.",
+      "rule_id": "PLAN-DATA-001",
+      "severity": "high",
+      "suppressed": false,
+      "suppression_expires": null,
+      "suppression_reason": null,
+      "tags": [
+        "aws_secretsmanager_secret",
+        "data-loss",
+        "destroy"
+      ],
+      "title": "`aws_secretsmanager_secret.db` will be destroyed, losing the secret value and all its versions"
+    },
+    {
+      "domain": "security",
+      "id": "fnd_92394c17bb8baff3",
+      "line": null,
+      "metadata": {
+        "attribute": "deletion_protection",
+        "resource_type": "aws_db_instance"
+      },
+      "observed": "`deletion_protection` changes true → false.",
+      "path": "aws_db_instance.app",
+      "product": "tfimpact",
+      "recommendation": "Confirm this is intended and recorded in the change; if not, revert it.",
+      "rule_id": "PLAN-EXPOSE-001",
+      "severity": "medium",
+      "suppressed": false,
+      "suppression_expires": null,
+      "suppression_reason": null,
+      "tags": [
+        "aws_db_instance",
+        "exposure",
+        "deletion_protection"
+      ],
+      "title": "`aws_db_instance.app`: deletion protection is being turned off, which removes the last guard against an accidental destroy"
+    }
+  ],
+  "generated_at": "2026-10-10T12:00:00Z",
+  "moves": [],
+  "policy": {
+    "configured": false,
+    "exclusions": [],
+    "path": null
+  },
+  "privacy": {
+    "note": "tfimpact runs locally. Nothing is sent anywhere; sensitive values are masked.",
+    "telemetry": false,
+    "uploaded": false
+  },
+  "routine": [
+    {
+      "type": "aws_s3_bucket",
+      "addresses": [
+        "aws_s3_bucket.data"
+      ],
+      "summary": "tags only"
+    }
+  ],
+  "schema_version": "1.1",
+  "source": {
+    "format_version": "1.2",
+    "kind": "terraform-plan",
+    "root": "../../testdata/plans/hardening-regression/plan.json",
+    "terraform_version": "1.15.5"
+  },
+  "summary": {
+    "changes": {
+      "create": 0,
+      "update": 6,
+      "delete": 2,
+      "replace": 0,
+      "no_op": 5,
+      "read": 0,
+      "forget": 0,
+      "move": 0,
+      "import": 0,
+      "drift": 0,
+      "tag_only": 1
+    },
+    "excluded_files": 0,
+    "findings": 9,
+    "resources": 13,
+    "scanned_files": 1,
+    "severity": {
+      "critical": 4,
+      "high": 4,
+      "low": 0,
+      "medium": 1
+    },
+    "skipped_files": 0,
+    "suppressed_findings": 0,
+    "total_findings": 9
+  },
+  "tool": "tfimpact",
+  "tool_version": "test"
+}

@@ -2,7 +2,8 @@ type = "aws_kms_key"
 display = "KMS key"
 doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_key"
 holds_data = true
-data = "the key material; once the key is deleted, everything encrypted with it (volumes, snapshots, objects, secrets) can never be decrypted again"
+data = "the key material"
+loss_note = "Once the key is deleted, everything encrypted with it (volumes, snapshots, objects, secrets) can never be decrypted again."
 
 [[mitigation]]
 attr = "deletion_window_in_days"
@@ -16,8 +17,8 @@ message = "the default 30-day deletion window applies; cancel the scheduled dele
 
 [[safeguard]]
 attr = "deletion_window_in_days"
-equals = 30
-message = "a 30-day deletion window applies; cancel the scheduled deletion in that time to keep the key"
+at_least = 8
+message = "the deletion window is longer than the minimum (`deletion_window_in_days`); cancel the scheduled deletion in that time to keep the key"
 
 [[flag]]
 attr = "enable_key_rotation"

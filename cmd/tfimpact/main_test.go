@@ -13,7 +13,7 @@ import (
 
 var update = flag.Bool("update", false, "rewrite golden files")
 
-var fixtures = []string{"rds-replacement", "rename", "iam-widening", "tag-only", "noisy"}
+var fixtures = []string{"rds-replacement", "rename", "iam-widening", "tag-only", "noisy", "hardening-regression", "fresh-create", "destroy-all", "keys-and-lifecycle", "drift"}
 
 func init() {
 	now = func() time.Time { return time.Date(2026, 10, 10, 12, 0, 0, 0, time.UTC) }
@@ -69,6 +69,8 @@ func TestNoSecretsInAnyOutput(t *testing.T) {
 	// noisy fixture carries a user_data script. Neither may ever be printed.
 	for _, tc := range []struct{ fixture, needle string }{
 		{"rds-replacement", "fixture-password-not-real"},
+		{"hardening-regression", "fixture-password-not-real"},
+		{"destroy-all", "fixture-password-not-real"},
 		{"noisy", "echo fixture v"},
 	} {
 		for _, format := range []string{"markdown", "text", "json"} {

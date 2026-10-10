@@ -1,0 +1,93 @@
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  + create
+  - destroy
++/- create replacement and then destroy
+
+Terraform will perform the following actions:
+
+ # aws_cloudwatch_log_group.legacy will no longer be managed by Terraform, but will not be destroyed
+ # (destroy = false is set in the configuration)
+ . resource "aws_cloudwatch_log_group" "legacy" {
+        id                          = "/fixture/lifecycle/legacy"
+        name                        = "/fixture/lifecycle/legacy"
+        # (9 unchanged attributes hidden)
+    }
+
+  # aws_iam_role.deploy must be replaced
++/- resource "aws_iam_role" "deploy" {
+      ~ arn                   = "arn:aws:iam::123456789012:role/fixture-lifecycle-deploy-v1" -> (known after apply)
+      ~ create_date           = "2026-10-10T12:14:40Z" -> (known after apply)
+      ~ id                    = "fixture-lifecycle-deploy-v1" -> (known after apply)
+      ~ managed_policy_arns   = [] -> (known after apply)
+      ~ name                  = "fixture-lifecycle-deploy-v1" -> "fixture-lifecycle-deploy-v2" # forces replacement
+      + name_prefix           = (known after apply)
+      ~ unique_id             = "AROARZPUZDIKBEL3AE6B6" -> (known after apply)
+        # (7 unchanged attributes hidden)
+
+      ~ inline_policy (known after apply)
+    }
+
+  # aws_sqs_queue.work["order_events"] will be created
+  + resource "aws_sqs_queue" "work" {
+      + arn                               = (known after apply)
+      + content_based_deduplication       = false
+      + deduplication_scope               = (known after apply)
+      + delay_seconds                     = 0
+      + fifo_queue                        = false
+      + fifo_throughput_limit             = (known after apply)
+      + id                                = (known after apply)
+      + kms_data_key_reuse_period_seconds = (known after apply)
+      + max_message_size                  = 262144
+      + message_retention_seconds         = 345600
+      + name                              = "fixture-lifecycle-orders"
+      + name_prefix                       = (known after apply)
+      + policy                            = (known after apply)
+      + receive_wait_time_seconds         = 0
+      + redrive_allow_policy              = (known after apply)
+      + redrive_policy                    = (known after apply)
+      + region                            = "eu-west-2"
+      + sqs_managed_sse_enabled           = (known after apply)
+      + tags_all                          = {
+          + "CostCentre" = "platform"
+          + "Project"    = "fixture"
+        }
+      + url                               = (known after apply)
+      + visibility_timeout_seconds        = 30
+    }
+
+  # aws_sqs_queue.work["orders"] will be destroyed
+  # (because key ["orders"] is not in for_each map)
+  - resource "aws_sqs_queue" "work" {
+      - arn                               = "arn:aws:sqs:eu-west-2:123456789012:fixture-lifecycle-orders" -> null
+      - content_based_deduplication       = false -> null
+      - delay_seconds                     = 0 -> null
+      - fifo_queue                        = false -> null
+      - id                                = "http://localhost:5000/123456789012/fixture-lifecycle-orders" -> null
+      - kms_data_key_reuse_period_seconds = 300 -> null
+      - max_message_size                  = 262144 -> null
+      - message_retention_seconds         = 345600 -> null
+      - name                              = "fixture-lifecycle-orders" -> null
+      - receive_wait_time_seconds         = 0 -> null
+      - region                            = "eu-west-2" -> null
+      - sqs_managed_sse_enabled           = true -> null
+      - tags_all                          = {
+          - "CostCentre" = "platform"
+          - "Project"    = "fixture"
+        } -> null
+      - url                               = "http://localhost:5000/123456789012/fixture-lifecycle-orders" -> null
+      - visibility_timeout_seconds        = 30 -> null
+        # (7 unchanged attributes hidden)
+    }
+
+Plan: 2 to add, 0 to change, 2 to destroy.
+
+Warning: Some objects will no longer be managed by Terraform
+
+If you apply this plan, Terraform will discard its tracking information for
+the following objects, but it will not delete them:
+ - aws_cloudwatch_log_group.legacy
+
+After applying this plan, Terraform will no longer manage these objects. You
+will need to import them into Terraform to manage them again.

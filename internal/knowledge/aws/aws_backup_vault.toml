@@ -8,9 +8,9 @@ identity = ["name"]
 [[mitigation]]
 attr = "force_destroy"
 equals = true
-message = "force_destroy = true, so all recovery points are deleted first"
+message = "`force_destroy` = true, so all recovery points are deleted first"
 
 [[safeguard]]
 attr = "force_destroy"
 absent = true
-message = "force_destroy is not set, so the delete fails while recovery points remain"
+message = "`force_destroy` is not set, so the delete fails while recovery points remain"

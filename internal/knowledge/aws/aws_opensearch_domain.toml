@@ -2,7 +2,8 @@ type = "aws_opensearch_domain"
 display = "OpenSearch domain"
 doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/opensearch_domain"
 holds_data = true
-data = "every index and document; the automated snapshots are deleted with the domain"
+data = "every index and document"
+loss_note = "The automated snapshots are deleted with the domain; only manual snapshots in your own bucket remain."
 identity = ["domain_name"]
 
 [[disruptive]]

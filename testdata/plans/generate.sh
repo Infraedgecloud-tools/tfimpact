@@ -25,7 +25,7 @@ fi
 
 fixtures=("$@")
 if [ ${#fixtures[@]} -eq 0 ]; then
-  fixtures=(rds-replacement rename iam-widening tag-only noisy)
+  fixtures=(rds-replacement rename iam-widening tag-only noisy hardening-regression fresh-create destroy-all keys-and-lifecycle drift)
 fi
 
 for f in "${fixtures[@]}"; do
@@ -36,7 +36,13 @@ for f in "${fixtures[@]}"; do
   (cd "$d" && terraform init -input=false -no-color >/dev/null && terraform apply -input=false -auto-approve -no-color >/dev/null)
   cp "$here/$f/after.tf" "$d/main.tf"
   varfile=(); [ -f "$here/$f/after.tfvars" ] && varfile=(-var-file="$here/$f/after.tfvars")
-  (cd "$d" && terraform plan -input=false -no-color -refresh=false -out=tfplan "${varfile[@]}" > "$here/$f/plan.txt" 2>&1 || true)
+  refresh=(-refresh=false)
+  if [ -x "$here/$f/between.sh" ]; then
+    # Something changes outside Terraform; plan with refresh so drift is recorded.
+    (cd "$d" && "$here/$f/between.sh")
+    refresh=()
+  fi
+  (cd "$d" && terraform plan -input=false -no-color "${refresh[@]}" -out=tfplan "${varfile[@]}" > "$here/$f/plan.txt" 2>&1 || true)
   (cd "$d" && terraform show -json tfplan | python3 -m json.tool > "$here/$f/plan.json")
   (cd "$d" && terraform version -json | python3 -c 'import json,sys; v=json.load(sys.stdin); print("terraform", v["terraform_version"], "aws provider", v["provider_selections"].get("registry.terraform.io/hashicorp/aws"))') > "$here/$f/versions.txt"
   python3 - "$here/$f/plan.json" <<'PY'

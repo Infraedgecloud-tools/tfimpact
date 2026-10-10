@@ -31,6 +31,9 @@ type Resource struct {
 	// noun phrase for what is lost, e.g. "the database and its contents".
 	HoldsData bool   `toml:"holds_data"`
 	Data      string `toml:"data"`
+	// LossNote is an optional sentence appended when the data is lost, for
+	// consequences that do not fit in the noun phrase.
+	LossNote string `toml:"loss_note"`
 
 	// DowntimeOnReplace marks a resource whose replacement interrupts service
 	// even though nothing is lost; Downtime says what happens.
@@ -71,10 +74,16 @@ type DeleteNote struct {
 // Condition matches an attribute value on the before side of a destroy.
 type Condition struct {
 	Attr    string `toml:"attr"`
-	Equals  any    `toml:"equals"`  // match when the value equals this
-	Absent  bool   `toml:"absent"`  // match when the value is null or missing
-	Present bool   `toml:"present"` // match when the value is non-null
+	Equals  any    `toml:"equals"`   // match when the value equals this
+	Absent  bool   `toml:"absent"`   // match when the value is null or missing
+	Present bool   `toml:"present"`  // match when the value is non-null
+	AtLeast *int64 `toml:"at_least"` // match when the numeric value is >= this
+	AtMost  *int64 `toml:"at_most"`  // match when the numeric value is <= this
 	Message string `toml:"message"`
+	// KeepsData, on a safeguard, means the destroy does not lose the data at
+	// all (for example skip_destroy): the finding is reported as a state
+	// removal rather than a loss.
+	KeepsData bool `toml:"keeps_data"`
 }
 
 // Disruptive describes an in-place attribute change with an effect.
@@ -174,8 +183,14 @@ func (r *Resource) validate(file string) error {
 		if c.Present {
 			n++
 		}
+		if c.AtLeast != nil {
+			n++
+		}
+		if c.AtMost != nil {
+			n++
+		}
 		if c.Attr == "" || c.Message == "" || n != 1 {
-			return fmt.Errorf("knowledge %s: condition on %q needs attr, message and exactly one of equals/absent/present", file, c.Attr)
+			return fmt.Errorf("knowledge %s: condition on %q needs attr, message and exactly one of equals/absent/present/at_least/at_most", file, c.Attr)
 		}
 	}
 	for _, d := range r.Disruptive {
@@ -286,6 +301,12 @@ func (c Condition) Matches(attrs map[string]any) bool {
 		return !ok || v == nil
 	case c.Present:
 		return ok && v != nil && v != "" && v != false
+	case c.AtLeast != nil:
+		f, isNum := v.(float64)
+		return ok && isNum && f >= float64(*c.AtLeast)
+	case c.AtMost != nil:
+		f, isNum := v.(float64)
+		return ok && isNum && f <= float64(*c.AtMost)
 	default:
 		return ok && equalValue(v, c.Equals)
 	}

@@ -18,5 +18,5 @@ severity = "medium"
 [[flag]]
 attr = "publicly_accessible"
 unsafe = true
-message = "the instance becomes reachable from the internet (publicly_accessible = true)"
+message = "the instance becomes reachable from the internet (`publicly_accessible` = true)"
 severity = "critical"

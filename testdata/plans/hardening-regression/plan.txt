@@ -1,0 +1,129 @@
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  ~ update in-place
+  - destroy
+
+Terraform will perform the following actions:
+
+  # aws_cloudtrail.main will be updated in-place
+  ~ resource "aws_cloudtrail" "main" {
+      ~ enable_logging                = true -> false
+        id                            = "arn:aws:cloudtrail:eu-west-2:123456789012:trail/fixture-trail"
+        name                          = "fixture-trail"
+        # (15 unchanged attributes hidden)
+    }
+
+  # aws_db_instance.app will be updated in-place
+  ~ resource "aws_db_instance" "app" {
+      ~ deletion_protection                   = true -> false
+        id                                    = "db-M5ENSHXFPU6XHZ4G4ZEI5QIO2U"
+      ~ publicly_accessible                   = false -> true
+        # (70 unchanged attributes hidden)
+    }
+
+  # aws_iam_role.lambda will be updated in-place
+  ~ resource "aws_iam_role" "lambda" {
+      ~ assume_role_policy    = jsonencode(
+          ~ {
+              ~ Statement = [
+                  ~ {
+                      ~ Principal = {
+                          + AWS     = "*"
+                          - Service = "lambda.amazonaws.com"
+                        }
+                        # (2 unchanged attributes hidden)
+                    },
+                ]
+                # (1 unchanged attribute hidden)
+            }
+        )
+        id                    = "fixture-lambda"
+        name                  = "fixture-lambda"
+        # (11 unchanged attributes hidden)
+    }
+
+  # aws_kms_key.data will be destroyed
+  # (because aws_kms_key.data is not in configuration)
+  - resource "aws_kms_key" "data" {
+      - arn                                = "arn:aws:kms:eu-west-2:123456789012:key/f3360fd3-9e92-40fe-b9ca-f692634b51d1" -> null
+      - bypass_policy_lockout_safety_check = false -> null
+      - customer_master_key_spec           = "SYMMETRIC_DEFAULT" -> null
+      - deletion_window_in_days            = 7 -> null
+      - description                        = "fixture data key" -> null
+      - enable_key_rotation                = true -> null
+      - id                                 = "f3360fd3-9e92-40fe-b9ca-f692634b51d1" -> null
+      - is_enabled                         = true -> null
+      - key_id                             = "f3360fd3-9e92-40fe-b9ca-f692634b51d1" -> null
+      - key_usage                          = "ENCRYPT_DECRYPT" -> null
+      - multi_region                       = false -> null
+      - policy                             = jsonencode(
+            {
+              - Id        = "key-default-1"
+              - Statement = [
+                  - {
+                      - Action    = "kms:*"
+                      - Effect    = "Allow"
+                      - Principal = {
+                          - AWS = "arn:aws:iam::123456789012:root"
+                        }
+                      - Resource  = "*"
+                      - Sid       = "Enable IAM User Permissions"
+                    },
+                ]
+              - Version   = "2012-10-17"
+            }
+        ) -> null
+      - region                             = "eu-west-2" -> null
+      - rotation_period_in_days            = 0 -> null
+      - tags_all                           = {
+          - "CostCentre" = "platform"
+          - "Project"    = "fixture"
+        } -> null
+        # (2 unchanged attributes hidden)
+    }
+
+  # aws_s3_bucket.data will be updated in-place
+  ~ resource "aws_s3_bucket" "data" {
+        id                          = "fixture-customer-exports-eu-west-2"
+      ~ tags_all                    = {
+          + "CostCentre" = "platform"
+          + "Project"    = "fixture"
+        }
+        # (14 unchanged attributes hidden)
+
+        # (2 unchanged blocks hidden)
+    }
+
+  # aws_s3_bucket_public_access_block.data will be updated in-place
+  ~ resource "aws_s3_bucket_public_access_block" "data" {
+      ~ block_public_policy     = true -> false
+        id                      = "fixture-customer-exports-eu-west-2"
+      ~ restrict_public_buckets = true -> false
+        # (4 unchanged attributes hidden)
+    }
+
+  # aws_secretsmanager_secret.db will be destroyed
+  # (because aws_secretsmanager_secret.db is not in configuration)
+  - resource "aws_secretsmanager_secret" "db" {
+      - arn                            = "arn:aws:secretsmanager:eu-west-2:123456789012:secret:fixture/db/password-ebTVIP" -> null
+      - force_overwrite_replica_secret = false -> null
+      - id                             = "arn:aws:secretsmanager:eu-west-2:123456789012:secret:fixture/db/password-ebTVIP" -> null
+      - name                           = "fixture/db/password" -> null
+      - recovery_window_in_days        = 30 -> null
+      - region                         = "eu-west-2" -> null
+      - tags_all                       = {
+          - "CostCentre" = "platform"
+          - "Project"    = "fixture"
+        } -> null
+        # (5 unchanged attributes hidden)
+    }
+
+  # aws_vpc_security_group_ingress_rule.postgres will be updated in-place
+  ~ resource "aws_vpc_security_group_ingress_rule" "postgres" {
+      ~ cidr_ipv4              = "10.0.0.0/8" -> "0.0.0.0/0"
+        id                     = "sgr-816e51238d3c0f765"
+        # (8 unchanged attributes hidden)
+    }
+
+Plan: 0 to add, 6 to change, 2 to destroy.

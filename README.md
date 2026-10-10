@@ -12,7 +12,7 @@ tfimpact: 1 change destroys data, 1 change widens exposure, 1 change interrupts 
 Plan: 1 to add, 40 to change, 1 to destroy (1 replacement, 6 unchanged).
 
 CRITICAL (2)
-  * aws_dynamodb_table.sessions will be destroyed and recreated; every item in the table is lost [PLAN-DATA-002]
+  * aws_dynamodb_table.sessions will be destroyed and recreated, losing every item in the table [PLAN-DATA-002]
     The DynamoDB table is replaced because hash_key ("session_id" → "user_id") cannot be changed in place.
     Deletion protection is off; point-in-time recovery is off, so there is no automatic backup to restore from.
   * aws_security_group.bastion opens SSH to the internet [PLAN-NET-001]
@@ -100,6 +100,8 @@ line and the dangerous change does not scroll off the screen.
 
 Resource knowledge lives in [`internal/knowledge/aws/`](internal/knowledge/aws/), one
 TOML file per resource type. Adding a resource is a data change plus a fixture, not Go.
+`tfimpact knowledge` lists the types it knows, `tfimpact knowledge aws_db_instance` shows
+one, and `tfimpact rules` prints the rule catalogue ([docs/rules.md](docs/rules.md)).
 
 ## Sensitive values
 

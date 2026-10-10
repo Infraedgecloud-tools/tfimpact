@@ -3,12 +3,12 @@
   "findings": [
     {
       "domain": "data",
-      "id": "fnd_a43109ee451771ed",
+      "id": "fnd_cf0ca20213c689e7",
       "line": null,
       "metadata": {
         "action_reason": "replace_because_cannot_update",
         "mitigations": [
-          "no final snapshot will be taken (skip_final_snapshot = true)",
+          "no final snapshot will be taken (`skip_final_snapshot` = true)",
           "deletion protection is off"
         ],
         "replace_paths": [
@@ -17,7 +17,7 @@
         "resource_type": "aws_db_instance",
         "safeguards": null
       },
-      "observed": "The RDS database instance is replaced because `storage_encrypted` (false → true) cannot be changed in place. No final snapshot will be taken (skip_final_snapshot = true); deletion protection is off.",
+      "observed": "The RDS database instance is replaced because `storage_encrypted` (false → true) cannot be changed in place. No final snapshot will be taken (`skip_final_snapshot` = true); deletion protection is off.",
       "path": "aws_db_instance.app",
       "product": "tfimpact",
       "recommendation": "If the change is intended, take a snapshot or backup first and plan the cutover. If the replacement is a surprise, revert `storage_encrypted`. `lifecycle { prevent_destroy = true }` makes Terraform refuse a plan like this.",
@@ -31,7 +31,7 @@
         "data-loss",
         "replace"
       ],
-      "title": "`aws_db_instance.app` will be destroyed and recreated; the database and everything stored in it is lost"
+      "title": "`aws_db_instance.app` will be destroyed and recreated, losing the database and everything stored in it"
     }
   ],
   "generated_at": "2026-10-10T12:00:00Z",

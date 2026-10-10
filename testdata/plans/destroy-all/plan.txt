@@ -1,0 +1,375 @@
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  - destroy
+
+Terraform will perform the following actions:
+
+  # aws_cloudwatch_log_group.keep will be destroyed
+  # (because aws_cloudwatch_log_group.keep is not in configuration)
+  - resource "aws_cloudwatch_log_group" "keep" {
+      - arn                         = "arn:aws:logs:eu-west-2:123456789012:log-group:/fixture/destroy/keep" -> null
+      - deletion_protection_enabled = false -> null
+      - id                          = "/fixture/destroy/keep" -> null
+      - name                        = "/fixture/destroy/keep" -> null
+      - region                      = "eu-west-2" -> null
+      - retention_in_days           = 0 -> null
+      - skip_destroy                = true -> null
+      - tags_all                    = {
+          - "CostCentre" = "platform"
+          - "Project"    = "fixture"
+        } -> null
+        # (3 unchanged attributes hidden)
+    }
+
+  # aws_db_instance.app will be destroyed
+  # (because aws_db_instance.app is not in configuration)
+  - resource "aws_db_instance" "app" {
+      - address                               = "fixture-destroy.aaaaaaaaaa.eu-west-2.rds.amazonaws.com" -> null
+      - allocated_storage                     = 20 -> null
+      - apply_immediately                     = false -> null
+      - arn                                   = "arn:aws:rds:eu-west-2:123456789012:db:fixture-destroy" -> null
+      - auto_minor_version_upgrade            = true -> null
+      - availability_zone                     = "eu-west-2a" -> null
+      - backup_retention_period               = 0 -> null
+      - backup_window                         = "13:14-13:44" -> null
+      - ca_cert_identifier                    = "rds-ca-default" -> null
+      - copy_tags_to_snapshot                 = false -> null
+      - customer_owned_ip_enabled             = false -> null
+      - db_subnet_group_name                  = "fixture-destroy" -> null
+      - dedicated_log_volume                  = false -> null
+      - delete_automated_backups              = true -> null
+      - deletion_protection                   = true -> null
+      - endpoint                              = "fixture-destroy.aaaaaaaaaa.eu-west-2.rds.amazonaws.com:3306" -> null
+      - engine                                = "mysql" -> null
+      - engine_version                        = "8.0.35" -> null
+      - engine_version_actual                 = "8.0.35" -> null
+      - final_snapshot_identifier             = "fixture-destroy-final" -> null
+      - iam_database_authentication_enabled   = false -> null
+      - id                                    = "db-M5ENSHXFPU6XHZ4G4ZEI5QIO2U" -> null
+      - identifier                            = "fixture-destroy" -> null
+      - instance_class                        = "db.t3.small" -> null
+      - iops                                  = 0 -> null
+      - latest_restorable_time                = "2026-10-10T12:14:22Z" -> null
+      - license_model                         = "general-public-license" -> null
+      - listener_endpoint                     = [] -> null
+      - maintenance_window                    = "wed:06:38-wed:07:08" -> null
+      - master_user_secret                    = [] -> null
+      - max_allocated_storage                 = 0 -> null
+      - monitoring_interval                   = 0 -> null
+      - multi_az                              = false -> null
+      - option_group_name                     = "default:mysql-8-0" -> null
+      - parameter_group_name                  = "default.mysql8.0" -> null
+      - password                              = (sensitive value) -> null
+      - password_wo                           = (write-only attribute) -> null
+      - performance_insights_enabled          = false -> null
+      - performance_insights_retention_period = 0 -> null
+      - port                                  = 3306 -> null
+      - publicly_accessible                   = false -> null
+      - region                                = "eu-west-2" -> null
+      - replicas                              = [] -> null
+      - resource_id                           = "db-M5ENSHXFPU6XHZ4G4ZEI5QIO2U" -> null
+      - skip_final_snapshot                   = false -> null
+      - status                                = "available" -> null
+      - storage_encrypted                     = false -> null
+      - storage_throughput                    = 0 -> null
+      - storage_type                          = "gp2" -> null
+      - tags_all                              = {
+          - "CostCentre" = "platform"
+          - "Project"    = "fixture"
+        } -> null
+      - username                              = "app" -> null
+      - vpc_security_group_ids                = [
+          - "sg-0c7e6b966d6de5df4",
+        ] -> null
+        # (22 unchanged attributes hidden)
+    }
+
+  # aws_db_subnet_group.app will be destroyed
+  # (because aws_db_subnet_group.app is not in configuration)
+  - resource "aws_db_subnet_group" "app" {
+      - arn                     = "arn:aws:rds:eu-west-2:123456789012:subgrp:fixture-destroy" -> null
+      - description             = "Managed by Terraform" -> null
+      - id                      = "fixture-destroy" -> null
+      - name                    = "fixture-destroy" -> null
+      - region                  = "eu-west-2" -> null
+      - subnet_ids              = [
+          - "subnet-af187243b7639337e",
+          - "subnet-eec6e629a1090b4b2",
+        ] -> null
+      - supported_network_types = [] -> null
+      - tags_all                = {
+          - "CostCentre" = "platform"
+          - "Project"    = "fixture"
+        } -> null
+      - vpc_id                  = "vpc-0eba91936f90af6e6" -> null
+        # (1 unchanged attribute hidden)
+    }
+
+  # aws_dynamodb_table.orders will be destroyed
+  # (because aws_dynamodb_table.orders is not in configuration)
+  - resource "aws_dynamodb_table" "orders" {
+      - arn                         = "arn:aws:dynamodb:eu-west-2:123456789012:table/fixture-destroy-orders" -> null
+      - billing_mode                = "PAY_PER_REQUEST" -> null
+      - deletion_protection_enabled = false -> null
+      - hash_key                    = "order_id" -> null
+      - id                          = "fixture-destroy-orders" -> null
+      - name                        = "fixture-destroy-orders" -> null
+      - read_capacity               = 0 -> null
+      - region                      = "eu-west-2" -> null
+      - stream_enabled              = false -> null
+      - table_class                 = "STANDARD" -> null
+      - tags_all                    = {
+          - "CostCentre" = "platform"
+          - "Project"    = "fixture"
+        } -> null
+      - write_capacity              = 0 -> null
+        # (3 unchanged attributes hidden)
+
+      - attribute {
+          - name = "order_id" -> null
+          - type = "S" -> null
+        }
+
+      - point_in_time_recovery {
+          - enabled                 = true -> null
+          - recovery_period_in_days = 35 -> null
+        }
+
+      - ttl {
+          - enabled        = false -> null
+            # (1 unchanged attribute hidden)
+        }
+    }
+
+  # aws_lb.public will be destroyed
+  # (because aws_lb.public is not in configuration)
+  - resource "aws_lb" "public" {
+      - arn                                                          = "arn:aws:elasticloadbalancing:eu-west-2:123456789012:loadbalancer/app/fixture-destroy/9b248b7a3298e0e5" -> null
+      - arn_suffix                                                   = "app/fixture-destroy/9b248b7a3298e0e5" -> null
+      - client_keep_alive                                            = 3600 -> null
+      - desync_mitigation_mode                                       = "defensive" -> null
+      - dns_name                                                     = "fixture-destroy-1.eu-west-2.elb.amazonaws.com" -> null
+      - drop_invalid_header_fields                                   = false -> null
+      - enable_cross_zone_load_balancing                             = false -> null
+      - enable_deletion_protection                                   = false -> null
+      - enable_http2                                                 = true -> null
+      - enable_tls_version_and_cipher_suite_headers                  = false -> null
+      - enable_waf_fail_open                                         = false -> null
+      - enable_xff_client_port                                       = false -> null
+      - enable_zonal_shift                                           = false -> null
+      - id                                                           = "arn:aws:elasticloadbalancing:eu-west-2:123456789012:loadbalancer/app/fixture-destroy/9b248b7a3298e0e5" -> null
+      - idle_timeout                                                 = 60 -> null
+      - internal                                                     = false -> null
+      - ip_address_type                                              = "ipv4" -> null
+      - load_balancer_type                                           = "application" -> null
+      - name                                                         = "fixture-destroy" -> null
+      - preserve_host_header                                         = false -> null
+      - region                                                       = "eu-west-2" -> null
+      - security_groups                                              = [] -> null
+      - subnets                                                      = [
+          - "subnet-af187243b7639337e",
+          - "subnet-eec6e629a1090b4b2",
+        ] -> null
+      - tags_all                                                     = {
+          - "CostCentre" = "platform"
+          - "Project"    = "fixture"
+        } -> null
+      - vpc_id                                                       = "vpc-0eba91936f90af6e6" -> null
+      - xff_header_processing_mode                                   = "append" -> null
+      - zone_id                                                      = "Z2P70J7EXAMPLE" -> null
+        # (4 unchanged attributes hidden)
+
+      - access_logs {
+          - enabled = false -> null
+            # (2 unchanged attributes hidden)
+        }
+
+      - connection_logs {
+          - enabled = false -> null
+            # (2 unchanged attributes hidden)
+        }
+
+      - health_check_logs {
+          - enabled = false -> null
+            # (2 unchanged attributes hidden)
+        }
+
+      - subnet_mapping {
+          - subnet_id            = "subnet-af187243b7639337e" -> null
+            # (4 unchanged attributes hidden)
+        }
+      - subnet_mapping {
+          - subnet_id            = "subnet-eec6e629a1090b4b2" -> null
+            # (4 unchanged attributes hidden)
+        }
+    }
+
+  # aws_s3_bucket.exports will be destroyed
+  # (because aws_s3_bucket.exports is not in configuration)
+  - resource "aws_s3_bucket" "exports" {
+      - arn                         = "arn:aws:s3:::fixture-destroy-exports-eu-west-2" -> null
+      - bucket                      = "fixture-destroy-exports-eu-west-2" -> null
+      - bucket_domain_name          = "fixture-destroy-exports-eu-west-2.s3.amazonaws.com" -> null
+      - bucket_namespace            = "global" -> null
+      - bucket_region               = "eu-west-2" -> null
+      - bucket_regional_domain_name = "fixture-destroy-exports-eu-west-2.s3.eu-west-2.amazonaws.com" -> null
+      - force_destroy               = true -> null
+      - hosted_zone_id              = "Z3GKZC51ZF0DB4" -> null
+      - id                          = "fixture-destroy-exports-eu-west-2" -> null
+      - object_lock_enabled         = false -> null
+      - region                      = "eu-west-2" -> null
+      - tags_all                    = {} -> null
+        # (4 unchanged attributes hidden)
+
+      - grant {
+          - id          = "75aa57f09aa0c8caeab4f8c24e99d10f8e7faeebf76c078efc7c6caea54ba06a" -> null
+          - permissions = [
+              - "FULL_CONTROL",
+            ] -> null
+          - type        = "CanonicalUser" -> null
+            # (1 unchanged attribute hidden)
+        }
+
+      - versioning {
+          - enabled    = false -> null
+          - mfa_delete = false -> null
+        }
+    }
+
+  # aws_sns_topic.alerts will be destroyed
+  # (because aws_sns_topic.alerts is not in configuration)
+  - resource "aws_sns_topic" "alerts" {
+      - application_success_feedback_sample_rate = 0 -> null
+      - arn                                      = "arn:aws:sns:eu-west-2:123456789012:fixture-destroy-alerts" -> null
+      - content_based_deduplication              = false -> null
+      - fifo_topic                               = false -> null
+      - firehose_success_feedback_sample_rate    = 0 -> null
+      - http_success_feedback_sample_rate        = 0 -> null
+      - id                                       = "arn:aws:sns:eu-west-2:123456789012:fixture-destroy-alerts" -> null
+      - lambda_success_feedback_sample_rate      = 0 -> null
+      - maximum_message_size                     = 0 -> null
+      - name                                     = "fixture-destroy-alerts" -> null
+      - owner                                    = "123456789012" -> null
+      - policy                                   = jsonencode(
+            {
+              - Id        = "__default_policy_ID"
+              - Statement = [
+                  - {
+                      - Action    = [
+                          - "SNS:GetTopicAttributes",
+                          - "SNS:SetTopicAttributes",
+                          - "SNS:AddPermission",
+                          - "SNS:RemovePermission",
+                          - "SNS:DeleteTopic",
+                          - "SNS:Subscribe",
+                          - "SNS:ListSubscriptionsByTopic",
+                          - "SNS:Publish",
+                        ]
+                      - Condition = {
+                          - StringEquals = {
+                              - "AWS:SourceOwner" = "123456789012"
+                            }
+                        }
+                      - Effect    = "Allow"
+                      - Principal = {
+                          - AWS = "*"
+                        }
+                      - Resource  = "arn:aws:sns:eu-west-2:123456789012:fixture-destroy-alerts"
+                      - Sid       = "__default_statement_ID"
+                    },
+                ]
+              - Version   = "2008-10-17"
+            }
+        ) -> null
+      - region                                   = "eu-west-2" -> null
+      - signature_version                        = 0 -> null
+      - sqs_success_feedback_sample_rate         = 0 -> null
+      - tags_all                                 = {
+          - "CostCentre" = "platform"
+          - "Project"    = "fixture"
+        } -> null
+        # (18 unchanged attributes hidden)
+    }
+
+  # aws_subnet.a will be destroyed
+  # (because aws_subnet.a is not in configuration)
+  - resource "aws_subnet" "a" {
+      - arn                                            = "arn:aws:ec2:eu-west-2:123456789012:subnet/subnet-eec6e629a1090b4b2" -> null
+      - assign_ipv6_address_on_creation                = false -> null
+      - availability_zone                              = "eu-west-2a" -> null
+      - availability_zone_id                           = "euw2-az2" -> null
+      - cidr_block                                     = "10.2.1.0/24" -> null
+      - enable_dns64                                   = false -> null
+      - enable_lni_at_device_index                     = 0 -> null
+      - enable_resource_name_dns_a_record_on_launch    = false -> null
+      - enable_resource_name_dns_aaaa_record_on_launch = false -> null
+      - id                                             = "subnet-eec6e629a1090b4b2" -> null
+      - ipv6_native                                    = false -> null
+      - map_customer_owned_ip_on_launch                = false -> null
+      - map_public_ip_on_launch                        = false -> null
+      - owner_id                                       = "123456789012" -> null
+      - private_dns_hostname_type_on_launch            = "ip-name" -> null
+      - region                                         = "eu-west-2" -> null
+      - tags_all                                       = {
+          - "CostCentre" = "platform"
+          - "Project"    = "fixture"
+        } -> null
+      - vpc_id                                         = "vpc-0eba91936f90af6e6" -> null
+        # (4 unchanged attributes hidden)
+    }
+
+  # aws_subnet.b will be destroyed
+  # (because aws_subnet.b is not in configuration)
+  - resource "aws_subnet" "b" {
+      - arn                                            = "arn:aws:ec2:eu-west-2:123456789012:subnet/subnet-af187243b7639337e" -> null
+      - assign_ipv6_address_on_creation                = false -> null
+      - availability_zone                              = "eu-west-2b" -> null
+      - availability_zone_id                           = "euw2-az3" -> null
+      - cidr_block                                     = "10.2.2.0/24" -> null
+      - enable_dns64                                   = false -> null
+      - enable_lni_at_device_index                     = 0 -> null
+      - enable_resource_name_dns_a_record_on_launch    = false -> null
+      - enable_resource_name_dns_aaaa_record_on_launch = false -> null
+      - id                                             = "subnet-af187243b7639337e" -> null
+      - ipv6_native                                    = false -> null
+      - map_customer_owned_ip_on_launch                = false -> null
+      - map_public_ip_on_launch                        = false -> null
+      - owner_id                                       = "123456789012" -> null
+      - private_dns_hostname_type_on_launch            = "ip-name" -> null
+      - region                                         = "eu-west-2" -> null
+      - tags_all                                       = {
+          - "CostCentre" = "platform"
+          - "Project"    = "fixture"
+        } -> null
+      - vpc_id                                         = "vpc-0eba91936f90af6e6" -> null
+        # (4 unchanged attributes hidden)
+    }
+
+  # aws_vpc.main will be destroyed
+  # (because aws_vpc.main is not in configuration)
+  - resource "aws_vpc" "main" {
+      - arn                                  = "arn:aws:ec2:eu-west-2:123456789012:vpc/vpc-0eba91936f90af6e6" -> null
+      - assign_generated_ipv6_cidr_block     = false -> null
+      - cidr_block                           = "10.2.0.0/16" -> null
+      - default_network_acl_id               = "acl-18d4674250d86b928" -> null
+      - default_route_table_id               = "rtb-fbc7fc2cfc46a4cd5" -> null
+      - default_security_group_id            = "sg-0b71d455978df77a4" -> null
+      - dhcp_options_id                      = "default" -> null
+      - enable_dns_hostnames                 = false -> null
+      - enable_dns_support                   = true -> null
+      - enable_network_address_usage_metrics = false -> null
+      - id                                   = "vpc-0eba91936f90af6e6" -> null
+      - instance_tenancy                     = "default" -> null
+      - ipv6_netmask_length                  = 0 -> null
+      - main_route_table_id                  = "rtb-fbc7fc2cfc46a4cd5" -> null
+      - owner_id                             = "123456789012" -> null
+      - region                               = "eu-west-2" -> null
+      - tags_all                             = {
+          - "CostCentre" = "platform"
+          - "Project"    = "fixture"
+        } -> null
+        # (4 unchanged attributes hidden)
+    }
+
+Plan: 0 to add, 0 to change, 10 to destroy.

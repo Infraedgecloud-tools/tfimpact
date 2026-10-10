@@ -5,7 +5,7 @@
 
 ### 🔴 Critical (1)
 
-- **`aws_s3_bucket.logs` is renamed to `aws_s3_bucket.audit_logs` without a moved block, so it will be destroyed and recreated.** `aws_s3_bucket.logs` will be destroyed because it left the configuration, and `aws_s3_bucket.audit_logs` will be created with the same `bucket` ("fixture-alb-access-logs-eu-west-2"). Terraform does not know they are the same object. Every object and object version in the bucket would be lost with the S3 bucket. _Add a moved block (`from = aws_s3_bucket.logs`, `to = aws_s3_bucket.audit_logs`) so Terraform changes the address in state instead. Applying as planned also tries to create a resource with the same bucket, which fails for globally named resources._ `PLAN-RENAME-001`
+- **`aws_s3_bucket.logs` is renamed to `aws_s3_bucket.audit_logs` without a moved block, so it will be destroyed and recreated.** `aws_s3_bucket.logs` will be destroyed because it left the configuration, and `aws_s3_bucket.audit_logs` will be created with the same `bucket` ("fixture-alb-access-logs-eu-west-2"). Terraform does not know they are the same object. The S3 bucket would be destroyed with it, losing every object and object version in the bucket. _Add a moved block (`from = aws_s3_bucket.logs`, `to = aws_s3_bucket.audit_logs`) so Terraform changes the address in state instead. Applying as planned also tries to create a resource with the same bucket, which fails for globally named resources._ `PLAN-RENAME-001`
 
 ### ⚪ Low (1)
 

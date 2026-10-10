@@ -1,0 +1,31 @@
+type = "aws_s3_account_public_access_block"
+display = "account-level S3 public access block"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_account_public_access_block"
+
+[delete]
+severity = "high"
+message = "every bucket in the account loses the account-wide public access block, including buckets created later"
+
+[[flag]]
+attr = "block_public_acls"
+unsafe = false
+message = "public ACLs are no longer blocked account-wide"
+severity = "high"
+
+[[flag]]
+attr = "block_public_policy"
+unsafe = false
+message = "public bucket policies are no longer blocked account-wide"
+severity = "high"
+
+[[flag]]
+attr = "ignore_public_acls"
+unsafe = false
+message = "existing public ACLs are no longer ignored account-wide"
+severity = "high"
+
+[[flag]]
+attr = "restrict_public_buckets"
+unsafe = false
+message = "cross-account access to public buckets is no longer restricted account-wide"
+severity = "high"

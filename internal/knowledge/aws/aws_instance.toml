@@ -6,7 +6,7 @@ downtime = "the instance is terminated and a new one launched with a new instanc
 
 [[disruptive]]
 attr = "user_data"
-effect = "the instance is stopped and started to apply the new user data (user_data_replace_on_change is false); it keeps its ID but gets a new public IP unless it has an Elastic IP, and the script only re-runs if the AMI's cloud-init is configured to"
+effect = "the instance is stopped and started to apply the new user data (`user_data_replace_on_change` is false); it keeps its ID but gets a new public IP unless it has an Elastic IP, and the script only re-runs if the AMI's cloud-init is configured to"
 severity = "high"
 
 [[disruptive]]
@@ -33,5 +33,5 @@ severity = "medium"
 [[flag]]
 attr = "metadata_options[0].http_tokens"
 unsafe = "optional"
-message = "IMDSv1 is allowed (http_tokens = optional), which weakens protection against credential theft via SSRF"
+message = "IMDSv1 is allowed (`http_tokens` = optional), which weakens protection against credential theft via SSRF"
 severity = "medium"
