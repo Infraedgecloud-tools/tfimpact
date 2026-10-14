@@ -28,6 +28,80 @@ archives:
 checksum:
   name_template: checksums.txt
 
+# A CycloneDX SBOM per archive, from syft, which the release workflow
+# installs. Downloaders who audit dependencies get it without building.
+sboms:
+  - artifacts: archive
+
+# The checksums file is signed keylessly with cosign through the workflow's
+# OIDC identity, alongside the build-provenance attestation the workflow
+# already attaches. Verify with:
+#   cosign verify-blob --certificate checksums.txt.pem --signature checksums.txt.sig \
+#     --certificate-identity-regexp 'github.com/infraedgecloud-tools/tfimpact' \
+#     --certificate-oidc-issuer https://token.actions.githubusercontent.com checksums.txt
+signs:
+  - cmd: cosign
+    certificate: "${artifact}.pem"
+    args:
+      - sign-blob
+      - --yes
+      - --output-certificate=${certificate}
+      - --output-signature=${signature}
+      - ${artifact}
+    artifacts: checksum
+    output: true
+
+# Linux packages, attached to the release. No repository is hosted; a
+# package pinned by checksum in a Dockerfile or an image build is the use.
+nfpms:
+  - id: packages
+    package_name: tfimpact
+    vendor: InfraEdge
+    homepage: https://github.com/infraedgecloud-tools/tfimpact
+    maintainer: InfraEdge <support@infraedge.org>
+    description: Explain what a Terraform or OpenTofu plan will do to your AWS resources
+    license: Apache-2.0
+    formats: [deb, rpm, apk]
+    bindir: /usr/bin
+    section: utils
+
+# Homebrew and Scoop. Both need a token that can push to the tap and the
+# bucket; the job token cannot reach another repository. When
+# TAP_GITHUB_TOKEN is not set the cask and manifest are still rendered into
+# dist/ and not uploaded, so a release never fails on a missing tap.
+#
+# A cask rather than a formula: goreleaser deprecated formulas for binary
+# releases in favour of casks, which install the prebuilt binary. The cask
+# carries macOS and Linux stanzas for both architectures.
+homebrew_casks:
+  - name: tfimpact
+    repository:
+      owner: infraedgecloud-tools
+      name: homebrew-tap
+      token: "{{ envOrDefault \"TAP_GITHUB_TOKEN\" \"\" }}"
+    directory: Casks
+    homepage: https://github.com/infraedgecloud-tools/tfimpact
+    description: Explain what a Terraform or OpenTofu plan will do to your AWS resources
+    skip_upload: "{{ if envOrDefault \"TAP_GITHUB_TOKEN\" \"\" }}auto{{ else }}true{{ end }}"
+    binaries: [tfimpact]
+    # The binary is not notarised, so macOS quarantines it on download.
+    hooks:
+      post:
+        install: |
+          if system_command("/usr/bin/xattr", args: ["-h"]).exit_status == 0
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/tfimpact"]
+          end
+
+scoops:
+  - repository:
+      owner: infraedgecloud-tools
+      name: scoop-bucket
+      token: "{{ envOrDefault \"TAP_GITHUB_TOKEN\" \"\" }}"
+    homepage: https://github.com/infraedgecloud-tools/tfimpact
+    description: Explain what a Terraform or OpenTofu plan will do to your AWS resources
+    license: Apache-2.0
+    skip_upload: "{{ if envOrDefault \"TAP_GITHUB_TOKEN\" \"\" }}auto{{ else }}true{{ end }}"
+
 changelog:
   sort: asc
   groups:
@@ -49,3 +123,14 @@ changelog:
 
 release:
   prerelease: auto
+  header: |
+    See [CHANGELOG.md](https://github.com/infraedgecloud-tools/tfimpact/blob/main/CHANGELOG.md) for the full account of this release.
+
+    Every archive below has a CycloneDX SBOM beside it, `checksums.txt` is signed with
+    cosign (keyless, through this repository's workflow identity), and each asset carries a
+    build-provenance attestation: `gh attestation verify <asset> -R infraedgecloud-tools/tfimpact`.
+  footer: |
+    Install: Homebrew `brew install infraedgecloud-tools/tap/tfimpact`, Scoop
+    `scoop bucket add infraedgecloud-tools https://github.com/infraedgecloud-tools/scoop-bucket && scoop install tfimpact`,
+    deb/rpm/apk above, `go install github.com/infraedgecloud-tools/tfimpact/cmd/tfimpact@{{ .Tag }}`,
+    or `docker run ghcr.io/infraedgecloud-tools/tfimpact:{{ .Tag }}`.

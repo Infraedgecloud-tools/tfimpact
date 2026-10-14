@@ -112,6 +112,11 @@ func openPlan(source string, stdin io.Reader) (io.Reader, func(), error) {
 	}
 	st, err := os.Stat(source)
 	if err != nil {
+		if os.IsNotExist(err) {
+			// The OS message differs per platform; the plain one reads the
+			// same everywhere.
+			return nil, none, fmt.Errorf("%s: no such file", source)
+		}
 		return nil, none, err
 	}
 	if st.IsDir() {
