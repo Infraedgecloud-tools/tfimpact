@@ -342,7 +342,16 @@ func deleteReason(reason string) string {
 }
 
 func (a *analysis) replaced(c change) {
-	before := c.rc.Change.BeforeMap()
+	before, after := c.rc.Change.BeforeMap(), c.rc.Change.AfterMap()
+	a.replacement(c, before)
+	// A replacement is also a change from before to after. A security group
+	// replaced with SSH open to the world, or a policy replaced with a
+	// wildcard, used to report only "destroyed and recreated".
+	a.transitions(c, before, after)
+}
+
+// replacement raises the finding for the destroy-and-create itself.
+func (a *analysis) replacement(c change, before map[string]any) {
 	reason := a.replaceReason(c)
 	order := ""
 	if c.rc.Change.CreateBeforeDestroy() {
@@ -505,6 +514,15 @@ func (a *analysis) updated(c change) {
 				Metadata:       map[string]any{"resource_type": c.rc.Type, "attribute": d.Attr},
 			})
 		}
+	}
+	a.transitions(c, before, after)
+}
+
+// transitions raises what changes between before and after regardless of
+// whether Terraform gets there in place or by replacement: a protection
+// turned off, a policy widened, an ingress opened.
+func (a *analysis) transitions(c change, before, after map[string]any) {
+	if c.know != nil {
 		for _, f := range c.know.Flags {
 			if !c.tops[knowledge.Top(f.Attr)] {
 				continue

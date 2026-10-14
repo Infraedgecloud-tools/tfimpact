@@ -121,6 +121,35 @@ func TestIngressRangeNamesEveryServiceDeterministically(t *testing.T) {
 		got := titles(analyze(t, doc))
 		if !strings.Contains(got, want) {
 			t.Fatalf("run %d: wanted %q in:\n%s", i, want, got)
+
+// A replacement is a change from before to after as well as a
+// destroy-and-create. The ingress, policy and flag checks used to run only
+// on updates and creates, so a security group replaced with SSH open to the
+// world, or a policy replaced with a wildcard, reported only "destroyed and
+// recreated" at medium.
+func TestReplacementRunsIngressPolicyAndFlagChecks(t *testing.T) {
+	r := analyze(t, wrap(
+		rc("aws_security_group.bastion", "aws_security_group", []string{"delete", "create"}, `"change_replace":true,`,
+			map[string]any{"name": "bastion-a", "ingress": []any{}},
+			map[string]any{"name": "bastion-b", "ingress": []any{
+				map[string]any{"from_port": 22.0, "to_port": 22.0, "protocol": "tcp", "cidr_blocks": []any{"0.0.0.0/0"}, "ipv6_cidr_blocks": []any{}},
+			}}),
+		rc("aws_iam_policy.p", "aws_iam_policy", []string{"delete", "create"}, ``,
+			map[string]any{"name": "p-a", "policy": `{"Statement":[{"Effect":"Allow","Action":["s3:GetObject"],"Resource":"arn:aws:s3:::b/*"}]}`},
+			map[string]any{"name": "p-b", "policy": `{"Statement":[{"Effect":"Allow","Action":"*","Resource":"*"}]}`}),
+		rc("aws_db_instance.main", "aws_db_instance", []string{"delete", "create"}, ``,
+			map[string]any{"identifier": "a", "engine": "postgres", "deletion_protection": true, "skip_final_snapshot": false},
+			map[string]any{"identifier": "b", "engine": "postgres", "deletion_protection": false, "skip_final_snapshot": false}),
+	))
+	got := titles(r)
+	for _, want := range []string{
+		"critical PLAN-NET-001 `aws_security_group.bastion` opens SSH to the internet",
+		"PLAN-IAM-001 `aws_iam_policy.p`: the policy is widened",
+		"PLAN-EXPOSE-001 `aws_db_instance.main`",
+		"PLAN-DATA-002 `aws_db_instance.main` will be destroyed and recreated",
+	} {
+		if !strings.Contains(got, want) {
+			t.Errorf("wanted %q in:\n%s", want, got)
 		}
 	}
 }
