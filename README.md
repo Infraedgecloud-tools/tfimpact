@@ -144,11 +144,38 @@ they look like. Leaving `address` out suppresses the rule everywhere.
 
 ## Output
 
-- `--format text` for terminals (the default when stdout is a terminal)
+- `--format text` for terminals (the default when stdout is a terminal). Colour follows
+  the terminal: on when stdout is a TTY, off under `NO_COLOR` or `TERM=dumb`, and
+  `--color always|never` overrides.
 - `--format markdown` for pull-request comments (the default in CI)
-- `--format json` for machines: the InfraEdge findings schema 1.1 envelope
-- `--output FILE` and `--json FILE` write both at once
+- `--format json` for machines: the findings schema 1.1 envelope, described by
+  [`docs/findings.schema.json`](docs/findings.schema.json)
+- `--format sarif` for code-scanning tabs and security dashboards: SARIF 2.1.0, one
+  result per finding with the resource address as its logical location and the
+  finding's stable ID as its fingerprint
+- `--output FILE`, `--json FILE` and `--sarif FILE` write files alongside whatever
+  goes to stdout
 - Exit code 0, or 1 when `--fail-on LEVEL` is reached, or 2 on bad input
+
+Upload the SARIF to GitHub code scanning from the same job:
+
+```yaml
+  - run: tfimpact explain plan.json --sarif tfimpact.sarif --quiet
+  - uses: github/codeql-action/upload-sarif@<sha>
+    with:
+      sarif_file: tfimpact.sarif
+```
+
+Shell completion: `source <(tfimpact completion bash)`, `source <(tfimpact completion zsh)`
+or `tfimpact completion fish | source`.
+
+### The comment subcommand
+
+The GitHub Action calls `tfimpact comment --body FILE` after `explain` to create or
+update one comment on the pull request. It reads `GITHUB_TOKEN`, `GITHUB_REPOSITORY` and
+the event payload from the runner's environment, finds its earlier comment by a marker
+in the body, and edits that rather than posting another. Outside Actions it has nothing
+to talk to and says so.
 
 ## What it does not do
 

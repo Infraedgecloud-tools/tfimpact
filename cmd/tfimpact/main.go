@@ -59,6 +59,8 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		return listRules(stdout)
 	case "knowledge":
 		return showKnowledge(args[1:], stdout, stderr)
+	case "completion":
+		return completion(args[1:], stdout, stderr)
 	case "version", "--version", "-v":
 		fmt.Fprintln(stdout, versionString())
 		return exitOK
@@ -79,12 +81,15 @@ Usage:
   tfimpact comment --body FILE             create or update the pull-request comment (GitHub Actions)
   tfimpact rules                           list the rules and what they mean
   tfimpact knowledge [TYPE]                list the AWS resource types tfimpact knows, or show one
+  tfimpact completion bash|zsh|fish        print a shell completion script
   tfimpact version
 
 Explain flags:
-  --format markdown|text|json   what to print to stdout (default: text on a terminal, markdown otherwise)
+  --format markdown|text|json|sarif   what to print to stdout (default: text on a terminal, markdown otherwise)
   --output FILE                 also write the Markdown report to FILE
   --json FILE                   also write the findings JSON (schema 1.1) to FILE
+  --sarif FILE                  also write a SARIF 2.1.0 log to FILE, for code scanning
+  --color auto|always|never     colour in the text report (default auto: a terminal without NO_COLOR)
   --fail-on LEVEL               exit 1 if an unsuppressed finding reaches LEVEL: none, low, medium, high, critical (default none)
   --no-values                   never print attribute values, only attribute names
   --config FILE                 suppressions file (default .tfimpact.toml if present)
@@ -197,7 +202,9 @@ func buildVersion() string {
 func explain(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	fs := flag.NewFlagSet("explain", flag.ContinueOnError)
 	fs.SetOutput(stderr)
-	format := fs.String("format", "", "markdown, text or json")
+	format := fs.String("format", "", "markdown, text, json or sarif")
+	sarifOut := fs.String("sarif", "", "write a SARIF 2.1.0 log to this file")
+	color := fs.String("color", "auto", "auto, always or never")
 	output := fs.String("output", "", "write the Markdown report to this file")
 	jsonOut := fs.String("json", "", "write the findings JSON to this file")
 	failOn := fs.String("fail-on", "none", "severity threshold for exit code 1")
@@ -218,8 +225,12 @@ func explain(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		fmt.Fprintf(stderr, "tfimpact explain: --fail-on must be none, low, medium, high or critical, not %q\n", *failOn)
 		return exitUsage
 	}
-	if *format != "" && *format != "markdown" && *format != "text" && *format != "json" {
-		fmt.Fprintf(stderr, "tfimpact explain: --format must be markdown, text or json, not %q\n", *format)
+	if *format != "" && *format != "markdown" && *format != "text" && *format != "json" && *format != "sarif" {
+		fmt.Fprintf(stderr, "tfimpact explain: --format must be markdown, text, json or sarif, not %q\n", *format)
+		return exitUsage
+	}
+	if *color != "auto" && *color != "always" && *color != "never" {
+		fmt.Fprintf(stderr, "tfimpact explain: --color must be auto, always or never, not %q\n", *color)
 		return exitUsage
 	}
 
@@ -280,6 +291,12 @@ func explain(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 			return exitUsage
 		}
 	}
+	if *sarifOut != "" {
+		if err := writeFile(*sarifOut, func(w io.Writer) error { return render.SARIF(w, result) }); err != nil {
+			fmt.Fprintf(stderr, "tfimpact: %v\n", err)
+			return exitUsage
+		}
+	}
 	if !*quiet {
 		f := *format
 		if f == "" {
@@ -293,9 +310,11 @@ func explain(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		case "markdown":
 			rerr = render.Markdown(stdout, result)
 		case "text":
-			rerr = render.Text(stdout, result)
+			rerr = render.TextColor(stdout, result, useColor(*color, stdout))
 		case "json":
 			rerr = render.JSON(stdout, result)
+		case "sarif":
+			rerr = render.SARIF(stdout, result)
 		}
 		if rerr != nil {
 			fmt.Fprintf(stderr, "tfimpact: %v\n", rerr)
@@ -341,6 +360,25 @@ func writeFile(path string, write func(io.Writer) error) error {
 		return err
 	}
 	return f.Close()
+}
+
+// useColor follows the convention terminals expect: --color always or never
+// wins; otherwise colour on a terminal unless NO_COLOR is set
+// (https://no-color.org) or TERM is dumb.
+func useColor(mode string, w io.Writer) bool {
+	switch mode {
+	case "always":
+		return true
+	case "never":
+		return false
+	}
+	if _, set := os.LookupEnv("NO_COLOR"); set {
+		return false
+	}
+	if os.Getenv("TERM") == "dumb" {
+		return false
+	}
+	return isTerminal(w)
 }
 
 func isTerminal(w io.Writer) bool {
