@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="tfimpact">
+  <!-- A plan sheet with one line marked: the point of the tool is the marked
+       line, not the count. Navy and gold are InfraEdge's; the sheet is white. -->
+  <rect width="128" height="128" rx="28" fill="#0B2545"/>
+  <g fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M34 22h40l20 20v64H34z"/>
+    <path d="M74 22v20h20"/>
+    <path d="M46 62h22"/>
+    <path d="M46 80h22"/>
+  </g>
+  <g fill="none" stroke="#F5C242" stroke-width="7" stroke-linecap="round">
+    <path d="M82 58v14"/>
+    <path d="M82 84h.1"/>
+  </g>
+</svg>

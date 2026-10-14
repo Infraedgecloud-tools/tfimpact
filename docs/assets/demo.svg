@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 724" width="960" height="724" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12.5">
+<!-- Generated from the tool's own output on testdata/plans/noisy: go run ./cmd/tfimpact explain testdata/plans/noisy/plan.json --format text -->
+<rect width="960" height="724" rx="12" fill="#0B2545"/>
+<circle cx="22" cy="20" r="6" fill="#FF5F57"/><circle cx="42" cy="20" r="6" fill="#FEBC2E"/><circle cx="62" cy="20" r="6" fill="#28C840"/>
+<text x="480.0" y="24" text-anchor="middle" fill="#8FA6C3" font-size="12">tfimpact explain tfplan</text>
+<text x="22" y="56" xml:space="preserve" fill="#FFFFFF" font-weight="700">tfimpact: 1 change destroys data, 1 change widens exposure, 1 change interrupts service, 38 routine</text>
+<text x="22" y="75" xml:space="preserve" fill="#E6EDF3">Plan: 1 to add, 40 to change, 1 to destroy (1 replacement, 6 unchanged). Terraform/OpenTofu 1.15.5 · 47</text>
+<text x="22" y="94" xml:space="preserve" fill="#E6EDF3">resources.</text>
+<text x="22" y="113" xml:space="preserve" fill="#E6EDF3"></text>
+<text x="22" y="132" xml:space="preserve" fill="#FF7B72" font-weight="700">CRITICAL (2)</text>
+<text x="22" y="151" xml:space="preserve" fill="#E6EDF3">  * aws_dynamodb_table.sessions will be destroyed and recreated, losing every item in the table [PLAN-</text>
+<text x="22" y="170" xml:space="preserve" fill="#E6EDF3">     DATA-002]</text>
+<text x="22" y="189" xml:space="preserve" fill="#E6EDF3">    The DynamoDB table is replaced because hash_key (&quot;session_id&quot; → &quot;user_id&quot;) cannot be changed in</text>
+<text x="22" y="208" xml:space="preserve" fill="#E6EDF3">    place. Deletion protection is off; point-in-time recovery is off, so there is no automatic backup to</text>
+<text x="22" y="227" xml:space="preserve" fill="#E6EDF3">    restore from.</text>
+<text x="22" y="246" xml:space="preserve" fill="#9DB3CF">    -&gt; If the change is intended, take a snapshot or backup first and plan the cutover. If the</text>
+<text x="22" y="265" xml:space="preserve" fill="#E6EDF3">    replacement is a surprise, revert hash_key. lifecycle { prevent_destroy = true } makes Terraform</text>
+<text x="22" y="284" xml:space="preserve" fill="#E6EDF3">    refuse a plan like this.</text>
+<text x="22" y="303" xml:space="preserve" fill="#FFFFFF">  * aws_security_group.bastion opens SSH to the internet [PLAN-NET-001]</text>
+<text x="22" y="322" xml:space="preserve" fill="#E6EDF3">    The security group gains ingress for tcp port 22 from 0.0.0.0/0.</text>
+<text x="22" y="341" xml:space="preserve" fill="#9DB3CF">    -&gt; Restrict the source to known CIDR ranges or a security group. If public access is intended, limit</text>
+<text x="22" y="360" xml:space="preserve" fill="#E6EDF3">    it to the listening port and say so in the change.</text>
+<text x="22" y="379" xml:space="preserve" fill="#E6EDF3"></text>
+<text x="22" y="398" xml:space="preserve" fill="#FFA657" font-weight="700">HIGH (1)</text>
+<text x="22" y="417" xml:space="preserve" fill="#FFFFFF">  * aws_instance.bastion: changing user_data in place has a service effect [PLAN-DISRUPT-001]</text>
+<text x="22" y="436" xml:space="preserve" fill="#E6EDF3">    user_data changes (value hidden): the instance is stopped and started to apply the new user data</text>
+<text x="22" y="455" xml:space="preserve" fill="#E6EDF3">    (user_data_replace_on_change is false); it keeps its ID but gets a new public IP unless it has an</text>
+<text x="22" y="474" xml:space="preserve" fill="#E6EDF3">    Elastic IP, and the script only re-runs if the AMI&#x27;s cloud-init is configured to.</text>
+<text x="22" y="493" xml:space="preserve" fill="#9DB3CF">    -&gt; Apply in a maintenance window or confirm that clients tolerate the interruption.</text>
+<text x="22" y="512" xml:space="preserve" fill="#E6EDF3"></text>
+<text x="22" y="531" xml:space="preserve" fill="#8FA6C3" font-weight="700">ROUTINE (38)</text>
+<text x="22" y="550" xml:space="preserve" fill="#E6EDF3">  * 10 x aws_cloudwatch_log_group: retention_in_days 30 → 90</text>
+<text x="22" y="569" xml:space="preserve" fill="#E6EDF3">  * aws_lb.public: subnet_mapping, subnets</text>
+<text x="22" y="588" xml:space="preserve" fill="#E6EDF3">  * aws_sqs_queue.work[&quot;notify&quot;], aws_sqs_queue.work[&quot;orders&quot;], aws_sqs_queue.work[&quot;payments&quot;]:</text>
+<text x="22" y="607" xml:space="preserve" fill="#E6EDF3">     visibility_timeout_seconds 60 → 120</text>
+<text x="22" y="626" xml:space="preserve" fill="#E6EDF3">  * 24 x aws_ssm_parameter: tags only</text>
+<text x="22" y="645" xml:space="preserve" fill="#E6EDF3"></text>
+<text x="22" y="664" xml:space="preserve" fill="#E6EDF3">tfimpact 0.1.0 by InfraEdge · deterministic, runs on the runner, sends nothing anywhere · sensitive</text>
+<text x="22" y="683" xml:space="preserve" fill="#E6EDF3">values masked</text>
+</svg>

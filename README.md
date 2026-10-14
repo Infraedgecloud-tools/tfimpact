@@ -1,11 +1,24 @@
-# tfimpact
+<p align="center"><img src="docs/assets/wordmark.svg" width="420" alt="tfimpact"></p>
+
+<p align="center">
+  <a href="https://github.com/infraedgecloud-tools/tfimpact/releases/latest"><img src="https://img.shields.io/github/v/release/infraedgecloud-tools/tfimpact?display_name=tag&color=0B2545" alt="Release"></a>
+  <a href="https://github.com/infraedgecloud-tools/tfimpact/actions/workflows/ci.yml"><img src="https://github.com/infraedgecloud-tools/tfimpact/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://goreportcard.com/report/github.com/infraedgecloud-tools/tfimpact"><img src="https://goreportcard.com/badge/github.com/infraedgecloud-tools/tfimpact" alt="Go Report Card"></a>
+  <a href="https://pkg.go.dev/github.com/infraedgecloud-tools/tfimpact"><img src="https://pkg.go.dev/badge/github.com/infraedgecloud-tools/tfimpact.svg" alt="Go Reference"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/licence-Apache--2.0-1A63B0" alt="Apache-2.0"></a>
+</p>
 
 **tfimpact explains what a Terraform or OpenTofu plan will do to your AWS resources.**
 Not how many resources change: which change destroys data, which one restarts
 something, which rename will quietly recreate a bucket, and which policy just got wider.
 
-It reads the plan JSON that Terraform already produces, runs on your CI runner, and
+It reads the plan Terraform already wrote, runs on your CI runner or your laptop, and
 sends nothing anywhere. Deterministic. No account, no cloud access, no LLM.
+
+<p align="center"><img src="docs/assets/demo.svg" width="960" alt="tfimpact explain on the bundled example plan: one change destroys data, one widens exposure, one interrupts service, thirty-eight routine"></p>
+
+<details>
+<summary>The same report as text</summary>
 
 ```text
 tfimpact: 1 change destroys data, 1 change widens exposure, 1 change interrupts service, 38 routine
@@ -27,6 +40,9 @@ ROUTINE (38)
   * 24 x aws_ssm_parameter: tags only
 ```
 
+</details>
+
+
 That plan says `1 to add, 40 to change, 1 to destroy`. Every existing summariser we
 tested lists the 40 updates and puts the one replacement at the bottom. None of them
 says that the table's items are gone, or that the "update in-place" on the bastion is a
@@ -47,21 +63,37 @@ the JSON or pipe it:
 terraform show -json tfplan | tfimpact explain -
 ```
 
-Install (pick one):
+## Install
+
+| | |
+|---|---|
+| Homebrew (macOS, Linux) | `brew install --cask infraedgecloud-tools/tap/tfimpact` |
+| Scoop (Windows) | `scoop bucket add infraedgecloud-tools https://github.com/infraedgecloud-tools/scoop-bucket` then `scoop install tfimpact` |
+| deb, rpm, apk | attached to every [release](https://github.com/infraedgecloud-tools/tfimpact/releases/latest) |
+| Go | `go install github.com/infraedgecloud-tools/tfimpact/cmd/tfimpact@latest` |
+| Container | `docker run --rm -v "$PWD:/work" -w /work ghcr.io/infraedgecloud-tools/tfimpact explain plan.json` |
+| GitHub Action | `uses: infraedgecloud-tools/tfimpact@v0.1.0`, see [In a pull request](#in-a-pull-request) |
+| Release archive | below, with the checksum and the signature verified |
+
+The Homebrew cask and the Scoop manifest are published from v0.2.0.
+
+Every release ships a CycloneDX SBOM per archive, a cosign-signed `checksums.txt`, and a
+build-provenance attestation per asset (`gh attestation verify <asset> -R infraedgecloud-tools/tfimpact`).
 
 ```bash
-# release binary (linux, macOS, windows; amd64 and arm64)
+# release archive (linux, macOS, windows; amd64 and arm64)
 v=$(curl -fsSL https://api.github.com/repos/infraedgecloud-tools/tfimpact/releases/latest | sed -n 's/.*"tag_name": *"v\([^"]*\)".*/\1/p')
 os=$(uname -s | tr A-Z a-z); arch=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
 curl -fsSLO "https://github.com/infraedgecloud-tools/tfimpact/releases/download/v${v}/tfimpact_${v}_${os}_${arch}.tar.gz"
 curl -fsSLO "https://github.com/infraedgecloud-tools/tfimpact/releases/download/v${v}/checksums.txt"
 sha256sum --ignore-missing -c checksums.txt && tar xzf "tfimpact_${v}_${os}_${arch}.tar.gz" tfimpact
 
-# container
-docker run --rm -v "$PWD:/work" -w /work ghcr.io/infraedgecloud-tools/tfimpact explain plan.json
-
-# from source
-go install github.com/infraedgecloud-tools/tfimpact/cmd/tfimpact@latest
+# optional: the checksums file is signed keylessly by the release workflow (from v0.2.0)
+curl -fsSLO "https://github.com/infraedgecloud-tools/tfimpact/releases/download/v${v}/checksums.txt.sig"
+curl -fsSLO "https://github.com/infraedgecloud-tools/tfimpact/releases/download/v${v}/checksums.txt.pem"
+cosign verify-blob --certificate checksums.txt.pem --signature checksums.txt.sig \
+  --certificate-identity-regexp 'github.com/infraedgecloud-tools/tfimpact' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com checksums.txt
 ```
 
 Try it on the bundled fixtures without any AWS account:
