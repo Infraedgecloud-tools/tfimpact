@@ -7,7 +7,7 @@ Only the latest minor release receives security fixes.
 ## Reporting a vulnerability
 
 Report privately through GitHub private vulnerability reporting:
-<https://github.com/infraedge-tools/tfimpact/security/advisories/new>
+<https://github.com/infraedgecloud-tools/tfimpact/security/advisories/new>
 
 Please do not open a public issue for a vulnerability. We acknowledge reports within 14 days.
 

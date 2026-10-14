@@ -5,9 +5,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/infraedge-tools/tfimpact/internal/findings"
-	"github.com/infraedge-tools/tfimpact/internal/knowledge"
-	"github.com/infraedge-tools/tfimpact/internal/plan"
+	"github.com/infraedgecloud-tools/tfimpact/internal/findings"
+	"github.com/infraedgecloud-tools/tfimpact/internal/knowledge"
+	"github.com/infraedgecloud-tools/tfimpact/internal/plan"
 )
 
 // Small synthetic plans for edge cases the moto fixtures do not reach. Real

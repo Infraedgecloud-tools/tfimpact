@@ -66,11 +66,11 @@ runs:
         rm -rf "$dest" "$dl"
         mkdir -p "$dest" "$dl"
         if [ "$VERSION" = "latest" ]; then
-          gh release download -R infraedge-tools/tfimpact -D "$dl" \
+          gh release download -R infraedgecloud-tools/tfimpact -D "$dl" \
             --pattern "tfimpact_*_${os}_${arch}.tar.gz" --pattern checksums.txt
         else
           v="${VERSION#v}"
-          base="https://github.com/infraedge-tools/tfimpact/releases/download/v${v}"
+          base="https://github.com/infraedgecloud-tools/tfimpact/releases/download/v${v}"
           curl -fsSL -o "$dl/tfimpact_${v}_${os}_${arch}.tar.gz" "${base}/tfimpact_${v}_${os}_${arch}.tar.gz"
           curl -fsSL -o "$dl/checksums.txt" "${base}/checksums.txt"
         fi

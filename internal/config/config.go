@@ -14,7 +14,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 
-	"github.com/infraedge-tools/tfimpact/internal/findings"
+	"github.com/infraedgecloud-tools/tfimpact/internal/findings"
 )
 
 // DefaultPath is looked for in the working directory when --config is not given.

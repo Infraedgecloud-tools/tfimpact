@@ -12,7 +12,7 @@ RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -trimpath \
     -o /out/tfimpact ./cmd/tfimpact
 
 FROM gcr.io/distroless/static-debian12:nonroot
-LABEL org.opencontainers.image.source="https://github.com/infraedge-tools/tfimpact" \
+LABEL org.opencontainers.image.source="https://github.com/infraedgecloud-tools/tfimpact" \
       org.opencontainers.image.licenses="Apache-2.0" \
       org.opencontainers.image.description="Explain what a Terraform or OpenTofu plan will do to your AWS resources" \
       org.opencontainers.image.vendor="InfraEdge"

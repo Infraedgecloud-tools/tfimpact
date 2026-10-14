@@ -1,4 +1,4 @@
-module github.com/infraedge-tools/tfimpact
+module github.com/infraedgecloud-tools/tfimpact
 
 go 1.26
 

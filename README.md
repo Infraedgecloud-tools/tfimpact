@@ -44,15 +44,15 @@ Install (pick one):
 
 ```bash
 # release binary (linux, macOS, windows; amd64 and arm64)
-curl -sSLO https://github.com/infraedge-tools/tfimpact/releases/latest/download/checksums.txt
-curl -sSLO "https://github.com/infraedge-tools/tfimpact/releases/latest/download/tfimpact_$(uname -s | tr A-Z a-z)_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz"
+curl -sSLO https://github.com/infraedgecloud-tools/tfimpact/releases/latest/download/checksums.txt
+curl -sSLO "https://github.com/infraedgecloud-tools/tfimpact/releases/latest/download/tfimpact_$(uname -s | tr A-Z a-z)_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz"
 sha256sum --ignore-missing -c checksums.txt && tar xzf tfimpact_*.tar.gz tfimpact
 
 # container
-docker run --rm -v "$PWD:/work" -w /work ghcr.io/infraedge-tools/tfimpact explain plan.json
+docker run --rm -v "$PWD:/work" -w /work ghcr.io/infraedgecloud-tools/tfimpact explain plan.json
 
 # from source
-go install github.com/infraedge-tools/tfimpact/cmd/tfimpact@latest
+go install github.com/infraedgecloud-tools/tfimpact/cmd/tfimpact@latest
 ```
 
 Try it on the bundled fixtures without any AWS account:
@@ -73,7 +73,7 @@ steps:
   - uses: actions/checkout@<sha>
   - uses: hashicorp/setup-terraform@<sha>
   - run: terraform init && terraform plan -out=tfplan && terraform show -json tfplan > plan.json
-  - uses: infraedge-tools/tfimpact@<sha>   # pin to a release tag or commit
+  - uses: infraedgecloud-tools/tfimpact@<sha>   # pin to a release tag or commit
     with:
       plan: plan.json
       fail-on: high        # exit 1 when an unsuppressed finding is high or critical

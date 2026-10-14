@@ -9,8 +9,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/infraedge-tools/tfimpact/internal/findings"
-	"github.com/infraedge-tools/tfimpact/internal/ghcomment"
+	"github.com/infraedgecloud-tools/tfimpact/internal/findings"
+	"github.com/infraedgecloud-tools/tfimpact/internal/ghcomment"
 )
 
 // Headline is the one-sentence verdict that opens every output.

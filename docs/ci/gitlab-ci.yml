@@ -3,7 +3,7 @@
 tfimpact:
   stage: test
   image:
-    name: ghcr.io/infraedge-tools/tfimpact:latest
+    name: ghcr.io/infraedgecloud-tools/tfimpact:latest
     entrypoint: [""]
   needs:
     - job: plan

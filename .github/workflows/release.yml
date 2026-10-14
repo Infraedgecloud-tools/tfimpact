@@ -55,13 +55,13 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/infraedge-tools/tfimpact:${{ github.ref_name }}
-            ghcr.io/infraedge-tools/tfimpact:latest
+            ghcr.io/infraedgecloud-tools/tfimpact:${{ github.ref_name }}
+            ghcr.io/infraedgecloud-tools/tfimpact:latest
           build-args: |
             VERSION=${{ steps.v.outputs.version }}
             COMMIT=${{ github.sha }}
       - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
-          subject-name: ghcr.io/infraedge-tools/tfimpact
+          subject-name: ghcr.io/infraedgecloud-tools/tfimpact
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true

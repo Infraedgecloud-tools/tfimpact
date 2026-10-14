@@ -13,13 +13,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/infraedge-tools/tfimpact/internal/config"
-	"github.com/infraedge-tools/tfimpact/internal/findings"
-	"github.com/infraedge-tools/tfimpact/internal/ghcomment"
-	"github.com/infraedge-tools/tfimpact/internal/knowledge"
-	"github.com/infraedge-tools/tfimpact/internal/plan"
-	"github.com/infraedge-tools/tfimpact/internal/render"
-	"github.com/infraedge-tools/tfimpact/internal/rules"
+	"github.com/infraedgecloud-tools/tfimpact/internal/config"
+	"github.com/infraedgecloud-tools/tfimpact/internal/findings"
+	"github.com/infraedgecloud-tools/tfimpact/internal/ghcomment"
+	"github.com/infraedgecloud-tools/tfimpact/internal/knowledge"
+	"github.com/infraedgecloud-tools/tfimpact/internal/plan"
+	"github.com/infraedgecloud-tools/tfimpact/internal/render"
+	"github.com/infraedgecloud-tools/tfimpact/internal/rules"
 )
 
 // Set by the release build (goreleaser ldflags).

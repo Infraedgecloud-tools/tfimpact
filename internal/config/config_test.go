@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/infraedge-tools/tfimpact/internal/findings"
+	"github.com/infraedgecloud-tools/tfimpact/internal/findings"
 )
 
 func write(t *testing.T, body string) string {

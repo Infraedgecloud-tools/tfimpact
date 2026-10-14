@@ -7,7 +7,7 @@ steps:
   - script: |
       set -euo pipefail
       v="$(TFIMPACT_VERSION)"
-      base="https://github.com/infraedge-tools/tfimpact/releases/download/v${v}"
+      base="https://github.com/infraedgecloud-tools/tfimpact/releases/download/v${v}"
       mkdir -p "$(Agent.TempDirectory)/tfimpact"
       cd "$(Agent.TempDirectory)/tfimpact"
       curl -fsSL -O "${base}/tfimpact_${v}_linux_amd64.tar.gz"
