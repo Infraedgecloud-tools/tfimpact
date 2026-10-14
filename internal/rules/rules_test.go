@@ -121,6 +121,9 @@ func TestIngressRangeNamesEveryServiceDeterministically(t *testing.T) {
 		got := titles(analyze(t, doc))
 		if !strings.Contains(got, want) {
 			t.Fatalf("run %d: wanted %q in:\n%s", i, want, got)
+		}
+	}
+}
 
 // A replacement is a change from before to after as well as a
 // destroy-and-create. The ingress, policy and flag checks used to run only
