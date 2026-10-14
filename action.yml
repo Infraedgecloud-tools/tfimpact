@@ -103,7 +103,12 @@ runs:
       run: |
         dir="$RUNNER_TEMP/tfimpact"
         args=(explain "$PLAN" --format markdown
-          --output "$dir/summary.md" --json "$dir/findings.json" --sarif "$dir/results.sarif" --fail-on "$FAIL_ON")
+          --output "$dir/summary.md" --json "$dir/findings.json" --fail-on "$FAIL_ON")
+        # The action may be running a release older than this file. Flags
+        # that release does not know would make it print usage and exit 2.
+        if "$dir/tfimpact" help 2>&1 | grep -q -- '--sarif'; then
+          args+=(--sarif "$dir/results.sarif")
+        fi
         if [ "$NO_VALUES" = "true" ]; then args+=(--no-values); fi
         if [ -n "$CONFIG" ]; then args+=(--config "$CONFIG"); fi
         set +e

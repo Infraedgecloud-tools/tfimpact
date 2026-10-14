@@ -1,0 +1,6 @@
+# Everything is text with LF endings on every platform: the goldens and the
+# fixtures are compared byte for byte, and a CRLF checkout fails them.
+* text=auto eol=lf
+*.png binary
+*.tar.gz binary
+*.zip binary

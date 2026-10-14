@@ -42,6 +42,9 @@ func checkGolden(t *testing.T, name, got string) {
 		return
 	}
 	want, err := os.ReadFile(path)
+	// A checkout with autocrlf hands the goldens back with CRLF; the tool
+	// writes LF everywhere. Compare the bytes that matter.
+	want = bytes.ReplaceAll(want, []byte("\r\n"), []byte("\n"))
 	if err != nil {
 		t.Fatalf("missing golden file %s (run go test ./... -update): %v", path, err)
 	}
