@@ -232,4 +232,4 @@ mock (`testdata/plans/generate.sh`); never hand-edit a plan.json.
 
 ## Licence
 
-Apache-2.0. tfimpact is made by [InfraEdge](https://infraedge.org).
+Apache-2.0. tfimpact is made by [InfraEdge](https://infraedgecloud.com).

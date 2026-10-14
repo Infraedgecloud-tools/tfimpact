@@ -14,4 +14,4 @@
 - `aws_sqs_queue.events`: changed outside Terraform: `visibility_timeout_seconds`
 - `aws_ssm_parameter.flag`: deleted outside Terraform
 
-<sub>tfimpact test by [InfraEdge](https://infraedge.org) · deterministic, runs on the runner, sends nothing anywhere · sensitive values masked</sub>
+<sub>tfimpact test by [InfraEdge](https://infraedgecloud.com) · deterministic, runs on the runner, sends nothing anywhere · sensitive values masked</sub>

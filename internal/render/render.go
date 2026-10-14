@@ -329,7 +329,7 @@ func engine(r *findings.Result) string {
 }
 
 func footer(r *findings.Result) string {
-	return fmt.Sprintf("tfimpact %s by [InfraEdge](https://infraedge.org) · deterministic, runs on the runner, sends nothing anywhere · sensitive values masked", r.ToolVersion)
+	return fmt.Sprintf("tfimpact %s by [InfraEdge](https://infraedgecloud.com) · deterministic, runs on the runner, sends nothing anywhere · sensitive values masked", r.ToolVersion)
 }
 
 func bySeverity(fs []findings.Finding, sev findings.Severity) []findings.Finding {
@@ -359,6 +359,6 @@ func joinCodes(xs []string) string {
 func strip(s string) string {
 	s = strings.ReplaceAll(s, "`", "")
 	s = strings.ReplaceAll(s, "**", "")
-	s = strings.ReplaceAll(s, "[InfraEdge](https://infraedge.org)", "InfraEdge")
+	s = strings.ReplaceAll(s, "[InfraEdge](https://infraedgecloud.com)", "InfraEdge")
 	return s
 }

@@ -25,4 +25,4 @@
 - **`aws_cloudwatch_log_group.keep` is removed from Terraform state; every stored log event stays in AWS.** The CloudWatch log group leaves this configuration because it is no longer in the configuration. `skip_destroy` = true, so the log group is only removed from state and its events stay in AWS. _Nothing is deleted, but the resource is no longer managed here. Import it elsewhere or delete it by hand when it is no longer needed._ `PLAN-DATA-001`
 - **`aws_db_subnet_group.app` will be destroyed.** The RDS subnet group is destroyed because it is no longer in the configuration. _Confirm nothing outside this configuration still depends on it._ `PLAN-DELETE-001`
 
-<sub>tfimpact test by [InfraEdge](https://infraedge.org) · deterministic, runs on the runner, sends nothing anywhere · sensitive values masked</sub>
+<sub>tfimpact test by [InfraEdge](https://infraedgecloud.com) · deterministic, runs on the runner, sends nothing anywhere · sensitive values masked</sub>
