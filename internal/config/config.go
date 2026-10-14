@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path"
 	"strings"
 	"time"
 
@@ -70,12 +69,41 @@ func Load(p string, explicit bool) (*Config, error) {
 				return nil, fmt.Errorf("config %s: suppress[%d] expires must be YYYY-MM-DD", p, i)
 			}
 		}
-		if _, err := path.Match(c.Suppress[i].Address, ""); err != nil {
-			return nil, fmt.Errorf("config %s: suppress[%d] address pattern invalid: %v", p, i, err)
-		}
 	}
 	c.Path = p
 	return &c, nil
+}
+
+// matchAddress reports whether a suppression's address pattern covers a
+// finding's address. "*" matches any run of characters and is the only
+// wildcard; everything else is literal, including the brackets, quotes and
+// slashes that for_each and count put into an address.
+//
+// This used to be path.Match, which reads "[" as a character class and stops
+// "*" at a "/": an exact pattern of aws_s3_bucket.b["a"] never matched the
+// address aws_s3_bucket.b["a"], and no pattern could reach a key containing
+// a slash. Every resource with for_each or count was unsuppressible.
+func matchAddress(pattern, address string) bool {
+	if pattern == "*" || pattern == address {
+		return true
+	}
+	parts := strings.Split(pattern, "*")
+	if len(parts) == 1 {
+		return false
+	}
+	if !strings.HasPrefix(address, parts[0]) {
+		return false
+	}
+	rest := address[len(parts[0]):]
+	last := len(parts) - 1
+	for _, part := range parts[1:last] {
+		i := strings.Index(rest, part)
+		if i < 0 {
+			return false
+		}
+		rest = rest[i+len(part):]
+	}
+	return strings.HasSuffix(rest, parts[last])
 }
 
 // Apply marks findings suppressed according to the config, as of now.
@@ -92,7 +120,7 @@ func (c *Config) Apply(fs []findings.Finding, now time.Time) {
 			if s.Expires != "" && s.Expires < today {
 				continue
 			}
-			if ok, _ := path.Match(s.Address, fs[i].Address()); !ok && s.Address != "*" {
+			if !matchAddress(s.Address, fs[i].Address()) {
 				continue
 			}
 			fs[i].Suppressed = true

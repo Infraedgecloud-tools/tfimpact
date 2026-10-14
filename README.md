@@ -127,6 +127,11 @@ reason = "sessions are rebuilt on login; approved in CHG-123"
 expires = "2026-12-31"
 ```
 
+`address` is the resource address as the report prints it. `*` matches any run of
+characters and is the only wildcard; everything else is literal, so
+`module.app.*`, `aws_s3_bucket.logs["eu"]` and `aws_db_instance.*[0]` all mean what
+they look like. Leaving `address` out suppresses the rule everywhere.
+
 ## Output
 
 - `--format text` for terminals (the default when stdout is a terminal)
