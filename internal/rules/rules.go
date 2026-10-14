@@ -695,18 +695,31 @@ func (r ingressRule) String() string {
 	return fmt.Sprintf("%s from %s", ports, r.cidr)
 }
 
-var adminPorts = map[int]string{22: "SSH", 3389: "RDP", 3306: "MySQL", 5432: "PostgreSQL", 1433: "SQL Server", 27017: "MongoDB", 6379: "Redis", 9200: "OpenSearch", 5439: "Redshift", 2049: "NFS", 11211: "Memcached", 445: "SMB", 23: "Telnet"}
+// adminPorts are the services whose exposure makes an open ingress critical
+// rather than high. Kept as a sorted slice: a range such as 0-10000 covers
+// several of them, and the finding must name them in the same order every run.
+var adminPorts = []struct {
+	port int
+	name string
+}{
+	{22, "SSH"}, {23, "Telnet"}, {445, "SMB"}, {1433, "SQL Server"}, {2049, "NFS"},
+	{3306, "MySQL"}, {3389, "RDP"}, {5432, "PostgreSQL"}, {5439, "Redshift"},
+	{6379, "Redis"}, {9200, "OpenSearch"}, {11211, "Memcached"}, {27017, "MongoDB"},
+}
 
-func (r ingressRule) sensitiveService() string {
+// sensitiveServices names every administrative or database service the rule
+// exposes, in port order, or "every port" when the rule covers them all.
+func (r ingressRule) sensitiveServices() []string {
 	if r.proto == "-1" || r.proto == "all" || (r.from == 0 && r.to == 65535) {
-		return "every port"
+		return []string{"every port"}
 	}
-	for port, name := range adminPorts {
-		if r.from <= port && port <= r.to {
-			return name
+	var out []string
+	for _, p := range adminPorts {
+		if r.from <= p.port && p.port <= r.to {
+			out = append(out, p.name)
 		}
 	}
-	return ""
+	return out
 }
 
 func (a *analysis) ingress(c change) {
@@ -734,14 +747,14 @@ func (a *analysis) ingress(c change) {
 	var services []string
 	for _, r := range opened {
 		descs = append(descs, r.String())
-		if s := r.sensitiveService(); s != "" {
+		if s := r.sensitiveServices(); len(s) > 0 {
 			sev = findings.Critical
-			services = append(services, s)
+			services = append(services, s...)
 		}
 	}
 	title := fmt.Sprintf("`%s` opens %s to the internet", c.rc.Address, strings.Join(descs, ", "))
 	if len(services) > 0 {
-		title = fmt.Sprintf("`%s` opens %s to the internet", c.rc.Address, strings.Join(uniq(services), " and "))
+		title = fmt.Sprintf("`%s` opens %s to the internet", c.rc.Address, joinAnd(uniq(services)))
 	}
 	verb := "gains"
 	if c.kind == plan.Create {
@@ -758,6 +771,18 @@ func (a *analysis) ingress(c change) {
 		Tags:           []string{c.rc.Type, "network", "public-ingress"},
 		Metadata:       map[string]any{"resource_type": c.rc.Type, "opened": descs},
 	})
+}
+
+// joinAnd writes a list the way a sentence does: "SSH", "SSH and RDP",
+// "SSH, RDP and MySQL".
+func joinAnd(xs []string) string {
+	switch len(xs) {
+	case 0:
+		return ""
+	case 1:
+		return xs[0]
+	}
+	return strings.Join(xs[:len(xs)-1], ", ") + " and " + xs[len(xs)-1]
 }
 
 func uniq(xs []string) []string {
