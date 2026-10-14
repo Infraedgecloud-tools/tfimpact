@@ -28,8 +28,11 @@ func runExplain(t *testing.T, args ...string) (int, string, string) {
 	return code, out.String(), errb.String()
 }
 
+// planPath is written with forward slashes on every platform: the path is
+// echoed into the JSON envelope as source.root, and the goldens hold the
+// slash form.
 func planPath(fixture string) string {
-	return filepath.Join("..", "..", "testdata", "plans", fixture, "plan.json")
+	return filepath.ToSlash(filepath.Join("..", "..", "testdata", "plans", fixture, "plan.json"))
 }
 
 func checkGolden(t *testing.T, name, got string) {
@@ -42,12 +45,12 @@ func checkGolden(t *testing.T, name, got string) {
 		return
 	}
 	want, err := os.ReadFile(path)
-	// A checkout with autocrlf hands the goldens back with CRLF; the tool
-	// writes LF everywhere. Compare the bytes that matter.
-	want = bytes.ReplaceAll(want, []byte("\r\n"), []byte("\n"))
 	if err != nil {
 		t.Fatalf("missing golden file %s (run go test ./... -update): %v", path, err)
 	}
+	// A checkout with autocrlf hands the goldens back with CRLF; the tool
+	// writes LF everywhere. Compare the bytes that matter.
+	want = bytes.ReplaceAll(want, []byte("\r\n"), []byte("\n"))
 	if string(want) != got {
 		t.Errorf("%s differs from golden file; run `go test ./cmd/tfimpact -update` after checking the diff.\n--- got ---\n%s", name, got)
 	}
