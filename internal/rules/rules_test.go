@@ -108,6 +108,23 @@ func TestProtectiveDeleteIsRaised(t *testing.T) {
 	}
 }
 
+// A range that covers several administrative ports names all of them, in
+// port order, on every run. The services used to come from ranging over a
+// map, so the title named a different one each time and the finding's ID
+// moved with it.
+func TestIngressRangeNamesEveryServiceDeterministically(t *testing.T) {
+	doc := wrap(rc("aws_security_group.wide", "aws_security_group", []string{"create"}, ``, nil, map[string]any{"name": "wide", "ingress": []any{
+		map[string]any{"from_port": 0.0, "to_port": 10000.0, "protocol": "tcp", "cidr_blocks": []any{"0.0.0.0/0"}, "ipv6_cidr_blocks": []any{}},
+	}}))
+	want := "critical PLAN-NET-001 `aws_security_group.wide` opens SSH, Telnet, SMB, SQL Server, NFS, MySQL, RDP, PostgreSQL, Redshift, Redis and OpenSearch to the internet"
+	for i := 0; i < 20; i++ {
+		got := titles(analyze(t, doc))
+		if !strings.Contains(got, want) {
+			t.Fatalf("run %d: wanted %q in:\n%s", i, want, got)
+		}
+	}
+}
+
 func TestCreateWithPublicIngressAndWildcardPolicy(t *testing.T) {
 	r := analyze(t, wrap(
 		rc("aws_security_group.web", "aws_security_group", []string{"create"}, ``, nil, map[string]any{"name": "web", "ingress": []any{
