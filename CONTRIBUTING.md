@@ -35,6 +35,12 @@ Resource behaviour lives in data, not code:
 2. Add a plan fixture under `testdata/plans/` that exercises the new rules.
 3. Generate the fixture with `testdata/plans/generate.sh`, which applies real Terraform against moto in Docker. Never hand-edit a `plan.json`.
 4. Never commit a plan containing real values. Fixtures come from moto only.
+
+The moto fixtures are for provider behaviour: what Terraform really plans for a resource.
+A knowledge-file change or a rule edge case does not need one. Write a small synthetic plan
+in `internal/rules/rules_test.go` with the `rc(...)` helper, as the existing edge-case tests
+do; it runs in milliseconds and needs no Docker. Add a moto fixture when the question is
+what the provider does, not what tfimpact says about it.
 5. Add or extend a test that asserts the findings for that fixture.
 
 ## False-positive policy
