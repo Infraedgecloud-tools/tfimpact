@@ -9,7 +9,10 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
+	"path/filepath"
 	"runtime"
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -92,8 +95,82 @@ Exit codes: 0 ok · 1 threshold reached · 2 usage or input error
 `)
 }
 
+// openPlan returns a reader of plan JSON for what the user pointed at: "-"
+// for stdin, a plan JSON file, or the saved plan itself (the file that
+// `terraform plan -out` writes), which is handed to `terraform show -json`
+// in the directory it sits in. A directory gets the hint that tfimpact reads
+// a plan, not a configuration.
+func openPlan(source string, stdin io.Reader) (io.Reader, func(), error) {
+	none := func() {}
+	if source == "-" {
+		return stdin, none, nil
+	}
+	st, err := os.Stat(source)
+	if err != nil {
+		return nil, none, err
+	}
+	if st.IsDir() {
+		return nil, none, fmt.Errorf("%s is a directory; tfimpact reads a plan, not a configuration. Run `terraform plan -out=tfplan` there, then `tfimpact explain tfplan`", source)
+	}
+	f, err := os.Open(source)
+	if err != nil {
+		return nil, none, err
+	}
+	magic := make([]byte, 4)
+	n, _ := io.ReadFull(f, magic)
+	if _, err := f.Seek(0, io.SeekStart); err != nil {
+		f.Close()
+		return nil, none, err
+	}
+	// A saved plan is a zip archive; plan JSON starts with "{".
+	if n == 4 && string(magic) == "PK\x03\x04" {
+		f.Close()
+		out, err := showPlanJSON(source)
+		if err != nil {
+			return nil, none, err
+		}
+		return strings.NewReader(out), none, nil
+	}
+	return f, func() { f.Close() }, nil
+}
+
+// showPlanJSON runs `terraform show -json` (or `tofu`, or whatever
+// TFIMPACT_TERRAFORM names) on a saved plan, in the current directory: show
+// needs the initialised configuration the plan was made from, which is where
+// the user ran plan, and the plan file itself can be anywhere.
+func showPlanJSON(planPath string) (string, error) {
+	abs, err := filepath.Abs(planPath)
+	if err != nil {
+		return "", err
+	}
+	bin := os.Getenv("TFIMPACT_TERRAFORM")
+	if bin == "" {
+		for _, candidate := range []string{"terraform", "tofu"} {
+			if p, err := exec.LookPath(candidate); err == nil {
+				bin = p
+				break
+			}
+		}
+	}
+	if bin == "" {
+		return "", fmt.Errorf("%s is a saved plan, and neither terraform nor tofu is on PATH to read it. Run `terraform show -json %s > plan.json` where you ran plan, or set TFIMPACT_TERRAFORM", planPath, planPath)
+	}
+	cmd := exec.Command(bin, "show", "-no-color", "-json", abs)
+	var stdout, stderr strings.Builder
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	if err := cmd.Run(); err != nil {
+		msg := strings.TrimSpace(stderr.String())
+		if msg == "" {
+			msg = err.Error()
+		}
+		return "", fmt.Errorf("%s show -json %s failed (run tfimpact in the directory you ran plan in): %s", filepath.Base(bin), planPath, msg)
+	}
+	return stdout.String(), nil
+}
+
 func versionString() string {
-	s := "tfimpact " + version
+	s := "tfimpact " + buildVersion()
 	if commit != "" {
 		s += " (" + commit
 		if date != "" {
@@ -102,6 +179,19 @@ func versionString() string {
 		s += ")"
 	}
 	return s + " " + runtime.GOOS + "/" + runtime.GOARCH
+}
+
+// buildVersion is the release version goreleaser links in, or, for a
+// `go install` build, the module version Go recorded, so a source build
+// does not call itself "dev".
+func buildVersion() string {
+	if version != "dev" {
+		return version
+	}
+	if info, ok := debug.ReadBuildInfo(); ok && info.Main.Version != "" && info.Main.Version != "(devel)" {
+		return info.Main.Version
+	}
+	return version
 }
 
 func explain(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
@@ -134,18 +224,12 @@ func explain(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	}
 
 	source := positional[0]
-	var in io.Reader
-	if source == "-" {
-		in = stdin
-	} else {
-		f, err := os.Open(source)
-		if err != nil {
-			fmt.Fprintf(stderr, "tfimpact: %v\n", err)
-			return exitUsage
-		}
-		defer f.Close()
-		in = f
+	in, cleanup, err := openPlan(source, stdin)
+	if err != nil {
+		fmt.Fprintf(stderr, "tfimpact: %v\n", err)
+		return exitUsage
 	}
+	defer cleanup()
 	p, err := plan.Load(in)
 	if err != nil {
 		fmt.Fprintf(stderr, "tfimpact: %v\n", err)

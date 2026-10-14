@@ -36,17 +36,26 @@ stop/start.
 
 ```bash
 terraform plan -out=tfplan
-terraform show -json tfplan > plan.json
-tfimpact explain plan.json
+tfimpact explain tfplan
+```
+
+Given the saved plan, tfimpact runs `terraform show -json` on it for you (or `tofu`), in
+the directory you ran `plan` in. In CI, where the JSON is usually written anyway, hand it
+the JSON or pipe it:
+
+```bash
+terraform show -json tfplan | tfimpact explain -
 ```
 
 Install (pick one):
 
 ```bash
 # release binary (linux, macOS, windows; amd64 and arm64)
-curl -sSLO https://github.com/infraedgecloud-tools/tfimpact/releases/latest/download/checksums.txt
-curl -sSLO "https://github.com/infraedgecloud-tools/tfimpact/releases/latest/download/tfimpact_$(uname -s | tr A-Z a-z)_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz"
-sha256sum --ignore-missing -c checksums.txt && tar xzf tfimpact_*.tar.gz tfimpact
+v=$(curl -fsSL https://api.github.com/repos/infraedgecloud-tools/tfimpact/releases/latest | sed -n 's/.*"tag_name": *"v\([^"]*\)".*/\1/p')
+os=$(uname -s | tr A-Z a-z); arch=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
+curl -fsSLO "https://github.com/infraedgecloud-tools/tfimpact/releases/download/v${v}/tfimpact_${v}_${os}_${arch}.tar.gz"
+curl -fsSLO "https://github.com/infraedgecloud-tools/tfimpact/releases/download/v${v}/checksums.txt"
+sha256sum --ignore-missing -c checksums.txt && tar xzf "tfimpact_${v}_${os}_${arch}.tar.gz" tfimpact
 
 # container
 docker run --rm -v "$PWD:/work" -w /work ghcr.io/infraedgecloud-tools/tfimpact explain plan.json
@@ -146,7 +155,7 @@ they look like. Leaving `address` out suppresses the rule everywhere.
   about to change. Pair it with tflint, Checkov or Trivy for static policy.
 - It knows AWS. Other providers are listed as plain changes.
 - It does not estimate cost, and it does not call AWS to look at what is deployed.
-- It needs the saved-plan route (`plan -out` then `show -json`). The streaming
+- It needs the saved plan (`plan -out`), as the plan file or as `show -json` output. The streaming
   `terraform plan -json` output has no attribute detail.
 - It has no AI mode. The explanations are templates filled from the plan, so the same
   plan always gives the same words.
