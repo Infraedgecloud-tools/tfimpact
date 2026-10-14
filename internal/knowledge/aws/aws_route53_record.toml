@@ -1,0 +1,14 @@
+type = "aws_route53_record"
+display = "Route 53 record"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record"
+# A record is identified by its name and its type together: an A record
+# replaced by a CNAME at the same name is a change of record, not a rename.
+identity = ["name", "type"]
+
+# Names beginning with an underscore are validation and service records
+# (ACM and ACME validation, _dmarc, _mta-sts, _smtp._tls). They are replaced
+# whenever what they validate is, and nothing serves traffic from them.
+[[replace_routine]]
+attr = "name"
+starts_with = "_"
+message = "an underscore-named record is a validation or service record; nothing serves traffic from it"

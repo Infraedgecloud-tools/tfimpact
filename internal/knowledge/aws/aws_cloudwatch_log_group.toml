@@ -3,6 +3,10 @@ display = "CloudWatch log group"
 doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_log_group"
 holds_data = true
 data = "every stored log event"
+# Losing a log group's events is real, but it is not losing a database:
+# decommissioning a function deletes its log group, and a critical finding
+# there blocks every such change behind --fail-on high.
+data_severity = "medium"
 identity = ["name"]
 
 [[safeguard]]

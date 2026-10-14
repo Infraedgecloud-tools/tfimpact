@@ -1,4 +1,4 @@
-tfimpact: 1 change destroys data, 1 change interrupts service, 1 routine
+tfimpact: 1 change destroys data, 1 replaced, 1 routine
 Plan: 2 to add, 0 to change, 2 to destroy (1 replacement, 1 forgotten, 2 unchanged). Terraform/OpenTofu 1.15.5 · 6 resources.
 
 CRITICAL (1)

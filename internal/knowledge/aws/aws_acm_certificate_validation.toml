@@ -1,0 +1,7 @@
+type = "aws_acm_certificate_validation"
+display = "ACM certificate validation wait"
+doc = "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/acm_certificate_validation"
+# This resource creates nothing: it waits for a certificate to be issued.
+# It is replaced whenever the certificate it waits on is, and that
+# replacement is the certificate's news, not its own.
+no_object = true

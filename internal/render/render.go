@@ -34,7 +34,7 @@ func Headline(r *findings.Result) string {
 		}
 		return s
 	}
-	var data, security, availability, other, minor int
+	var data, security, availability, replaced, other, minor int
 	for _, f := range active {
 		if f.Severity == findings.Low {
 			minor++
@@ -46,7 +46,14 @@ func Headline(r *findings.Result) string {
 		case "security":
 			security++
 		case "availability":
-			availability++
+			// A replacement the knowledge file does not mark as interrupting
+			// service is reported at medium: an identifier changes, nothing
+			// stops. Counting it as "interrupts service" overstated the plan.
+			if f.RuleID == "PLAN-REPLACE-001" && f.Severity.Rank() < findings.High.Rank() {
+				replaced++
+			} else {
+				availability++
+			}
 		default:
 			if f.RuleID == "PLAN-RENAME-001" && f.Severity == findings.Critical {
 				data++
@@ -64,6 +71,9 @@ func Headline(r *findings.Result) string {
 	}
 	if availability > 0 {
 		parts = append(parts, fmt.Sprintf("%s service", pluralVerb(availability, "change", "interrupts", "interrupt")))
+	}
+	if replaced > 0 {
+		parts = append(parts, fmt.Sprintf("%d replaced", replaced))
 	}
 	if other > 0 {
 		parts = append(parts, fmt.Sprintf("%s attention", pluralVerb(other, "change", "needs", "need")))

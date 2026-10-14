@@ -157,6 +157,63 @@ func TestReplacementRunsIngressPolicyAndFlagChecks(t *testing.T) {
 	}
 }
 
+// A replacement the knowledge file calls routine raises no finding and is
+// listed with the routine changes rather than dropped: a certificate
+// validation wait, and a DNS record whose name marks it as a validation
+// record. A record that serves traffic is still a replacement.
+func TestRoutineReplacementsAreListedNotRaised(t *testing.T) {
+	r := analyze(t, wrap(
+		rc("aws_acm_certificate_validation.site", "aws_acm_certificate_validation", []string{"delete", "create"}, ``,
+			map[string]any{"certificate_arn": "arn:a"}, map[string]any{"certificate_arn": "arn:b"}),
+		rc("aws_route53_record.validation", "aws_route53_record", []string{"delete", "create"}, ``,
+			map[string]any{"name": "_abc.example.com", "type": "CNAME"}, map[string]any{"name": "_def.example.com", "type": "CNAME"}),
+		rc("aws_route53_record.apex", "aws_route53_record", []string{"delete", "create"}, ``,
+			map[string]any{"name": "example.com", "type": "A"}, map[string]any{"name": "example.com", "type": "AAAA"}),
+	))
+	got := titles(r)
+	if strings.Contains(got, "aws_acm_certificate_validation.site") || strings.Contains(got, "aws_route53_record.validation") {
+		t.Fatalf("routine replacements must not be findings:\n%s", got)
+	}
+	if !strings.Contains(got, "medium PLAN-REPLACE-001 `aws_route53_record.apex` will be destroyed and recreated") {
+		t.Fatalf("a record serving traffic is still a replacement:\n%s", got)
+	}
+	listed := 0
+	for _, g := range r.Routine {
+		if g.Summary == "replaced; nothing outside Terraform changes" {
+			listed += len(g.Addresses)
+		}
+	}
+	if listed != 2 {
+		t.Fatalf("expected 2 routine replacements listed, got %d: %+v", listed, r.Routine)
+	}
+}
+
+// Severity is calibrated to consequence: losing a log group's events is
+// medium, and opening only 80 or 443 is medium, while SSH stays critical.
+func TestSeverityCalibration(t *testing.T) {
+	r := analyze(t, wrap(
+		rc("aws_cloudwatch_log_group.fn", "aws_cloudwatch_log_group", []string{"delete"}, ``,
+			map[string]any{"name": "/aws/lambda/fn", "skip_destroy": false}, nil),
+		rc("aws_security_group.alb", "aws_security_group", []string{"create"}, ``, nil, map[string]any{"name": "alb", "ingress": []any{
+			map[string]any{"from_port": 443.0, "to_port": 443.0, "protocol": "tcp", "cidr_blocks": []any{"0.0.0.0/0"}, "ipv6_cidr_blocks": []any{}},
+			map[string]any{"from_port": 80.0, "to_port": 80.0, "protocol": "tcp", "cidr_blocks": []any{"0.0.0.0/0"}, "ipv6_cidr_blocks": []any{}},
+		}}),
+		rc("aws_security_group.ssh", "aws_security_group", []string{"create"}, ``, nil, map[string]any{"name": "ssh", "ingress": []any{
+			map[string]any{"from_port": 22.0, "to_port": 22.0, "protocol": "tcp", "cidr_blocks": []any{"0.0.0.0/0"}, "ipv6_cidr_blocks": []any{}},
+		}}),
+	))
+	got := titles(r)
+	for _, want := range []string{
+		"medium PLAN-DATA-001 `aws_cloudwatch_log_group.fn` will be destroyed",
+		"medium PLAN-NET-001 `aws_security_group.alb` opens",
+		"critical PLAN-NET-001 `aws_security_group.ssh` opens SSH",
+	} {
+		if !strings.Contains(got, want) {
+			t.Errorf("wanted %q in:\n%s", want, got)
+		}
+	}
+}
+
 func TestCreateWithPublicIngressAndWildcardPolicy(t *testing.T) {
 	r := analyze(t, wrap(
 		rc("aws_security_group.web", "aws_security_group", []string{"create"}, ``, nil, map[string]any{"name": "web", "ingress": []any{

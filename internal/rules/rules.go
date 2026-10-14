@@ -280,6 +280,7 @@ func (a *analysis) deleted(c change) {
 		if len(safe) > 0 {
 			sev = findings.High
 		}
+		sev = capSeverity(sev, c.know.DataSeverity)
 		a.add(findings.Finding{
 			RuleID:         RuleDataDestroyed,
 			Severity:       sev,
@@ -350,8 +351,12 @@ func (a *analysis) replaced(c change) {
 	a.transitions(c, before, after)
 }
 
-// replacement raises the finding for the destroy-and-create itself.
+// replacement raises the finding for the destroy-and-create itself, unless
+// the knowledge file says this replacement changes nothing outside Terraform.
 func (a *analysis) replacement(c change, before map[string]any) {
+	if c.know != nil && (c.know.NoObject || anyMatches(c.know.ReplaceRoutine, before)) {
+		return
+	}
 	reason := a.replaceReason(c)
 	order := ""
 	if c.rc.Change.CreateBeforeDestroy() {
@@ -363,6 +368,7 @@ func (a *analysis) replacement(c change, before map[string]any) {
 		if len(safe) > 0 || kept != "" {
 			sev = findings.High
 		}
+		sev = capSeverity(sev, c.know.DataSeverity)
 		if kept != "" {
 			safe = append(safe, kept)
 		}
@@ -437,6 +443,24 @@ func (a *analysis) valueChange(c change, path string) string {
 
 // conditions evaluates mitigations and safeguards; kept is the message of a
 // safeguard that keeps the data entirely (skip_destroy and the like).
+// anyMatches reports whether any condition holds for the attributes.
+func anyMatches(cs []knowledge.Condition, attrs map[string]any) bool {
+	for _, c := range cs {
+		if c.Matches(attrs) {
+			return true
+		}
+	}
+	return false
+}
+
+// capSeverity lowers sev to the cap a knowledge file sets, if any.
+func capSeverity(sev findings.Severity, cap string) findings.Severity {
+	if c, ok := findings.Parse(cap); ok && c.Rank() < sev.Rank() {
+		return c
+	}
+	return sev
+}
+
 func conditions(k *knowledge.Resource, attrs map[string]any) (mitigations, safeguards []string, kept string) {
 	for _, m := range k.Mitigations {
 		if m.Matches(attrs) {
@@ -760,7 +784,14 @@ func (a *analysis) ingress(c change) {
 		return
 	}
 	sort.Slice(opened, func(i, j int) bool { return opened[i].String() < opened[j].String() })
+	// Opening a port to the internet is high by default and critical when an
+	// administrative or database service sits on it. Plain HTTP and HTTPS on
+	// their own are what a public load balancer is for, so they are medium:
+	// worth a line, not a failed check.
 	sev := findings.High
+	if onlyWebPorts(opened) {
+		sev = findings.Medium
+	}
 	var descs []string
 	var services []string
 	for _, r := range opened {
@@ -789,6 +820,16 @@ func (a *analysis) ingress(c change) {
 		Tags:           []string{c.rc.Type, "network", "public-ingress"},
 		Metadata:       map[string]any{"resource_type": c.rc.Type, "opened": descs},
 	})
+}
+
+// onlyWebPorts reports whether every opened rule is tcp 80 or 443 alone.
+func onlyWebPorts(rules []ingressRule) bool {
+	for _, r := range rules {
+		if r.proto != "tcp" || r.from != r.to || (r.from != 80 && r.from != 443) {
+			return false
+		}
+	}
+	return len(rules) > 0
 }
 
 // joinAnd writes a list the way a sentence does: "SSH", "SSH and RDP",
@@ -928,6 +969,10 @@ func (a *analysis) routine(changes []change) {
 			key = c.rc.Type + "|update|" + strings.Join(attrs, ",")
 		case plan.Create:
 			key = c.rc.Type + "|create"
+		case plan.Replace:
+			// Only a replacement the knowledge file calls routine reaches here;
+			// every other one raised a finding above.
+			key = c.rc.Type + "|replace"
 		case plan.Forget:
 			key = c.rc.Type + "|forget"
 		default:
@@ -958,6 +1003,8 @@ func (a *analysis) routine(changes []change) {
 		switch g.kind {
 		case plan.Create:
 			summary = "created"
+		case plan.Replace:
+			summary = "replaced; nothing outside Terraform changes"
 		case plan.Forget:
 			summary = "removed from state but not destroyed"
 		default:
