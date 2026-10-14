@@ -90,7 +90,8 @@ request up to date. GitLab CI and Azure DevOps snippets are in [`docs/ci/`](docs
 | `PLAN-RENAME-001` | A resource was renamed in code without a `moved` block: the plan destroys one address and creates another with the same name. |
 | `PLAN-REPLACE-001` | Anything else replaced, with the attribute that forced it and the service effect (new DNS name, new IP, dependent resources). A replacement that changes nothing outside Terraform, such as a certificate validation wait or an underscore-named DNS record, is listed as routine instead. |
 | `PLAN-DISRUPT-001` | An in-place update that still interrupts service: an instance class change, a `user_data` change that stops and starts the instance, an RDS identifier rename that changes the endpoint. |
-| `PLAN-IAM-001` | A policy, trust policy or resource policy got wider: wildcard actions, `Resource = "*"`, `Principal = "*"`, a removed or loosened condition, a federated trust with no `sub`. |
+| `PLAN-IAM-001` | A policy, trust policy or resource policy got wider: wildcard actions, `Resource = "*"`, `Principal = "*"`, a removed or loosened condition, the same action on a broader resource, an escalation primitive such as `iam:PassRole`, a web-identity trust with no `sub`. |
+| `PLAN-IAM-002` | A policy document that is not known until apply, so it was not assessed. |
 | `PLAN-NET-001` | Ingress opened to `0.0.0.0/0` or `::/0`, with the port and service named. |
 | `PLAN-EXPOSE-001` | A protection turned off or an exposure flag turned on: public access block, encryption, deletion protection, logging, `publicly_accessible`. |
 | `PLAN-DELETE-001` | Other deletions, raised when the resource is protective (a trail, a flow log, a public access block). |

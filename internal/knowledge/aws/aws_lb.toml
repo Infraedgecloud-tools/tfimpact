@@ -16,3 +16,9 @@ attr = "drop_invalid_header_fields"
 unsafe = false
 message = "invalid HTTP headers are no longer dropped"
 severity = "low"
+# The attribute exists on every aws_lb but only an application load balancer
+# reads it; a network load balancer carries the default false forever.
+[flag.only]
+attr = "load_balancer_type"
+equals = "application"
+message = "application load balancer"

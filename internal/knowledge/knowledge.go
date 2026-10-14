@@ -121,6 +121,10 @@ type Flag struct {
 	Unsafe   any    `toml:"unsafe"`
 	Message  string `toml:"message"`
 	Severity string `toml:"severity"` // default high
+	// Only restricts the flag to resources matching a condition: rotation
+	// applies to symmetric KMS keys, header dropping to application load
+	// balancers. Its message is not shown.
+	Only *Condition `toml:"only"`
 }
 
 // Base is the set of resource knowledge, keyed by type.

@@ -24,6 +24,7 @@ const (
 	RuleDeleted       = "PLAN-DELETE-001"  // other resource destroyed
 	RuleDisruptive    = "PLAN-DISRUPT-001" // in-place change with a service effect
 	RulePolicyWidened = "PLAN-IAM-001"     // IAM policy document widened
+	RulePolicyUnknown = "PLAN-IAM-002"     // IAM policy document not known until apply
 	RuleIngressOpened = "PLAN-NET-001"     // ingress opened to the world
 	RuleExposure      = "PLAN-EXPOSE-001"  // protection removed or exposure flag set
 )
@@ -298,6 +299,9 @@ func (a *analysis) deleted(c change) {
 	effect := ""
 	domain := "change"
 	recommendation := "Confirm nothing outside this configuration still depends on it."
+	if c.know == nil {
+		effect = " " + unknownTypeNote
+	}
 	if c.know != nil && c.know.DowntimeOnReplace {
 		sev = findings.Medium
 		domain = "availability"
@@ -319,9 +323,30 @@ func (a *analysis) deleted(c change) {
 		Recommendation: recommendation,
 		Domain:         domain,
 		Path:           ptr(c.rc.Address),
-		Tags:           []string{c.rc.Type, "destroy"},
+		Tags:           tagsFor(c, "destroy"),
 		Metadata:       map[string]any{"resource_type": c.rc.Type, "action_reason": c.rc.ActionReason},
 	})
+}
+
+// flagApplies reports whether a flag's "only" condition, if it has one,
+// holds for the resource: key rotation exists for symmetric keys only, and
+// header dropping for application load balancers only.
+func flagApplies(f knowledge.Flag, attrs map[string]any) bool {
+	return f.Only == nil || f.Only.Matches(attrs)
+}
+
+// unknownTypeNote is appended when tfimpact has no knowledge file for the
+// type: a low finding then means "nothing known", not "nothing to worry
+// about".
+const unknownTypeNote = "tfimpact has no knowledge of this resource type, so it cannot say whether data or a protection goes with it."
+
+// tagsFor adds the unknown-type tag when there is no knowledge file.
+func tagsFor(c change, tags ...string) []string {
+	out := append([]string{c.rc.Type}, tags...)
+	if c.know == nil {
+		out = append(out, "unknown-type")
+	}
+	return out
 }
 
 func deleteReason(reason string) string {
@@ -391,6 +416,9 @@ func (a *analysis) replacement(c change, before map[string]any) {
 		sev = findings.High
 		effect = " " + capitalise(c.know.Downtime) + "."
 	}
+	if c.know == nil {
+		effect = " " + unknownTypeNote
+	}
 	a.add(findings.Finding{
 		RuleID:         RuleReplaced,
 		Severity:       sev,
@@ -399,7 +427,7 @@ func (a *analysis) replacement(c change, before map[string]any) {
 		Recommendation: "Check that the identifiers other systems hold for this resource (ARN, ID, DNS name, IP) are not referenced outside Terraform, or plan a cutover.",
 		Domain:         "availability",
 		Path:           ptr(c.rc.Address),
-		Tags:           []string{c.rc.Type, "replace"},
+		Tags:           tagsFor(c, "replace"),
 		Metadata:       map[string]any{"resource_type": c.rc.Type, "replace_paths": c.rc.Change.ReplacePathStrings(), "action_reason": c.rc.ActionReason},
 	})
 }
@@ -548,7 +576,7 @@ func (a *analysis) updated(c change) {
 func (a *analysis) transitions(c change, before, after map[string]any) {
 	if c.know != nil {
 		for _, f := range c.know.Flags {
-			if !c.tops[knowledge.Top(f.Attr)] {
+			if !c.tops[knowledge.Top(f.Attr)] || !flagApplies(f, after) {
 				continue
 			}
 			av, _ := knowledge.LookupPath(after, f.Attr)
@@ -570,6 +598,9 @@ func (a *analysis) created(c change) {
 	after := c.rc.Change.AfterMap()
 	if c.know != nil {
 		for _, f := range c.know.Flags {
+			if !flagApplies(f, after) {
+				continue
+			}
 			if v, ok := knowledge.LookupPath(after, f.Attr); ok && equalValue(v, f.Unsafe) {
 				a.exposure(c, f, "created with ")
 			}
@@ -587,18 +618,23 @@ func (a *analysis) exposure(c change, f knowledge.Flag, prefix string) {
 		sev = s
 	}
 	observed := fmt.Sprintf("`%s` changes %s.", f.Attr, a.pathChange(c, f.Attr))
+	title := fmt.Sprintf("`%s`: %s", c.rc.Address, f.Message)
 	if c.kind == plan.Create {
+		// A flag's message describes a transition ("deletion protection is
+		// being turned off"). Nothing is turned off on a new resource, so
+		// the title states the fact and the message explains the flag.
 		v, _ := knowledge.LookupPath(c.rc.Change.AfterMap(), f.Attr)
 		shown := "(value hidden)"
 		if !a.opts.NoValues {
 			shown = sensitive.Format(sensitive.Mask(v, nil))
 		}
-		observed = fmt.Sprintf("`%s` is set to %s on creation.", f.Attr, shown)
+		title = fmt.Sprintf("`%s` is created with `%s` = %s", c.rc.Address, f.Attr, shown)
+		observed = fmt.Sprintf("`%s` is set to %s on creation; on an existing %s this is what the flag means: %s.", f.Attr, shown, c.know.Display, f.Message)
 	}
 	a.add(findings.Finding{
 		RuleID:         RuleExposure,
 		Severity:       sev,
-		Title:          fmt.Sprintf("`%s`: %s", c.rc.Address, f.Message),
+		Title:          title,
 		Observed:       observed,
 		Recommendation: "Confirm this is intended and recorded in the change; if not, revert it.",
 		Domain:         "security",
@@ -658,7 +694,21 @@ func (a *analysis) policy(c change, pa knowledge.PolicyAttr, beforeV, afterV any
 	}
 	if u, ok := sensitive.Lookup(c.rc.Change.AfterUnknown, []any{pa.Attr}); ok {
 		if b, ok := u.(bool); ok && b {
-			return // policy not known until apply
+			// A policy built from a data source or a template is known only
+			// at apply. Saying so is better than a routine line that looks
+			// like it was checked.
+			a.add(findings.Finding{
+				RuleID:         RulePolicyUnknown,
+				Severity:       findings.Low,
+				Title:          fmt.Sprintf("`%s`: `%s` is not known until apply, so it was not assessed", c.rc.Address, pa.Attr),
+				Observed:       fmt.Sprintf("The %s's `%s` comes from a value the plan cannot show (a data source, a template or an attribute of another resource).", displayName(c), pa.Attr),
+				Recommendation: "Review the policy document in the pull request, or build it with `data.aws_iam_policy_document` in the same configuration so the plan carries it.",
+				Domain:         "security",
+				Path:           ptr(c.rc.Address),
+				Tags:           []string{c.rc.Type, "iam", pa.Kind, "unknown"},
+				Metadata:       map[string]any{"resource_type": c.rc.Type, "attribute": pa.Attr, "policy_kind": pa.Kind},
+			})
+			return
 		}
 	}
 	afterDoc, ok := afterV.(string)

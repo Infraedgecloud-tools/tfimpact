@@ -238,11 +238,17 @@ func TestCreateWithPublicIngressAndWildcardPolicy(t *testing.T) {
 	}
 }
 
-func TestUnknownPolicyValueIsSkipped(t *testing.T) {
+// A policy unknown until apply is not assessed, and the report says so at
+// low rather than passing the resource off as routine.
+func TestUnknownPolicyValueIsReportedNotAssessed(t *testing.T) {
 	doc := `{"format_version":"1.2","resource_changes":[{"address":"aws_iam_policy.p","mode":"managed","type":"aws_iam_policy","change":{"actions":["update"],"before":{"name":"p","policy":"{}"},"after":{"name":"p"},"after_unknown":{"policy":true}}}]}`
 	r := analyze(t, doc)
-	if len(r.Active()) != 0 {
-		t.Fatalf("a policy unknown until apply must not produce a finding: %s", titles(r))
+	got := titles(r)
+	if strings.Contains(got, "PLAN-IAM-001") {
+		t.Fatalf("a policy unknown until apply must not be judged widened: %s", got)
+	}
+	if !strings.Contains(got, "low PLAN-IAM-002 `aws_iam_policy.p`: `policy` is not known until apply") {
+		t.Fatalf("expected the not-assessed finding: %s", got)
 	}
 }
 
