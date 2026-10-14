@@ -6,6 +6,7 @@ import (
 	"flag"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -157,6 +158,63 @@ func TestNoValues(t *testing.T) {
 	}
 	if !strings.Contains(out, "hash_key") {
 		t.Errorf("--no-values should still name attributes:\n%s", out)
+	}
+}
+
+// A directory is the commonest wrong argument: the hint says what to run.
+func TestDirectoryGetsAHint(t *testing.T) {
+	var out, errb strings.Builder
+	code := run([]string{"explain", t.TempDir()}, nil, &out, &errb)
+	if code != exitUsage || !strings.Contains(errb.String(), "terraform plan -out=tfplan") {
+		t.Fatalf("code %d, stderr %q", code, errb.String())
+	}
+}
+
+// A saved plan is a zip. With terraform on PATH it is read through
+// `terraform show -json` on the plan's absolute path, in the current
+// directory; when that fails, the error carries terraform's own message.
+func TestSavedPlanIsReadThroughShow(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("the fake terraform is a shell script")
+	}
+	dir := t.TempDir()
+	planPath := filepath.Join(dir, "tfplan")
+	if err := os.WriteFile(planPath, []byte("PK\x03\x04not really a zip"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	fixture, err := os.ReadFile(filepath.Join("..", "..", "testdata", "plans", "noisy", "plan.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "plan.json"), fixture, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	// The fake records its arguments and working directory, then prints the
+	// fixture, which is what a real show -json would produce.
+	fake := filepath.Join(dir, "fake-terraform")
+	script := "#!/bin/sh\nprintf '%s %s' \"$PWD\" \"$*\" > \"" + filepath.Join(dir, "called") + "\"\ncat \"" + filepath.Join(dir, "plan.json") + "\"\n"
+	if err := os.WriteFile(fake, []byte(script), 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	t.Setenv("TFIMPACT_TERRAFORM", fake)
+	var out, errb strings.Builder
+	if code := run([]string{"explain", planPath, "--format", "text"}, nil, &out, &errb); code != exitOK {
+		t.Fatalf("code %d, stderr %q", code, errb.String())
+	}
+	if !strings.Contains(out.String(), "destroys data") {
+		t.Fatalf("expected the fixture's findings, got:\n%s", out.String())
+	}
+	called, _ := os.ReadFile(filepath.Join(dir, "called"))
+	if !strings.HasSuffix(string(called), "show -no-color -json "+planPath) {
+		t.Fatalf("show was run as %q, wanted `show -no-color -json %s`", string(called), planPath)
+	}
+
+	t.Setenv("TFIMPACT_TERRAFORM", filepath.Join(dir, "missing"))
+	out.Reset()
+	errb.Reset()
+	if code := run([]string{"explain", planPath}, nil, &out, &errb); code != exitUsage || !strings.Contains(errb.String(), "failed") {
+		t.Fatalf("a missing terraform should fail with its error: code %d, stderr %q", code, errb.String())
 	}
 }
 
