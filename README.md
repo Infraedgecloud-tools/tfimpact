@@ -88,7 +88,7 @@ request up to date. GitLab CI and Azure DevOps snippets are in [`docs/ci/`](docs
 |---|---|
 | `PLAN-DATA-001` / `PLAN-DATA-002` | A resource that holds data is destroyed or replaced. Names what is lost and whether a final snapshot, deletion protection, point-in-time recovery or a recovery window softens it. |
 | `PLAN-RENAME-001` | A resource was renamed in code without a `moved` block: the plan destroys one address and creates another with the same name. |
-| `PLAN-REPLACE-001` | Anything else replaced, with the attribute that forced it and the service effect (new DNS name, new IP, dependent resources). |
+| `PLAN-REPLACE-001` | Anything else replaced, with the attribute that forced it and the service effect (new DNS name, new IP, dependent resources). A replacement that changes nothing outside Terraform, such as a certificate validation wait or an underscore-named DNS record, is listed as routine instead. |
 | `PLAN-DISRUPT-001` | An in-place update that still interrupts service: an instance class change, a `user_data` change that stops and starts the instance, an RDS identifier rename that changes the endpoint. |
 | `PLAN-IAM-001` | A policy, trust policy or resource policy got wider: wildcard actions, `Resource = "*"`, `Principal = "*"`, a removed or loosened condition, a federated trust with no `sub`. |
 | `PLAN-NET-001` | Ingress opened to `0.0.0.0/0` or `::/0`, with the port and service named. |
