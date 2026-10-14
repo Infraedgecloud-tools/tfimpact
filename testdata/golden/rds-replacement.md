@@ -7,4 +7,4 @@
 
 - **`aws_db_instance.app` will be destroyed and recreated, losing the database and everything stored in it.** The RDS database instance is replaced because `storage_encrypted` (false → true) cannot be changed in place. No final snapshot will be taken (`skip_final_snapshot` = true); deletion protection is off. _If the change is intended, take a snapshot or backup first and plan the cutover. If the replacement is a surprise, revert `storage_encrypted`. `lifecycle { prevent_destroy = true }` makes Terraform refuse a plan like this._ `PLAN-DATA-002`
 
-<sub>tfimpact test by [InfraEdge](https://infraedge.org) · deterministic, runs on the runner, sends nothing anywhere · sensitive values masked</sub>
+<sub>tfimpact test by [InfraEdge](https://infraedgecloud.com) · deterministic, runs on the runner, sends nothing anywhere · sensitive values masked</sub>

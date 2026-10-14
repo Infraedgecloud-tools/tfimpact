@@ -12,4 +12,4 @@
 - **`aws_iam_policy.deploy`: the policy is widened.** `policy` now grants `s3:*` on all resources. _Scope actions, resources and principals to what the workload needs and keep the conditions. If the widening is intended, say why in the change._ `PLAN-IAM-001`
 - **`aws_iam_role.deploy`: the trust policy is widened.** `assume_role_policy` now widens the `token.actions.githubusercontent.com:sub` condition from `repo:acme/platform:ref:refs/heads/main` to `repo:acme/*`. _Scope actions, resources and principals to what the workload needs and keep the conditions. If the widening is intended, say why in the change._ `PLAN-IAM-001`
 
-<sub>tfimpact test by [InfraEdge](https://infraedge.org) · deterministic, runs on the runner, sends nothing anywhere · sensitive values masked</sub>
+<sub>tfimpact test by [InfraEdge](https://infraedgecloud.com) · deterministic, runs on the runner, sends nothing anywhere · sensitive values masked</sub>

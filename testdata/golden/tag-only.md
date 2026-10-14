@@ -11,4 +11,4 @@
 - `aws_sqs_queue.jobs`: tags only
 - `aws_ssm_parameter.feature_flag`: tags only
 
-<sub>tfimpact test by [InfraEdge](https://infraedge.org) · deterministic, runs on the runner, sends nothing anywhere · sensitive values masked</sub>
+<sub>tfimpact test by [InfraEdge](https://infraedgecloud.com) · deterministic, runs on the runner, sends nothing anywhere · sensitive values masked</sub>
