@@ -1,0 +1,442 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/infraedgecloud-tools/tfimpact/main/docs/findings.schema.json",
+  "title": "tfimpact findings",
+  "description": "The envelope `tfimpact explain --format json` (and `--json FILE`) writes: InfraEdge findings schema 1.1. Rule IDs never change meaning; a rule that needs different semantics gets a new ID.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "tool",
+    "tool_version",
+    "generated_at",
+    "source",
+    "policy",
+    "summary",
+    "findings",
+    "routine",
+    "moves",
+    "drift",
+    "privacy"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.1"
+    },
+    "tool": {
+      "const": "tfimpact"
+    },
+    "tool_version": {
+      "type": "string"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "root",
+        "terraform_version",
+        "format_version"
+      ],
+      "properties": {
+        "kind": {
+          "const": "terraform-plan"
+        },
+        "root": {
+          "type": "string",
+          "description": "The plan as it was named on the command line; \"-\" for stdin."
+        },
+        "terraform_version": {
+          "type": "string"
+        },
+        "format_version": {
+          "type": "string",
+          "description": "The plan JSON format_version; major version 1."
+        }
+      }
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "configured",
+        "path",
+        "exclusions"
+      ],
+      "properties": {
+        "configured": {
+          "type": "boolean"
+        },
+        "path": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The .tfimpact.toml that was read, if any."
+        },
+        "exclusions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "findings",
+        "suppressed_findings",
+        "total_findings",
+        "scanned_files",
+        "skipped_files",
+        "excluded_files",
+        "severity",
+        "resources",
+        "changes"
+      ],
+      "properties": {
+        "findings": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Unsuppressed findings."
+        },
+        "suppressed_findings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "total_findings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "scanned_files": {
+          "type": "integer"
+        },
+        "skipped_files": {
+          "type": "integer"
+        },
+        "excluded_files": {
+          "type": "integer"
+        },
+        "severity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "critical",
+            "high",
+            "medium",
+            "low"
+          ],
+          "properties": {
+            "critical": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "high": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "medium": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "low": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "resources": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Resources in the plan, changed or not."
+        },
+        "changes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "create",
+            "update",
+            "delete",
+            "replace",
+            "no_op",
+            "read",
+            "forget",
+            "move",
+            "import",
+            "drift",
+            "tag_only"
+          ],
+          "properties": {
+            "create": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "update": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "delete": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "replace": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "no_op": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "read": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "forget": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "move": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "import": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "drift": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "tag_only": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/finding"
+      }
+    },
+    "routine": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/routine"
+      }
+    },
+    "moves": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/move"
+      }
+    },
+    "drift": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/drift"
+      }
+    },
+    "privacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "uploaded",
+        "telemetry",
+        "note"
+      ],
+      "properties": {
+        "uploaded": {
+          "const": false
+        },
+        "telemetry": {
+          "const": false
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "severity": {
+      "type": "string",
+      "enum": [
+        "critical",
+        "high",
+        "medium",
+        "low"
+      ]
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "rule_id",
+        "product",
+        "severity",
+        "title",
+        "observed",
+        "recommendation",
+        "domain",
+        "path",
+        "line",
+        "tags",
+        "metadata",
+        "suppressed",
+        "suppression_reason",
+        "suppression_expires"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^fnd_[0-9a-f]{16}$",
+          "description": "Stable across runs for the same rule, address and observation."
+        },
+        "rule_id": {
+          "type": "string",
+          "pattern": "^PLAN-[A-Z]+-[0-9]{3}$"
+        },
+        "product": {
+          "const": "tfimpact"
+        },
+        "severity": {
+          "$ref": "#/$defs/severity"
+        },
+        "title": {
+          "type": "string"
+        },
+        "observed": {
+          "type": "string",
+          "description": "What the plan shows, with sensitive values masked."
+        },
+        "recommendation": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "string",
+          "enum": [
+            "data",
+            "security",
+            "availability",
+            "change"
+          ]
+        },
+        "path": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The resource address."
+        },
+        "line": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Always null: a plan has no source positions."
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Rule-specific detail: resource_type, replace_paths, widenings, opened ports, safeguards."
+        },
+        "suppressed": {
+          "type": "boolean"
+        },
+        "suppression_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "suppression_expires": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date"
+        }
+      }
+    },
+    "routine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "addresses",
+        "summary"
+      ],
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "addresses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "summary": {
+          "type": "string"
+        }
+      }
+    },
+    "move": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "from",
+        "to"
+      ],
+      "properties": {
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        }
+      }
+    },
+    "drift": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "address",
+        "actions",
+        "changed_attributes"
+      ],
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "changed_attributes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -217,9 +217,33 @@ func writeRoutineMarkdown(b *strings.Builder, g findings.Routine) {
 }
 
 // Text writes the terminal form.
-func Text(w io.Writer, r *findings.Result) error {
+// Text writes the plain report; TextColor adds ANSI colour for a terminal.
+func Text(w io.Writer, r *findings.Result) error { return TextColor(w, r, false) }
+
+// ANSI sequences for the terminal report. Only headings and the headline
+// are coloured: the words carry the meaning, the colour just finds them.
+var (
+	ansiReset = "\x1b[0m"
+	ansiBold  = "\x1b[1m"
+	ansiDim   = "\x1b[2m"
+	ansiSev   = map[findings.Severity]string{
+		findings.Critical: "\x1b[1;31m",
+		findings.High:     "\x1b[31m",
+		findings.Medium:   "\x1b[33m",
+		findings.Low:      "\x1b[2m",
+	}
+)
+
+// TextColor writes the plain report, with colour when color is true.
+func TextColor(w io.Writer, r *findings.Result, color bool) error {
+	paint := func(code, s string) string {
+		if !color || code == "" {
+			return s
+		}
+		return code + s + ansiReset
+	}
 	var b strings.Builder
-	fmt.Fprintf(&b, "tfimpact: %s\n", Headline(r))
+	fmt.Fprintf(&b, "%s %s\n", paint(ansiBold, "tfimpact:"), paint(ansiBold, Headline(r)))
 	fmt.Fprintf(&b, "Plan: %s. %s.\n", PlanLine(r.Counts), engine(r))
 	active := r.Active()
 	for _, sev := range severityOrder {
@@ -227,9 +251,9 @@ func Text(w io.Writer, r *findings.Result) error {
 		if len(group) == 0 {
 			continue
 		}
-		fmt.Fprintf(&b, "\n%s (%d)\n", strings.ToUpper(string(sev)), len(group))
+		fmt.Fprintf(&b, "\n%s\n", paint(ansiSev[sev], fmt.Sprintf("%s (%d)", strings.ToUpper(string(sev)), len(group))))
 		for _, f := range group {
-			fmt.Fprintf(&b, "  * %s [%s]\n", strip(f.Title), f.RuleID)
+			fmt.Fprintf(&b, "  * %s %s\n", strip(f.Title), paint(ansiDim, "["+f.RuleID+"]"))
 			fmt.Fprintf(&b, "    %s\n", strip(f.Observed))
 			fmt.Fprintf(&b, "    -> %s\n", strip(f.Recommendation))
 		}
@@ -239,7 +263,7 @@ func Text(w io.Writer, r *findings.Result) error {
 		for _, g := range r.Routine {
 			total += len(g.Addresses)
 		}
-		fmt.Fprintf(&b, "\nROUTINE (%d)\n", total)
+		fmt.Fprintf(&b, "\n%s\n", paint(ansiDim, fmt.Sprintf("ROUTINE (%d)", total)))
 		for _, g := range r.Routine {
 			if len(g.Addresses) <= 3 {
 				fmt.Fprintf(&b, "  * %s: %s\n", strings.Join(g.Addresses, ", "), strip(g.Summary))
