@@ -58,13 +58,13 @@
     },
     {
       "domain": "security",
-      "id": "fnd_55f05067a3d8af5d",
+      "id": "fnd_fb6c091a4e67f231",
       "line": null,
       "metadata": {
         "attribute": "map_public_ip_on_launch",
         "resource_type": "aws_subnet"
       },
-      "observed": "`map_public_ip_on_launch` is set to true on creation.",
+      "observed": "`map_public_ip_on_launch` is set to true on creation; on an existing subnet this is what the flag means: instances launched in this subnet get public IP addresses by default.",
       "path": "aws_subnet.public",
       "product": "tfimpact",
       "recommendation": "Confirm this is intended and recorded in the change; if not, revert it.",
@@ -78,7 +78,33 @@
         "exposure",
         "map_public_ip_on_launch"
       ],
-      "title": "`aws_subnet.public`: instances launched in this subnet get public IP addresses by default"
+      "title": "`aws_subnet.public` is created with `map_public_ip_on_launch` = true"
+    },
+    {
+      "domain": "security",
+      "id": "fnd_d281ddc5bb36a9a8",
+      "line": null,
+      "metadata": {
+        "attribute": "policy",
+        "policy_kind": "resource",
+        "resource_type": "aws_sqs_queue"
+      },
+      "observed": "The SQS queue's `policy` comes from a value the plan cannot show (a data source, a template or an attribute of another resource).",
+      "path": "aws_sqs_queue.jobs",
+      "product": "tfimpact",
+      "recommendation": "Review the policy document in the pull request, or build it with `data.aws_iam_policy_document` in the same configuration so the plan carries it.",
+      "rule_id": "PLAN-IAM-002",
+      "severity": "low",
+      "suppressed": false,
+      "suppression_expires": null,
+      "suppression_reason": null,
+      "tags": [
+        "aws_sqs_queue",
+        "iam",
+        "resource",
+        "unknown"
+      ],
+      "title": "`aws_sqs_queue.jobs`: `policy` is not known until apply, so it was not assessed"
     }
   ],
   "generated_at": "2026-10-10T12:00:00Z",
@@ -116,13 +142,6 @@
       "summary": "created"
     },
     {
-      "type": "aws_sqs_queue",
-      "addresses": [
-        "aws_sqs_queue.jobs"
-      ],
-      "summary": "created"
-    },
-    {
       "type": "aws_vpc",
       "addresses": [
         "aws_vpc.main"
@@ -152,18 +171,18 @@
       "tag_only": 0
     },
     "excluded_files": 0,
-    "findings": 3,
+    "findings": 4,
     "resources": 8,
     "scanned_files": 1,
     "severity": {
       "critical": 1,
       "high": 1,
-      "low": 0,
+      "low": 1,
       "medium": 1
     },
     "skipped_files": 0,
     "suppressed_findings": 0,
-    "total_findings": 3
+    "total_findings": 4
   },
   "tool": "tfimpact",
   "tool_version": "test"

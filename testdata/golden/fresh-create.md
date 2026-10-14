@@ -1,5 +1,5 @@
 <!-- tfimpact -->
-## tfimpact: 3 changes widen exposure, 5 routine
+## tfimpact: 3 changes widen exposure, 1 minor, 4 routine
 
 **Plan:** 8 to add, 0 to change, 0 to destroy · Terraform/OpenTofu 1.15.5 · 8 resources
 
@@ -13,14 +13,17 @@
 
 ### 🟡 Medium (1)
 
-- **`aws_subnet.public`: instances launched in this subnet get public IP addresses by default.** `map_public_ip_on_launch` is set to true on creation. _Confirm this is intended and recorded in the change; if not, revert it._ `PLAN-EXPOSE-001`
+- **`aws_subnet.public` is created with `map_public_ip_on_launch` = true.** `map_public_ip_on_launch` is set to true on creation; on an existing subnet this is what the flag means: instances launched in this subnet get public IP addresses by default. _Confirm this is intended and recorded in the change; if not, revert it._ `PLAN-EXPOSE-001`
 
-### Routine changes (5)
+### ⚪ Low (1)
+
+- **`aws_sqs_queue.jobs`: `policy` is not known until apply, so it was not assessed.** The SQS queue's `policy` comes from a value the plan cannot show (a data source, a template or an attribute of another resource). _Review the policy document in the pull request, or build it with `data.aws_iam_policy_document` in the same configuration so the plan carries it._ `PLAN-IAM-002`
+
+### Routine changes (4)
 
 - `aws_cloudwatch_log_group.app`: created
 - `aws_iam_role.app`: created
 - `aws_s3_bucket.assets`: created
-- `aws_sqs_queue.jobs`: created
 - `aws_vpc.main`: created
 
 <sub>tfimpact test by [InfraEdge](https://infraedge.org) · deterministic, runs on the runner, sends nothing anywhere · sensitive values masked</sub>

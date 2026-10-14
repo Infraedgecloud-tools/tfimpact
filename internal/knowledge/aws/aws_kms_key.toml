@@ -25,6 +25,12 @@ attr = "enable_key_rotation"
 unsafe = false
 message = "automatic key rotation is being turned off"
 severity = "low"
+# Rotation exists for symmetric encryption keys only; an asymmetric or HMAC
+# key cannot rotate, so the flag would fire on every one of them.
+[flag.only]
+attr = "customer_master_key_spec"
+equals = "SYMMETRIC_DEFAULT"
+message = "symmetric encryption key"
 
 [[policy]]
 attr = "policy"

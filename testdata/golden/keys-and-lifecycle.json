@@ -52,6 +52,32 @@
         "replace"
       ],
       "title": "`aws_iam_role.deploy` will be destroyed and recreated"
+    },
+    {
+      "domain": "security",
+      "id": "fnd_08fa9cf9ef6c6fc0",
+      "line": null,
+      "metadata": {
+        "attribute": "policy",
+        "policy_kind": "resource",
+        "resource_type": "aws_sqs_queue"
+      },
+      "observed": "The SQS queue's `policy` comes from a value the plan cannot show (a data source, a template or an attribute of another resource).",
+      "path": "aws_sqs_queue.work[\"order_events\"]",
+      "product": "tfimpact",
+      "recommendation": "Review the policy document in the pull request, or build it with `data.aws_iam_policy_document` in the same configuration so the plan carries it.",
+      "rule_id": "PLAN-IAM-002",
+      "severity": "low",
+      "suppressed": false,
+      "suppression_expires": null,
+      "suppression_reason": null,
+      "tags": [
+        "aws_sqs_queue",
+        "iam",
+        "resource",
+        "unknown"
+      ],
+      "title": "`aws_sqs_queue.work[\"order_events\"]`: `policy` is not known until apply, so it was not assessed"
     }
   ],
   "generated_at": "2026-10-10T12:00:00Z",
@@ -97,18 +123,18 @@
       "tag_only": 0
     },
     "excluded_files": 0,
-    "findings": 2,
+    "findings": 3,
     "resources": 6,
     "scanned_files": 1,
     "severity": {
       "critical": 1,
       "high": 0,
-      "low": 0,
+      "low": 1,
       "medium": 1
     },
     "skipped_files": 0,
     "suppressed_findings": 0,
-    "total_findings": 2
+    "total_findings": 3
   },
   "tool": "tfimpact",
   "tool_version": "test"

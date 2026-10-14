@@ -1,5 +1,5 @@
 <!-- tfimpact -->
-## tfimpact: 1 change destroys data, 1 replaced, 1 routine
+## tfimpact: 1 change destroys data, 1 replaced, 1 minor, 1 routine
 
 **Plan:** 2 to add, 0 to change, 2 to destroy (1 replacement, 1 forgotten, 2 unchanged) · Terraform/OpenTofu 1.15.5 · 6 resources
 
@@ -10,6 +10,10 @@
 ### 🟡 Medium (1)
 
 - **`aws_iam_role.deploy` will be destroyed and recreated.** The IAM role is replaced because `name` ("fixture-lifecycle-deploy-v1" → "fixture-lifecycle-deploy-v2") cannot be changed in place. The new object is created before the old one is destroyed (create_before_destroy). _Check that the identifiers other systems hold for this resource (ARN, ID, DNS name, IP) are not referenced outside Terraform, or plan a cutover._ `PLAN-REPLACE-001`
+
+### ⚪ Low (1)
+
+- **`aws_sqs_queue.work["order_events"]`: `policy` is not known until apply, so it was not assessed.** The SQS queue's `policy` comes from a value the plan cannot show (a data source, a template or an attribute of another resource). _Review the policy document in the pull request, or build it with `data.aws_iam_policy_document` in the same configuration so the plan carries it._ `PLAN-IAM-002`
 
 ### Routine changes (1)
 

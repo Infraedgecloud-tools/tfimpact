@@ -56,8 +56,8 @@ func Parse(doc string) (*Policy, error) {
 		st := Statement{
 			Sid:           str(m["Sid"]),
 			Effect:        str(m["Effect"]),
-			Actions:       lower(list(m["Action"])),
-			NotActions:    lower(list(m["NotAction"])),
+			Actions:       sorted(list(m["Action"])),
+			NotActions:    sorted(list(m["NotAction"])),
 			Resources:     list(m["Resource"]),
 			NotResources:  list(m["NotResource"]),
 			Principals:    principals(m["Principal"]),
@@ -91,13 +91,36 @@ func list(v any) []string {
 	return nil
 }
 
-func lower(in []string) []string {
-	out := make([]string, len(in))
-	for i, s := range in {
-		out[i] = strings.ToLower(s)
-	}
+// Action names keep the case the policy wrote them in, so a report prints
+// iam:PassRole and not iam:passrole. Comparisons go through key().
+func sorted(in []string) []string {
+	out := append([]string(nil), in...)
 	sort.Strings(out)
 	return out
+}
+
+// key is the comparison form of an action name: IAM matches actions
+// case-insensitively.
+func key(action string) string { return strings.ToLower(action) }
+
+// escalation lists actions that let a principal gain more than the policy
+// grants directly. Adding one is never just "adds 1 action".
+var escalation = map[string]string{
+	"iam:passrole":                "lets this principal hand a role, and its permissions, to a service",
+	"iam:createpolicyversion":     "lets this principal rewrite a policy it is allowed to edit",
+	"iam:setdefaultpolicyversion": "lets this principal switch a policy to an older, possibly wider, version",
+	"iam:attachrolepolicy":        "lets this principal attach policies to roles",
+	"iam:attachuserpolicy":        "lets this principal attach policies to users",
+	"iam:attachgrouppolicy":       "lets this principal attach policies to groups",
+	"iam:putrolepolicy":           "lets this principal write inline policies on roles",
+	"iam:putuserpolicy":           "lets this principal write inline policies on users",
+	"iam:putgrouppolicy":          "lets this principal write inline policies on groups",
+	"iam:updateassumerolepolicy":  "lets this principal change who may assume a role",
+	"iam:createaccesskey":         "lets this principal mint credentials for users",
+	"iam:createloginprofile":      "lets this principal set console passwords",
+	"iam:updateloginprofile":      "lets this principal reset console passwords",
+	"iam:addusertogroup":          "lets this principal join users to groups",
+	"sts:assumerole":              "lets this principal take on other roles",
 }
 
 func principals(v any) []string {
@@ -165,7 +188,6 @@ func Diff(before, after *Policy, kind string) []Widening {
 	}
 	bGrants := grants(before)
 	bWildActions := map[string]bool{}
-	bStarResource := false
 	bPrincipals := map[string]bool{}
 	for _, s := range before.Statements {
 		if s.Effect != "Allow" {
@@ -173,12 +195,7 @@ func Diff(before, after *Policy, kind string) []Widening {
 		}
 		for _, a := range s.Actions {
 			if isWildcardAction(a) {
-				bWildActions[a] = true
-			}
-		}
-		for _, r := range s.Resources {
-			if r == "*" {
-				bStarResource = true
+				bWildActions[key(a)] = true
 			}
 		}
 		for _, p := range s.Principals {
@@ -199,19 +216,24 @@ func Diff(before, after *Policy, kind string) []Widening {
 			out = append(out, Widening{"high", "allows every resource except a list (NotResource)"})
 		}
 		for _, a := range s.Actions {
-			if isWildcardAction(a) && !bWildActions[a] {
+			if isWildcardAction(a) && !bWildActions[key(a)] {
 				scope := describeResources(s.Resources)
 				out = append(out, Widening{"high", fmt.Sprintf("grants `%s` %s", a, scope)})
 			}
 		}
-		starNow := false
-		for _, r := range s.Resources {
-			if r == "*" {
-				starNow = true
+		// Resource = "*" is judged per action, not per policy: a second
+		// statement that already granted other actions on "*" does not make
+		// a new "*" grant routine.
+		if hasStarResource(s.Resources) && !allWildcard(s.Actions) {
+			var fresh []string
+			for _, a := range s.Actions {
+				if !isWildcardAction(a) && !coveredByWildcard(before, a, "*") {
+					fresh = append(fresh, a)
+				}
 			}
-		}
-		if starNow && !bStarResource && !allWildcard(s.Actions) {
-			out = append(out, Widening{"high", fmt.Sprintf("grants %s on all resources (`Resource = \"*\"`)", quoteList(s.Actions))})
+			if len(fresh) > 0 {
+				out = append(out, Widening{"high", fmt.Sprintf("grants %s on all resources (`Resource = \"*\"`)", quoteList(fresh))})
+			}
 		}
 		for _, p := range s.Principals {
 			if bPrincipals[p] {
@@ -236,15 +258,26 @@ func Diff(before, after *Policy, kind string) []Widening {
 				continue
 			}
 			for _, r := range s.Resources {
-				if !bGrants[a+"|"+r] && !seenNew[a] && !coveredByWildcard(before, a, r) {
-					newActions = append(newActions, a)
-					seenNew[a] = true
+				if bGrants[key(a)+"|"+r] || seenNew[key(a)] || coveredByWildcard(before, a, r) {
+					continue
 				}
+				seenNew[key(a)] = true
+				// The same action on a broader resource is a widening of
+				// scope, not a new action: arn:aws:s3:::b/* to arn:aws:s3:::*.
+				if narrower := narrowerGrant(before, a, r); narrower != "" {
+					out = append(out, Widening{"medium", fmt.Sprintf("widens `%s` from `%s` to `%s`", a, narrower, r)})
+					continue
+				}
+				if why, ok := escalation[key(a)]; ok {
+					out = append(out, Widening{"medium", fmt.Sprintf("adds `%s`, which %s", a, why)})
+					continue
+				}
+				newActions = append(newActions, a)
 			}
 		}
 		if m := match(before, s); m != nil {
 			out = append(out, conditionWidenings(m, &s)...)
-		} else if kind == Trust && isFederated(s) && !hasSubCondition(s) {
+		} else if kind == Trust && isOIDCTrust(s) && !hasSubCondition(s) {
 			out = append(out, Widening{"high", "a federated (OIDC) trust statement has no `sub` condition, so any identity from that provider can assume the role"})
 		}
 	}
@@ -268,14 +301,44 @@ func grants(p *Policy) map[string]bool {
 		}
 		for _, a := range s.Actions {
 			for _, r := range s.Resources {
-				g[a+"|"+r] = true
+				g[key(a)+"|"+r] = true
 			}
 			if len(s.Resources) == 0 {
-				g[a+"|"] = true
+				g[key(a)+"|"] = true
 			}
 		}
 	}
 	return g
+}
+
+func hasStarResource(rs []string) bool {
+	for _, r := range rs {
+		if r == "*" {
+			return true
+		}
+	}
+	return false
+}
+
+// narrowerGrant returns a resource the policy already granted the action
+// on that the new resource pattern covers, or "" if there is none.
+func narrowerGrant(p *Policy, action, resource string) string {
+	for _, s := range p.Statements {
+		if s.Effect != "Allow" {
+			continue
+		}
+		for _, a := range s.Actions {
+			if !matchGlob(a, action) {
+				continue
+			}
+			for _, r := range s.Resources {
+				if r != resource && matchGlob(resource, r) {
+					return r
+				}
+			}
+		}
+	}
+	return ""
 }
 
 func coveredByWildcard(p *Policy, action, resource string) bool {
@@ -298,6 +361,7 @@ func coveredByWildcard(p *Policy, action, resource string) bool {
 }
 
 func matchGlob(pattern, s string) bool {
+	pattern, s = key(pattern), key(s)
 	if pattern == s {
 		return true
 	}
@@ -365,13 +429,31 @@ func sidSuffix(s Statement) string {
 	return ""
 }
 
-func isFederated(s Statement) bool {
+// isOIDCTrust reports whether a trust statement is for a web-identity
+// provider, where a missing sub condition lets anyone the provider knows
+// assume the role. SAML providers and Cognito identity pools are federated
+// too, but they scope on other keys (SAML:aud, cognito-identity:aud and
+// :amr), so the rule does not apply to them.
+func isOIDCTrust(s Statement) bool {
+	federated := false
 	for _, p := range s.Principals {
-		if strings.HasPrefix(p, "Federated:") {
-			return true
+		if !strings.HasPrefix(p, "Federated:") {
+			continue
+		}
+		if strings.Contains(p, "cognito-identity.amazonaws.com") || strings.Contains(p, ":saml-provider/") {
+			return false
+		}
+		federated = true
+	}
+	if !federated {
+		return false
+	}
+	for _, a := range s.Actions {
+		if key(a) == "sts:assumerolewithsaml" {
+			return false
 		}
 	}
-	return false
+	return true
 }
 
 func hasSubCondition(s Statement) bool {

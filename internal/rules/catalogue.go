@@ -17,6 +17,7 @@ var Catalogue = []RuleInfo{
 	{RuleDeleted, "change", "low–high", "A resource is destroyed; raised when the resource is protective (a trail, a flow log, a public access block, an OIDC provider)."},
 	{RuleDisruptive, "availability", "low–high", "An in-place update that still interrupts service: an instance class change, a user_data change that stops and starts the instance, an identifier change that alters an endpoint."},
 	{RulePolicyWidened, "security", "low–critical", "An IAM, trust or resource policy document grants more: wildcard actions, Resource \"*\", Principal \"*\", a removed or loosened condition, a federated trust without a sub condition, or added actions (low)."},
+	{RulePolicyUnknown, "security", "low", "An IAM policy document is not known until apply (a data source, a template, another resource's attribute), so it was not assessed. The finding exists so a routine line never stands in for a check that did not run."},
 	{RuleIngressOpened, "security", "high–critical", "A security group or rule opens ingress to 0.0.0.0/0 or ::/0; critical when the range covers an administrative or database port, or all ports."},
 	{RuleExposure, "security", "low–critical", "A protection is turned off or an exposure flag is turned on: public access block, encryption, deletion protection, logging, publicly_accessible, IMDSv1."},
 }
