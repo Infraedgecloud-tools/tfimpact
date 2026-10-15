@@ -4,7 +4,7 @@ All notable changes to tfimpact. The format follows [Keep a Changelog](https://k
 and the project uses [Semantic Versioning](https://semver.org/). Rule IDs never change
 meaning; a rule that needs different semantics gets a new ID.
 
-## [Unreleased]
+## [0.2.0] - 2026-10-15
 
 ### Added
 - `tfimpact explain tfplan` reads the saved plan `terraform plan -out` wrote, running
