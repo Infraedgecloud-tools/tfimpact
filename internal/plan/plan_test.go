@@ -6,6 +6,11 @@ import (
 )
 
 func TestKind(t *testing.T) {
+	for _, actions := range [][]string{{"create", "delete", "future"}, {"forget", "future"}, {"create", "create"}} {
+		if (Change{Actions: actions}).Kind() != Unknown {
+			t.Error("unsupported action combination must be unknown")
+		}
+	}
 	cases := map[string][]string{
 		string(NoOp): {"no-op"}, string(Create): {"create"}, string(Update): {"update"}, string(Delete): {"delete"},
 		string(Replace): {"delete", "create"}, string(Read): {"read"}, string(Forget): {"forget"},

@@ -5,13 +5,13 @@
 
 ### Routine changes (3)
 
-- `aws_cloudwatch_log_group.app`: `retention_in_days` 30 → 90
-- `aws_sqs_queue.events`: `visibility_timeout_seconds` 120 → 30
-- `aws_ssm_parameter.flag`: created
+- `aws\_cloudwatch\_log\_group.app`: &#96;retention\_in\_days&#96; 30 → 90
+- `aws\_sqs\_queue.events`: &#96;visibility\_timeout\_seconds&#96; 120 → 30
+- `aws\_ssm\_parameter.flag`: created
 
 ### Changed outside Terraform (2)
 
-- `aws_sqs_queue.events`: changed outside Terraform: `visibility_timeout_seconds`
-- `aws_ssm_parameter.flag`: deleted outside Terraform
+- `aws\_sqs\_queue.events`: changed outside Terraform: &#96;visibility\\\_timeout\\\_seconds&#96;
+- `aws\_ssm\_parameter.flag`: deleted outside Terraform
 
 <sub>tfimpact test by [InfraEdge](https://infraedgecloud.com) · deterministic, runs on the runner, sends nothing anywhere · sensitive values masked</sub>

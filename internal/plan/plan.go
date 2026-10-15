@@ -13,6 +13,7 @@ import (
 	"io"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 // Plan is the subset of the plan representation tfimpact uses.
@@ -20,6 +21,9 @@ type Plan struct {
 	FormatVersion    string           `json:"format_version"`
 	TerraformVersion string           `json:"terraform_version"`
 	Timestamp        string           `json:"timestamp"`
+	Complete         *bool            `json:"complete"`
+	Errored          *bool            `json:"errored"`
+	Applyable        *bool            `json:"applyable"`
 	ResourceChanges  []ResourceChange `json:"resource_changes"`
 	ResourceDrift    []ResourceChange `json:"resource_drift"`
 }
@@ -77,9 +81,9 @@ func (c Change) Kind() Kind {
 		has[a] = true
 	}
 	switch {
-	case has["create"] && has["delete"]:
+	case len(c.Actions) == 2 && has["create"] && has["delete"]:
 		return Replace
-	case has["forget"]:
+	case (len(c.Actions) == 1 && has["forget"]) || (len(c.Actions) == 2 && has["create"] && has["forget"]):
 		return Forget
 	case len(c.Actions) == 1 && has["no-op"]:
 		return NoOp
@@ -150,9 +154,13 @@ var ErrNotAPlan = errors.New("input is not a Terraform plan JSON document")
 
 // Load parses plan JSON from r.
 func Load(r io.Reader) (*Plan, error) {
-	raw, err := io.ReadAll(r)
+	const maxPlanBytes = 64 << 20
+	raw, err := io.ReadAll(io.LimitReader(r, maxPlanBytes+1))
 	if err != nil {
 		return nil, fmt.Errorf("read plan: %w", err)
+	}
+	if len(raw) > maxPlanBytes {
+		return nil, errors.New("plan JSON exceeds the 64 MiB input limit")
 	}
 	trimmed := bytes.TrimSpace(raw)
 	if len(trimmed) == 0 {
@@ -162,11 +170,18 @@ func Load(r io.Reader) (*Plan, error) {
 		return nil, fmt.Errorf("%w: expected a JSON object", ErrNotAPlan)
 	}
 	var p Plan
+	if err := validateJSON(trimmed); err != nil {
+		if bytes.Contains(trimmed[:min(len(trimmed), 4096)], []byte(`"@level"`)) {
+			return nil, fmt.Errorf("%w: this looks like streaming `terraform plan -json`; supply saved-plan show-JSON", ErrNotAPlan)
+		}
+		return nil, errors.New("parse plan JSON: invalid, duplicate or excessively nested JSON")
+	}
 	if err := json.Unmarshal(trimmed, &p); err != nil {
 		if bytes.Contains(trimmed[:min(len(trimmed), 4096)], []byte(`"@level"`)) {
 			return nil, fmt.Errorf("%w: this looks like the streaming output of `terraform plan -json`; tfimpact needs `terraform plan -out=tfplan && terraform show -json tfplan`", ErrNotAPlan)
 		}
-		return nil, fmt.Errorf("parse plan JSON: %w", err)
+		// JSON type/syntax errors can contain attacker-controlled values.
+		return nil, errors.New("parse plan JSON: invalid JSON or field type")
 	}
 	if p.FormatVersion == "" {
 		if bytes.Contains(trimmed[:min(len(trimmed), 4096)], []byte(`"@level"`)) {
@@ -176,10 +191,128 @@ func Load(r io.Reader) (*Plan, error) {
 	}
 	major, _, _ := strings.Cut(p.FormatVersion, ".")
 	if major != "1" {
-		return nil, fmt.Errorf("unsupported plan format_version %q: tfimpact understands major version 1", p.FormatVersion)
+		return nil, errors.New("unsupported plan format_version: tfimpact understands major version 1")
 	}
-	if p.ResourceChanges == nil && p.ResourceDrift == nil && !bytes.Contains(trimmed, []byte(`"planned_values"`)) {
+	parts := strings.Split(p.FormatVersion, ".")
+	if len(parts) != 2 || !digits(parts[0]) || !digits(parts[1]) {
+		return nil, errors.New("invalid plan format_version: expected numeric major.minor")
+	}
+	if p.Errored != nil && *p.Errored {
+		return nil, errors.New("plan reports errored=true; analysis requires successful planning")
+	}
+	if p.Complete != nil && !*p.Complete {
+		return nil, errors.New("plan reports complete=false; analysis requires a complete plan")
+	}
+	var fields map[string]json.RawMessage
+	if err := json.Unmarshal(trimmed, &fields); err != nil {
+		return nil, ErrNotAPlan
+	}
+	for _, name := range []string{"resource_changes", "resource_drift"} {
+		if v, ok := fields[name]; ok && (len(bytes.TrimSpace(v)) == 0 || bytes.TrimSpace(v)[0] != '[') {
+			return nil, errors.New("plan resource change collections must be arrays")
+		}
+	}
+	planned, hasPlanned := fields["planned_values"]
+	if deferred, ok := fields["deferred_changes"]; ok {
+		var changes []json.RawMessage
+		if err := json.Unmarshal(deferred, &changes); err != nil {
+			return nil, errors.New("deferred_changes must be an array")
+		}
+		if len(changes) > 0 {
+			return nil, errors.New("plan contains deferred changes; analysis requires a complete plan")
+		}
+	}
+	if hasPlanned && (len(bytes.TrimSpace(planned)) == 0 || bytes.TrimSpace(planned)[0] != '{') {
+		return nil, errors.New("planned_values must be an object")
+	}
+	if p.ResourceChanges == nil && p.ResourceDrift == nil && !hasPlanned {
 		return nil, fmt.Errorf("%w: no resource_changes (is this `terraform show -json` of a state rather than a plan?)", ErrNotAPlan)
 	}
+	for _, changes := range [][]ResourceChange{p.ResourceChanges, p.ResourceDrift} {
+		for _, rc := range changes {
+			for _, identifier := range []string{rc.Address, rc.PreviousAddress, rc.Type, rc.ProviderName, rc.Name, rc.Mode} {
+				for _, r := range identifier {
+					if unicode.IsControl(r) {
+						return nil, errors.New("plan identifiers contain control characters")
+					}
+				}
+			}
+			if rc.Address == "" || rc.Type == "" || len(rc.Change.Actions) == 0 {
+				return nil, errors.New("resource changes require address, type and nonempty actions")
+			}
+			for _, action := range rc.Change.Actions {
+				if action == "" {
+					return nil, errors.New("resource actions must be nonempty strings")
+				}
+			}
+		}
+	}
 	return &p, nil
+}
+
+func digits(s string) bool {
+	if s == "" {
+		return false
+	}
+	for _, r := range s {
+		if r < '0' || r > '9' {
+			return false
+		}
+	}
+	return true
+}
+
+// Validate all container keys before decoding into structs: duplicate masks or
+// action fields must not depend on a decoder's last-key-wins behaviour.
+func validateJSON(raw []byte) error {
+	d := json.NewDecoder(bytes.NewReader(raw))
+	d.UseNumber()
+	var value func(int) error
+	value = func(depth int) error {
+		if depth > 128 {
+			return errors.New("depth")
+		}
+		tok, err := d.Token()
+		if err != nil {
+			return err
+		}
+		if delim, ok := tok.(json.Delim); ok {
+			switch delim {
+			case '{':
+				seen := map[string]bool{}
+				for d.More() {
+					key, err := d.Token()
+					if err != nil {
+						return err
+					}
+					s, ok := key.(string)
+					if !ok || seen[s] {
+						return errors.New("duplicate key")
+					}
+					seen[s] = true
+					if err := value(depth + 1); err != nil {
+						return err
+					}
+				}
+			case '[':
+				for d.More() {
+					if err := value(depth + 1); err != nil {
+						return err
+					}
+				}
+			default:
+				return errors.New("delimiter")
+			}
+			_, err = d.Token()
+			return err
+		}
+		return nil
+	}
+	if err := value(0); err != nil {
+		return err
+	}
+	if _, err := d.Token(); err != io.EOF {
+		return errors.New("trailing JSON")
+	}
+	return nil
 }

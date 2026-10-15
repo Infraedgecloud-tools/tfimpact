@@ -66,7 +66,7 @@ func (a *analysis) run() {
 	a.flagged = map[string]bool{}
 	var changes []change
 	for _, rc := range a.p.ResourceChanges {
-		if !rc.Managed() {
+		if rc.Mode == "data" {
 			if rc.Change.Kind() == plan.Read {
 				a.res.Counts.Read++
 			}
@@ -74,6 +74,22 @@ func (a *analysis) run() {
 		}
 		a.res.Resources++
 		c := change{rc: rc, kind: rc.Change.Kind(), know: a.kb.Get(rc.Type)}
+		providerOK := rc.ProviderName == "" || rc.ProviderName == "aws" || rc.ProviderName == "registry.terraform.io/hashicorp/aws" || rc.ProviderName == "registry.opentofu.org/hashicorp/aws"
+		if !providerOK {
+			c.know = nil
+		}
+		if !providerOK || !rc.Managed() {
+			c.kind = plan.Unknown
+		}
+		if c.kind == plan.Unknown || (!providerOK || c.know == nil) && c.kind != plan.NoOp && c.kind != plan.Read && c.kind != plan.Forget {
+			a.add(findings.Finding{
+				RuleID: "PLAN-COVERAGE-001", Severity: findings.Low,
+				Title:          "Resource change is not fully assessed",
+				Observed:       "The resource type, provider or action combination is outside tfimpact's supported assessment scope. Generic action facts may still be reported.",
+				Recommendation: "Review this change directly in the original plan and provider documentation.",
+				Domain:         "coverage", Path: ptr(rc.Address), Tags: []string{"unassessed"},
+			})
+		}
 		c.diff = sensitive.Diff(rc.Change.Before, rc.Change.After, rc.Change.BeforeSensitive, rc.Change.AfterSensitive, rc.Change.AfterUnknown)
 		c.tops = map[string]bool{}
 		for _, d := range c.diff {
@@ -196,7 +212,10 @@ func sharedIdentity(before, after map[string]any, identity []string) (string, bo
 }
 
 func (a *analysis) renameFinding(del, cr change, attr string) {
-	value := sensitive.Format(sensitive.Mask(del.rc.Change.BeforeMap()[attr], lookupMask(del.rc.Change.BeforeSensitive, attr)))
+	value := sensitive.Format(sensitive.Mask(sensitive.Mask(del.rc.Change.BeforeMap()[attr], lookupMask(del.rc.Change.BeforeSensitive, attr)), lookupMask(cr.rc.Change.AfterSensitive, attr)))
+	if sensitive.AlwaysRedacted(attr) {
+		value = sensitive.Redacted
+	}
 	if a.opts.NoValues {
 		value = "same value"
 	}
@@ -216,14 +235,14 @@ func (a *analysis) renameFinding(del, cr change, attr string) {
 	case "delete_because_no_module":
 		why = "its module was removed"
 	}
-	observed := fmt.Sprintf("`%s` will be destroyed because %s, and `%s` will be created with the same `%s` (%s). Terraform does not know they are the same object.%s",
+	observed := fmt.Sprintf("`%s` will be destroyed because %s, and `%s` will be created with the same `%s` (%s). A shared identity suggests a possible address rename; it does not establish that these are the same cloud object.%s",
 		del.rc.Address, why, cr.rc.Address, attr, value, loss)
 	a.add(findings.Finding{
 		RuleID:   RuleRename,
 		Severity: sev,
-		Title:    fmt.Sprintf("`%s` is renamed to `%s` without a moved block, so it will be destroyed and recreated", del.rc.Address, cr.rc.Address),
+		Title:    fmt.Sprintf("`%s` and `%s` share an identity across a destroy/create pair: possible address rename", del.rc.Address, cr.rc.Address),
 		Observed: observed,
-		Recommendation: fmt.Sprintf("Add a moved block (`from = %s`, `to = %s`) so Terraform changes the address in state instead. Applying as planned also tries to create a resource with the same %s, which fails for globally named resources.",
+		Recommendation: fmt.Sprintf("Confirm that both entries refer to the same provider configuration, account, region and cloud object before considering a moved block (`from = %s`, `to = %s`). Otherwise review the intended migration and any uniqueness constraints on %s.",
 			del.rc.Address, cr.rc.Address, attr),
 		Domain: "change",
 		Path:   ptr(del.rc.Address),
@@ -241,6 +260,9 @@ func (a *analysis) renameFinding(del, cr change, attr string) {
 }
 
 func lookupMask(mask any, attr string) any {
+	if b, ok := mask.(bool); ok && b {
+		return true
+	}
 	m, _ := mask.(map[string]any)
 	if m == nil {
 		return nil
@@ -623,10 +645,11 @@ func (a *analysis) exposure(c change, f knowledge.Flag, prefix string) {
 		// A flag's message describes a transition ("deletion protection is
 		// being turned off"). Nothing is turned off on a new resource, so
 		// the title states the fact and the message explains the flag.
-		v, _ := knowledge.LookupPath(c.rc.Change.AfterMap(), f.Attr)
 		shown := "(value hidden)"
 		if !a.opts.NoValues {
-			shown = sensitive.Format(sensitive.Mask(v, nil))
+			masked, _ := sensitive.Mask(c.rc.Change.AfterMap(), c.rc.Change.AfterSensitive).(map[string]any)
+			v, _ := knowledge.LookupPath(masked, f.Attr)
+			shown = sensitive.Format(v)
 		}
 		title = fmt.Sprintf("`%s` is created with `%s` = %s", c.rc.Address, f.Attr, shown)
 		observed = fmt.Sprintf("`%s` is set to %s on creation; on an existing %s this is what the flag means: %s.", f.Attr, shown, c.know.Display, f.Message)
@@ -654,8 +677,9 @@ func (a *analysis) pathChange(c change, path string) string {
 			return sensitive.Format(d.Before) + " → " + sensitive.Format(d.After)
 		}
 	}
-	if v, ok := knowledge.LookupPath(c.rc.Change.AfterMap(), path); ok {
-		return sensitive.Format(sensitive.Mask(v, nil))
+	masked, _ := sensitive.Mask(c.rc.Change.AfterMap(), c.rc.Change.AfterSensitive).(map[string]any)
+	if v, ok := knowledge.LookupPath(masked, path); ok {
+		return sensitive.Format(v)
 	}
 	return a.topChange(c, knowledge.Top(path))
 }
@@ -668,7 +692,7 @@ func (a *analysis) topChange(c change, top string) string {
 	for _, d := range c.diff {
 		if d.Top == top {
 			if d.Path == top {
-				if d.Sensitive && !d.Unknown {
+				if d.Sensitive {
 					return "(value hidden)"
 				}
 				return sensitive.Format(d.Before) + " → " + sensitive.Format(d.After)
@@ -689,7 +713,10 @@ func (a *analysis) topChange(c change, top string) string {
 }
 
 func (a *analysis) policy(c change, pa knowledge.PolicyAttr, beforeV, afterV any) {
-	if sensitive.IsSensitive(c.rc.Change.AfterSensitive, []any{pa.Attr}) {
+	if sensitive.IsSensitive(c.rc.Change.BeforeSensitive, []any{pa.Attr}) || sensitive.IsSensitive(c.rc.Change.AfterSensitive, []any{pa.Attr}) || sensitive.AlwaysRedacted(pa.Attr) {
+		a.add(findings.Finding{RuleID: RulePolicyUnknown, Severity: findings.Low,
+			Title: "Sensitive policy document was not assessed", Observed: "At least one side of the policy comparison is marked sensitive; policy content is withheld.",
+			Recommendation: "Review the document using an authorised process.", Domain: "security", Path: ptr(c.rc.Address), Tags: []string{"iam", "unassessed"}})
 		return
 	}
 	if u, ok := sensitive.Lookup(c.rc.Change.AfterUnknown, []any{pa.Attr}); ok {
@@ -713,15 +740,23 @@ func (a *analysis) policy(c change, pa knowledge.PolicyAttr, beforeV, afterV any
 	}
 	afterDoc, ok := afterV.(string)
 	if !ok || afterDoc == "" {
+		if afterV != nil {
+			a.unassessedPolicy(c)
+		}
 		return
 	}
 	afterP, err := iampolicy.Parse(afterDoc)
 	if err != nil {
+		a.unassessedPolicy(c)
 		return
 	}
 	var beforeP *iampolicy.Policy
 	if s, ok := beforeV.(string); ok && s != "" {
-		beforeP, _ = iampolicy.Parse(s)
+		beforeP, err = iampolicy.Parse(s)
+		if err != nil {
+			a.unassessedPolicy(c)
+			return
+		}
 	}
 	ws := iampolicy.Diff(beforeP, afterP, pa.Kind)
 	if beforeP == nil {
@@ -743,7 +778,11 @@ func (a *analysis) policy(c change, pa knowledge.PolicyAttr, beforeV, afterV any
 		if s, ok := findings.Parse(w.Severity); ok && s.Rank() > sev.Rank() {
 			sev = s
 		}
-		lines = append(lines, w.Summary)
+		if a.opts.NoValues {
+			lines = append(lines, "policy access widens (values hidden)")
+		} else {
+			lines = append(lines, w.Summary)
+		}
 	}
 	kindName := map[string]string{iampolicy.Identity: "policy", iampolicy.Resource: "resource policy", iampolicy.Trust: "trust policy"}[pa.Kind]
 	verb := "is widened"
@@ -763,6 +802,12 @@ func (a *analysis) policy(c change, pa knowledge.PolicyAttr, beforeV, afterV any
 		Tags:           []string{c.rc.Type, "iam", pa.Kind},
 		Metadata:       map[string]any{"resource_type": c.rc.Type, "attribute": pa.Attr, "policy_kind": pa.Kind, "widenings": lines},
 	})
+}
+
+func (a *analysis) unassessedPolicy(c change) {
+	a.add(findings.Finding{RuleID: RulePolicyUnknown, Severity: findings.Low,
+		Title: "Policy document was not assessed", Observed: "The plan contains a policy value outside the supported policy structure. Parser details and document content are withheld.",
+		Recommendation: "Validate the policy document and review it directly.", Domain: "security", Path: ptr(c.rc.Address), Tags: []string{"iam", "unassessed"}})
 }
 
 // ingressRule is one normalised ingress permission.
@@ -859,6 +904,13 @@ func (a *analysis) ingress(c change) {
 	if c.kind == plan.Create {
 		verb = "is created with"
 	}
+	// These descriptions are derived from raw plan values. Keep severity and
+	// the fact of widening, but do not copy sensitive/no-values details into
+	// titles, observations or machine-readable metadata.
+	if a.opts.NoValues || hasSensitive(c.rc.Change.BeforeSensitive) || hasSensitive(c.rc.Change.AfterSensitive) {
+		title = fmt.Sprintf("`%s` opens ingress to the internet (details hidden)", c.rc.Address)
+		descs = []string{"ingress details hidden"}
+	}
 	a.add(findings.Finding{
 		RuleID:         RuleIngressOpened,
 		Severity:       sev,
@@ -870,6 +922,26 @@ func (a *analysis) ingress(c change) {
 		Tags:           []string{c.rc.Type, "network", "public-ingress"},
 		Metadata:       map[string]any{"resource_type": c.rc.Type, "opened": descs},
 	})
+}
+
+func hasSensitive(mask any) bool {
+	switch v := mask.(type) {
+	case bool:
+		return v
+	case map[string]any:
+		for _, child := range v {
+			if hasSensitive(child) {
+				return true
+			}
+		}
+	case []any:
+		for _, child := range v {
+			if hasSensitive(child) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // onlyWebPorts reports whether every opened rule is tcp 80 or 443 alone.
@@ -1054,7 +1126,7 @@ func (a *analysis) routine(changes []change) {
 		case plan.Create:
 			summary = "created"
 		case plan.Replace:
-			summary = "replaced; nothing outside Terraform changes"
+			summary = "replaced; no additional consequence identified by supported rules"
 		case plan.Forget:
 			summary = "removed from state but not destroyed"
 		default:

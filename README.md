@@ -211,10 +211,16 @@ they look like. Leaving `address` out suppresses the rule everywhere.
   finding's stable ID as its fingerprint
 - `--output FILE`, `--json FILE` and `--sarif FILE` write files alongside whatever
   goes to stdout
-- Exit code 0, or 1 when `--fail-on LEVEL` is reached, or 2 on bad input
-
-CLI hardening is a separate pending change and is not included in this Action/install
-PR. The selected binary version defines its analysis capabilities.
+- Exit code 0, or 1 when `--fail-on LEVEL` is reached, or 2 on bad input,
+  explicit `errored: true`, or explicit `complete: false`. `applyable: false` alone
+  does not reject a valid empty no-op plan. Older plans without these optional fields
+  remain supported. Unknown minor fields are ignored; unsupported major formats fail.
+- Unrecognised resource types, providers and action combinations emit
+  `PLAN-COVERAGE-001` as unassessed. `--fail-on low` gates these findings; broader
+  thresholds do not imply full assessment. Generic plan action facts can still be shown.
+- JSON input is limited to 64 MiB. `--json-only` rejects binary saved plans before
+  any subprocess. JSON files and stdin are parsed locally without Terraform/OpenTofu.
+  These hardening changes are pending release and are absent from v0.1.0.
 
 Upload the SARIF to GitHub code scanning from the same job:
 
@@ -263,13 +269,15 @@ Apache-2.0. tfimpact is made by [InfraEdge](https://infraedgecloud.com).
 
 ## Assessment limits
 
-Downtime and rename effects are resource heuristics; action lists and replacement
-paths are plan facts. Equal names across delete/create entries suggest a rename
-and do not prove operator intent. IAM comparison does not compute effective
-permissions across policies, SCPs, boundaries or identity sessions. This is not
-dependency blast-radius analysis.
+Downtime and rename effects are resource heuristics; action lists and replacement paths
+are plan facts. Equal names across delete/create entries suggest a rename and do not prove
+operator intent. IAM comparison does not compute effective permissions across policies,
+SCPs, boundaries or identity sessions. This is not dependency blast-radius analysis.
 
-The Action accepts pre-generated show-JSON and streams it through stdin, so even
-older selected binaries cannot invoke saved-plan helpers. Outside the Action,
-saved-plan paths invoke Terraform/OpenTofu from PATH (or TFIMPACT_TERRAFORM); only
-use trusted executable/provider installations. They never invoke init, plan or apply.
+Saved binary plans explicitly invoke `terraform show -json` or `tofu show -json` from PATH
+(or the executable selected by `TFIMPACT_TERRAFORM`) with a 60-second deadline. This can
+load provider plugins from the initialised configuration. Only use it with trusted
+executables and provider installations. The helper never runs init, plan or apply.
+Use pre-generated show-JSON with `--json-only` for strict offline scanning; do not set
+`TFIMPACT_TERRAFORM` from untrusted repository content. Subprocess diagnostics are withheld
+from tfimpact errors because they may contain sensitive material.

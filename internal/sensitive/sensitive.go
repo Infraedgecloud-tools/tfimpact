@@ -74,6 +74,9 @@ func Mask(value, mask any) any {
 func IsSensitive(mask any, path []any) bool {
 	cur := mask
 	for _, step := range path {
+		if isTrue(cur) {
+			return true // A sensitive container marks all descendants.
+		}
 		switch s := step.(type) {
 		case string:
 			m, ok := cur.(map[string]any)
@@ -142,7 +145,15 @@ func Diff(before, after, beforeMask, afterMask, afterUnknown any) []AttrChange {
 func diff(path []any, before, after, bm, am, au any, out *[]AttrChange) {
 	// Unknown after apply: the after side is absent and afterUnknown is true.
 	if b, ok := au.(bool); ok && b {
-		*out = append(*out, change(path, before, Unknown, isTrue(bm) || isTrue(am), true))
+		// Unknown is a property of the after side, never permission to
+		// disclose the prior value. Preserve nested masks when the whole
+		// container becomes unknown, and honour either side's sensitivity.
+		hidden := isTrue(bm) || isTrue(am) || lastIsRedacted(path)
+		shown := Mask(Mask(before, bm), am)
+		if hidden {
+			shown = Redacted
+		}
+		*out = append(*out, change(path, shown, Unknown, hidden, true))
 		return
 	}
 	if isTrue(bm) || isTrue(am) || lastIsRedacted(path) {

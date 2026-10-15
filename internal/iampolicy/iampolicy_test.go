@@ -34,6 +34,14 @@ func TestWildcardActionAndResource(t *testing.T) {
 	}
 }
 
+func TestMalformedPoliciesAreNotAssessed(t *testing.T) {
+	for _, doc := range []string{`{}`, `{"Statement":[null]}`, `{"Statement":[{"Action":"s3:*","Resource":"*"}]}`, `{"Statement":[{"Effect":"future"}]}`} {
+		if _, err := Parse(doc); err == nil {
+			t.Fatal("malformed policy accepted")
+		}
+	}
+}
+
 func TestTrustSubWidened(t *testing.T) {
 	before := mustParse(t, `{"Statement":[{"Effect":"Allow","Action":"sts:AssumeRoleWithWebIdentity","Principal":{"Federated":"arn:aws:iam::123456789012:oidc-provider/token.actions.githubusercontent.com"},"Condition":{"StringEquals":{"token.actions.githubusercontent.com:aud":"sts.amazonaws.com","token.actions.githubusercontent.com:sub":"repo:acme/platform:ref:refs/heads/main"}}}]}`)
 	after := mustParse(t, `{"Statement":[{"Effect":"Allow","Action":"sts:AssumeRoleWithWebIdentity","Principal":{"Federated":"arn:aws:iam::123456789012:oidc-provider/token.actions.githubusercontent.com"},"Condition":{"StringEquals":{"token.actions.githubusercontent.com:aud":"sts.amazonaws.com"},"StringLike":{"token.actions.githubusercontent.com:sub":"repo:acme/*"}}}]}`)

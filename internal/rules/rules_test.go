@@ -179,7 +179,7 @@ func TestRoutineReplacementsAreListedNotRaised(t *testing.T) {
 	}
 	listed := 0
 	for _, g := range r.Routine {
-		if g.Summary == "replaced; nothing outside Terraform changes" {
+		if g.Summary == "replaced; no additional consequence identified by supported rules" {
 			listed += len(g.Addresses)
 		}
 	}

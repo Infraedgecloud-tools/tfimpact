@@ -5,57 +5,57 @@
 
 ### 🔴 Critical (2)
 
-- **`aws_dynamodb_table.sessions` will be destroyed and recreated, losing every item in the table.** The DynamoDB table is replaced because `hash_key` ("session_id" → "user_id") cannot be changed in place. Deletion protection is off; point-in-time recovery is off, so there is no automatic backup to restore from. _If the change is intended, take a snapshot or backup first and plan the cutover. If the replacement is a surprise, revert `hash_key`. `lifecycle { prevent_destroy = true }` makes Terraform refuse a plan like this._ `PLAN-DATA-002`
-- **`aws_security_group.bastion` opens SSH to the internet.** The security group gains ingress for tcp port 22 from 0.0.0.0/0. _Restrict the source to known CIDR ranges or a security group. If public access is intended, limit it to the listening port and say so in the change._ `PLAN-NET-001`
+- **&#96;aws\_dynamodb\_table.sessions&#96; will be destroyed and recreated, losing every item in the table.** The DynamoDB table is replaced because &#96;hash\_key&#96; \(&#34;session\_id&#34; → &#34;user\_id&#34;\) cannot be changed in place. Deletion protection is off; point-in-time recovery is off, so there is no automatic backup to restore from. _If the change is intended, take a snapshot or backup first and plan the cutover. If the replacement is a surprise, revert &#96;hash\_key&#96;. &#96;lifecycle { prevent\_destroy = true }&#96; makes Terraform refuse a plan like this._ `PLAN-DATA-002`
+- **&#96;aws\_security\_group.bastion&#96; opens SSH to the internet.** The security group gains ingress for tcp port 22 from 0.0.0.0/0. _Restrict the source to known CIDR ranges or a security group. If public access is intended, limit it to the listening port and say so in the change._ `PLAN-NET-001`
 
 ### 🟠 High (1)
 
-- **`aws_instance.bastion`: changing `user_data` in place has a service effect.** `user_data` changes (value hidden): the instance is stopped and started to apply the new user data (`user_data_replace_on_change` is false); it keeps its ID but gets a new public IP unless it has an Elastic IP, and the script only re-runs if the AMI's cloud-init is configured to. _Apply in a maintenance window or confirm that clients tolerate the interruption._ `PLAN-DISRUPT-001`
+- **&#96;aws\_instance.bastion&#96;: changing &#96;user\_data&#96; in place has a service effect.** &#96;user\_data&#96; changes \(value hidden\): the instance is stopped and started to apply the new user data \(&#96;user\_data\_replace\_on\_change&#96; is false\); it keeps its ID but gets a new public IP unless it has an Elastic IP, and the script only re-runs if the AMI&#39;s cloud-init is configured to. _Apply in a maintenance window or confirm that clients tolerate the interruption._ `PLAN-DISRUPT-001`
 
 ### Routine changes (38)
 
-- <details><summary>10 × `aws_cloudwatch_log_group`: `retention_in_days` 30 → 90</summary>
+- <details><summary>10 × `aws\_cloudwatch\_log\_group`: &#96;retention\_in\_days&#96; 30 → 90</summary>
 
-  - `aws_cloudwatch_log_group.service["api"]`
-  - `aws_cloudwatch_log_group.service["auth"]`
-  - `aws_cloudwatch_log_group.service["billing"]`
-  - `aws_cloudwatch_log_group.service["catalog"]`
-  - `aws_cloudwatch_log_group.service["checkout"]`
-  - `aws_cloudwatch_log_group.service["gateway"]`
-  - `aws_cloudwatch_log_group.service["orders"]`
-  - `aws_cloudwatch_log_group.service["payments"]`
-  - `aws_cloudwatch_log_group.service["search"]`
-  - `aws_cloudwatch_log_group.service["shipping"]`
+  - `aws\_cloudwatch\_log\_group.service\[&#34;api&#34;\]`
+  - `aws\_cloudwatch\_log\_group.service\[&#34;auth&#34;\]`
+  - `aws\_cloudwatch\_log\_group.service\[&#34;billing&#34;\]`
+  - `aws\_cloudwatch\_log\_group.service\[&#34;catalog&#34;\]`
+  - `aws\_cloudwatch\_log\_group.service\[&#34;checkout&#34;\]`
+  - `aws\_cloudwatch\_log\_group.service\[&#34;gateway&#34;\]`
+  - `aws\_cloudwatch\_log\_group.service\[&#34;orders&#34;\]`
+  - `aws\_cloudwatch\_log\_group.service\[&#34;payments&#34;\]`
+  - `aws\_cloudwatch\_log\_group.service\[&#34;search&#34;\]`
+  - `aws\_cloudwatch\_log\_group.service\[&#34;shipping&#34;\]`
 
   </details>
-- `aws_lb.public`: `subnet_mapping`, `subnets`
-- `aws_sqs_queue.work["notify"]`, `aws_sqs_queue.work["orders"]`, `aws_sqs_queue.work["payments"]`: `visibility_timeout_seconds` 60 → 120
-- <details><summary>24 × `aws_ssm_parameter`: tags only</summary>
+- `aws\_lb.public`: &#96;subnet\_mapping&#96;, &#96;subnets&#96;
+- `aws\_sqs\_queue.work\[&#34;notify&#34;\]`, `aws\_sqs\_queue.work\[&#34;orders&#34;\]`, `aws\_sqs\_queue.work\[&#34;payments&#34;\]`: &#96;visibility\_timeout\_seconds&#96; 60 → 120
+- <details><summary>24 × `aws\_ssm\_parameter`: tags only</summary>
 
-  - `aws_ssm_parameter.service_version["api"]`
-  - `aws_ssm_parameter.service_version["auth"]`
-  - `aws_ssm_parameter.service_version["billing"]`
-  - `aws_ssm_parameter.service_version["catalog"]`
-  - `aws_ssm_parameter.service_version["checkout"]`
-  - `aws_ssm_parameter.service_version["email"]`
-  - `aws_ssm_parameter.service_version["export"]`
-  - `aws_ssm_parameter.service_version["feed"]`
-  - `aws_ssm_parameter.service_version["gateway"]`
-  - `aws_ssm_parameter.service_version["ingest"]`
-  - `aws_ssm_parameter.service_version["inventory"]`
-  - `aws_ssm_parameter.service_version["jobs"]`
-  - `aws_ssm_parameter.service_version["ledger"]`
-  - `aws_ssm_parameter.service_version["media"]`
-  - `aws_ssm_parameter.service_version["notify"]`
-  - `aws_ssm_parameter.service_version["orders"]`
-  - `aws_ssm_parameter.service_version["payments"]`
-  - `aws_ssm_parameter.service_version["pricing"]`
-  - `aws_ssm_parameter.service_version["profile"]`
-  - `aws_ssm_parameter.service_version["reports"]`
-  - `aws_ssm_parameter.service_version["search"]`
-  - `aws_ssm_parameter.service_version["shipping"]`
-  - `aws_ssm_parameter.service_version["tax"]`
-  - `aws_ssm_parameter.service_version["webhooks"]`
+  - `aws\_ssm\_parameter.service\_version\[&#34;api&#34;\]`
+  - `aws\_ssm\_parameter.service\_version\[&#34;auth&#34;\]`
+  - `aws\_ssm\_parameter.service\_version\[&#34;billing&#34;\]`
+  - `aws\_ssm\_parameter.service\_version\[&#34;catalog&#34;\]`
+  - `aws\_ssm\_parameter.service\_version\[&#34;checkout&#34;\]`
+  - `aws\_ssm\_parameter.service\_version\[&#34;email&#34;\]`
+  - `aws\_ssm\_parameter.service\_version\[&#34;export&#34;\]`
+  - `aws\_ssm\_parameter.service\_version\[&#34;feed&#34;\]`
+  - `aws\_ssm\_parameter.service\_version\[&#34;gateway&#34;\]`
+  - `aws\_ssm\_parameter.service\_version\[&#34;ingest&#34;\]`
+  - `aws\_ssm\_parameter.service\_version\[&#34;inventory&#34;\]`
+  - `aws\_ssm\_parameter.service\_version\[&#34;jobs&#34;\]`
+  - `aws\_ssm\_parameter.service\_version\[&#34;ledger&#34;\]`
+  - `aws\_ssm\_parameter.service\_version\[&#34;media&#34;\]`
+  - `aws\_ssm\_parameter.service\_version\[&#34;notify&#34;\]`
+  - `aws\_ssm\_parameter.service\_version\[&#34;orders&#34;\]`
+  - `aws\_ssm\_parameter.service\_version\[&#34;payments&#34;\]`
+  - `aws\_ssm\_parameter.service\_version\[&#34;pricing&#34;\]`
+  - `aws\_ssm\_parameter.service\_version\[&#34;profile&#34;\]`
+  - `aws\_ssm\_parameter.service\_version\[&#34;reports&#34;\]`
+  - `aws\_ssm\_parameter.service\_version\[&#34;search&#34;\]`
+  - `aws\_ssm\_parameter.service\_version\[&#34;shipping&#34;\]`
+  - `aws\_ssm\_parameter.service\_version\[&#34;tax&#34;\]`
+  - `aws\_ssm\_parameter.service\_version\[&#34;webhooks&#34;\]`
 
   </details>
 
