@@ -11,10 +11,16 @@ inputs:
     required: true
   version:
     description: >-
-      tfimpact release to install, for example 1.2.3. The default, latest, installs the newest
-      release. Pin a version in your workflow so a new release cannot change your results.
+      Exact tfimpact release to install, for example 0.1.0. Moving labels are rejected.
+      Pin the Action source SHA as well as the binary version.
     required: false
-    default: latest
+    default: '0.1.0'
+  verify-provenance:
+    description: >-
+      Require GitHub build attestation from this repository's release workflow and exact tag.
+      v0.1.0 has no verified attestation; false uses release checksums only and does not establish provenance.
+    required: false
+    default: 'false'
   fail-on:
     description: Fail the step when an unsuppressed finding reaches this severity (none, low, medium, high, critical).
     required: false
@@ -22,15 +28,15 @@ inputs:
   comment:
     description: Post or update one pull request comment with the summary.
     required: false
-    default: 'true'
+    default: 'false'
   no-values:
     description: Do not print attribute values in the report.
     required: false
     default: 'false'
   working-directory:
     description: >-
-      Directory to run in. Set it to the configuration's directory when `plan` is the
-      saved plan file rather than its JSON, so `terraform show -json` can read it.
+      Directory used to resolve the plan JSON and optional configuration paths.
+      This Action accepts show-JSON only and never runs a saved-plan helper.
     required: false
     default: '.'
   config:
@@ -56,9 +62,11 @@ runs:
   using: composite
   steps:
     - name: Install tfimpact
+      id: install
       shell: bash
       env:
         VERSION: ${{ inputs.version }}
+        VERIFY_PROVENANCE: ${{ inputs.verify-provenance }}
         GH_TOKEN: ${{ github.token }}
         RUNNER_OS_NAME: ${{ runner.os }}
         RUNNER_ARCH_NAME: ${{ runner.arch }}
@@ -74,35 +82,53 @@ runs:
           ARM64) arch=arm64 ;;
           *) echo "unsupported architecture $RUNNER_ARCH_NAME" >&2; exit 1 ;;
         esac
-        dest="$RUNNER_TEMP/tfimpact"
-        dl="$RUNNER_TEMP/tfimpact-download"
-        rm -rf "$dest" "$dl"
-        mkdir -p "$dest" "$dl"
-        if [ "$VERSION" = "latest" ]; then
-          gh release download -R infraedgecloud-tools/tfimpact -D "$dl" \
-            --pattern "tfimpact_*_${os}_${arch}.tar.gz" --pattern checksums.txt
-        else
-          v="${VERSION#v}"
-          base="https://github.com/infraedgecloud-tools/tfimpact/releases/download/v${v}"
-          curl -fsSL -o "$dl/tfimpact_${v}_${os}_${arch}.tar.gz" "${base}/tfimpact_${v}_${os}_${arch}.tar.gz"
-          curl -fsSL -o "$dl/checksums.txt" "${base}/checksums.txt"
+        v="${VERSION#v}"
+        if [[ ! "$v" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+          echo "version must be an exact stable semantic version" >&2; exit 2
         fi
-        (cd "$dl" && if command -v sha256sum >/dev/null 2>&1; then sha256sum -c --ignore-missing checksums.txt; else shasum -a 256 -c --ignore-missing checksums.txt; fi)
-        tar -xzf "$dl"/tfimpact_*_"${os}"_"${arch}".tar.gz -C "$dest"
+        case "$VERIFY_PROVENANCE" in true|false) ;; *) echo "verify-provenance must be true or false" >&2; exit 2 ;; esac
+        dest=$(mktemp -d "$RUNNER_TEMP/tfimpact.XXXXXXXX")
+        dl=$(mktemp -d "$RUNNER_TEMP/tfimpact-download.XXXXXXXX")
+        trap 'rm -rf "$dl"' EXIT
+        archive="tfimpact_${v}_${os}_${arch}.tar.gz"
+        base="https://github.com/infraedgecloud-tools/tfimpact/releases/download/v${v}"
+        curl --proto '=https' --tlsv1.2 --connect-timeout 15 --max-time 120 -fsSL -o "$dl/$archive" "$base/$archive"
+        curl --proto '=https' --tlsv1.2 --connect-timeout 15 --max-time 60 -fsSL -o "$dl/checksums.txt" "$base/checksums.txt"
+        # Verify exactly the selected archive; unrelated checksum entries do not count.
+        python3 - "$dl" "$archive" <<'PYVERIFY'
+        import hashlib, pathlib, sys
+        root, name = pathlib.Path(sys.argv[1]), sys.argv[2]
+        entries = [line.split() for line in (root / 'checksums.txt').read_text().splitlines()]
+        matches = [row[0] for row in entries if len(row) == 2 and row[1] == name]
+        if len(matches) != 1 or hashlib.sha256((root / name).read_bytes()).hexdigest() != matches[0]:
+            raise SystemExit('selected archive checksum missing, duplicated or mismatched')
+        PYVERIFY
+        if [ "$VERIFY_PROVENANCE" = true ]; then
+          gh attestation verify "$dl/$archive" --repo Infraedgecloud-tools/tfimpact \
+            --signer-workflow Infraedgecloud-tools/tfimpact/.github/workflows/release.yml \
+            --source-ref "refs/tags/v${v}" \
+            --cert-identity "https://github.com/Infraedgecloud-tools/tfimpact/.github/workflows/release.yml@refs/tags/v${v}"
+        fi
+        # Stream only the named executable: never extract archive-controlled paths.
+        tar -xOzf "$dl/$archive" tfimpact > "$dest/tfimpact"
         chmod +x "$dest/tfimpact"
+        "$dest/tfimpact" version | grep -Eq "^tfimpact v?${v//./\.}([[:space:]]|$)"
+        echo "dir=$dest" >> "$GITHUB_OUTPUT"
 
     - name: Explain plan
       id: explain
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       env:
+        INSTALL_DIR: ${{ steps.install.outputs.dir }}
         PLAN: ${{ inputs.plan }}
         FAIL_ON: ${{ inputs.fail-on }}
         NO_VALUES: ${{ inputs.no-values }}
         CONFIG: ${{ inputs.config }}
       run: |
-        dir="$RUNNER_TEMP/tfimpact"
-        args=(explain "$PLAN" --format markdown
+        dir="$INSTALL_DIR"
+        if [ ! -f "$PLAN" ]; then echo "plan must be a regular show-JSON file" >&2; exit 2; fi
+        args=(explain - --format markdown
           --output "$dir/summary.md" --json "$dir/findings.json" --fail-on "$FAIL_ON")
         # The action may be running a release older than this file. Flags
         # that release does not know would make it print usage and exit 2.
@@ -112,13 +138,13 @@ runs:
         if [ "$NO_VALUES" = "true" ]; then args+=(--no-values); fi
         if [ -n "$CONFIG" ]; then args+=(--config "$CONFIG"); fi
         set +e
-        "$dir/tfimpact" "${args[@]}"
+        "$dir/tfimpact" "${args[@]}" < "$PLAN"
         code=$?
         set -e
         {
           echo "summary-markdown=$dir/summary.md"
           echo "findings-json=$dir/findings.json"
-          echo "sarif=$dir/results.sarif"
+          if [ -f "$dir/results.sarif" ]; then echo "sarif=$dir/results.sarif"; else echo "sarif="; fi
           echo "exit-code=$code"
         } >> "$GITHUB_OUTPUT"
         if [ -f "$dir/summary.md" ]; then
@@ -128,14 +154,17 @@ runs:
     - name: Comment on pull request
       if: inputs.comment == 'true' && github.event_name == 'pull_request'
       shell: bash
+      continue-on-error: true
       env:
+        INSTALL_DIR: ${{ steps.install.outputs.dir }}
         GITHUB_TOKEN: ${{ github.token }}
       run: |
-        if [ -f "$RUNNER_TEMP/tfimpact/summary.md" ]; then
-          "$RUNNER_TEMP/tfimpact/tfimpact" comment --body "$RUNNER_TEMP/tfimpact/summary.md"
+        if [ -f "$INSTALL_DIR/summary.md" ]; then
+          "$INSTALL_DIR/tfimpact" comment --body "$INSTALL_DIR/summary.md"
         fi
 
     - name: Apply exit code
+      if: always() && steps.explain.outputs.exit-code != ''
       shell: bash
       env:
         EXIT_CODE: ${{ steps.explain.outputs.exit-code }}

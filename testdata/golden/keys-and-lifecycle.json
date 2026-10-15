@@ -3,7 +3,7 @@
   "findings": [
     {
       "domain": "change",
-      "id": "fnd_97e2741d22880db0",
+      "id": "fnd_29fa0c94918110ec",
       "line": null,
       "metadata": {
         "action_reason": "delete_because_each_key",
@@ -12,10 +12,10 @@
         "identity": "name",
         "resource_type": "aws_sqs_queue"
       },
-      "observed": "`aws_sqs_queue.work[\"orders\"]` will be destroyed because its for_each key changed, and `aws_sqs_queue.work[\"order_events\"]` will be created with the same `name` (\"fixture-lifecycle-orders\"). Terraform does not know they are the same object. The SQS queue would be destroyed with it, losing every message still in the queue.",
+      "observed": "`aws_sqs_queue.work[\"orders\"]` will be destroyed because its for_each key changed, and `aws_sqs_queue.work[\"order_events\"]` will be created with the same `name` (\"fixture-lifecycle-orders\"). A shared identity suggests a possible address rename; it does not establish that these are the same cloud object. The SQS queue would be destroyed with it, losing every message still in the queue.",
       "path": "aws_sqs_queue.work[\"orders\"]",
       "product": "tfimpact",
-      "recommendation": "Add a moved block (`from = aws_sqs_queue.work[\"orders\"]`, `to = aws_sqs_queue.work[\"order_events\"]`) so Terraform changes the address in state instead. Applying as planned also tries to create a resource with the same name, which fails for globally named resources.",
+      "recommendation": "Confirm that both entries refer to the same provider configuration, account, region and cloud object before considering a moved block (`from = aws_sqs_queue.work[\"orders\"]`, `to = aws_sqs_queue.work[\"order_events\"]`). Otherwise review the intended migration and any uniqueness constraints on name.",
       "rule_id": "PLAN-RENAME-001",
       "severity": "critical",
       "suppressed": false,
@@ -25,7 +25,7 @@
         "aws_sqs_queue",
         "rename"
       ],
-      "title": "`aws_sqs_queue.work[\"orders\"]` is renamed to `aws_sqs_queue.work[\"order_events\"]` without a moved block, so it will be destroyed and recreated"
+      "title": "`aws_sqs_queue.work[\"orders\"]` and `aws_sqs_queue.work[\"order_events\"]` share an identity across a destroy/create pair: possible address rename"
     },
     {
       "domain": "availability",

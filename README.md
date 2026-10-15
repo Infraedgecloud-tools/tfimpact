@@ -52,10 +52,14 @@ stop/start.
 
 ```bash
 terraform plan -out=tfplan
-tfimpact explain tfplan
+terraform show -json tfplan > plan.json
+tfimpact explain plan.json
 ```
 
-Given the saved plan, tfimpact runs `terraform show -json` on it for you (or `tofu`), in
+**Unreleased main features (absent from v0.1.0):** saved-plan helper, SARIF output,
+shell completion, and the associated current-source flags shown below.
+
+Given the saved plan, current unreleased source runs `terraform show -json` on it for you (or `tofu`), in
 the directory you ran `plan` in. In CI, where the JSON is usually written anyway, hand it
 the JSON or pipe it:
 
@@ -65,36 +69,44 @@ terraform show -json tfplan | tfimpact explain -
 
 ## Install
 
-| | |
-|---|---|
-| Homebrew (macOS, Linux) | `brew install --cask infraedgecloud-tools/tap/tfimpact` |
-| Scoop (Windows) | `scoop bucket add infraedgecloud-tools https://github.com/infraedgecloud-tools/scoop-bucket` then `scoop install tfimpact` |
-| deb, rpm, apk | attached to every [release](https://github.com/infraedgecloud-tools/tfimpact/releases/latest) |
-| Go | `go install github.com/infraedgecloud-tools/tfimpact/cmd/tfimpact@latest` |
-| Container | `docker run --rm -v "$PWD:/work" -w /work ghcr.io/infraedgecloud-tools/tfimpact explain plan.json` |
-| GitHub Action | `uses: infraedgecloud-tools/tfimpact@v0.1.0`, see [In a pull request](#in-a-pull-request) |
-| Release archive | below, with the checksum and the signature verified |
+Availability checked on 15 October 2026 against the published **v0.1.0** assets.
+Workflow configuration describes future packaging; it does not prove publication.
+The published version is legacy: the hardening described in this change requires
+an owner-approved release. Installing v0.1.0 does not install these pending changes.
 
-The Homebrew cask and the Scoop manifest are published from v0.2.0.
-
-Every release ships a CycloneDX SBOM per archive, a cosign-signed `checksums.txt`, and a
-build-provenance attestation per asset (`gh attestation verify <asset> -R infraedgecloud-tools/tfimpact`).
+| Channel | v0.1.0 availability | Verification in this change |
+|---|---|---|
+| Release archives | Linux/macOS amd64 and arm64 `.tar.gz`; Windows amd64 and arm64 `.zip`; `checksums.txt` | Linux amd64 downloaded, checksum checked and CLI smoke tested; other platforms pending native runners |
+| Go source install | Versioned module path below | See [validation evidence](docs/validation.md) |
+| GitHub Action | Source available; pin source SHA and binary version separately | Embedded Bash consumer tests; live hosted runner and fork permissions pending |
+| Homebrew / Scoop | Upcoming; tap and bucket were empty when checked | No supported installation command yet |
+| deb / rpm / apk | Not attached to v0.1.0 | Upcoming |
+| Container | Not established by the archive release | Registry pull/run verification pending |
+| SBOM / signed checksums / attestations | Not established for v0.1.0 | No provenance claim for that release |
 
 ```bash
-# release archive (linux, macOS, windows; amd64 and arm64)
-v=$(curl -fsSL https://api.github.com/repos/infraedgecloud-tools/tfimpact/releases/latest | sed -n 's/.*"tag_name": *"v\([^"]*\)".*/\1/p')
-os=$(uname -s | tr A-Z a-z); arch=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
-curl -fsSLO "https://github.com/infraedgecloud-tools/tfimpact/releases/download/v${v}/tfimpact_${v}_${os}_${arch}.tar.gz"
-curl -fsSLO "https://github.com/infraedgecloud-tools/tfimpact/releases/download/v${v}/checksums.txt"
-sha256sum --ignore-missing -c checksums.txt && tar xzf "tfimpact_${v}_${os}_${arch}.tar.gz" tfimpact
+# Explicit Linux amd64 release archive. Inspect the release before selecting another platform.
+v=0.1.0
+archive="tfimpact_${v}_linux_amd64.tar.gz"
+base="https://github.com/Infraedgecloud-tools/tfimpact/releases/download/v${v}"
+curl -fsSLO "$base/$archive"
+curl -fsSLO "$base/checksums.txt"
+test -f "$archive"
+awk -v archive="$archive" '$2 == archive {print}' checksums.txt > selected-checksum.txt
+test "$(wc -l < selected-checksum.txt)" -eq 1
+sha256sum -c selected-checksum.txt
+# Stream only the named executable rather than extracting archive-controlled paths.
+tar -xOzf "$archive" tfimpact > tfimpact
+chmod +x tfimpact
+./tfimpact version
 
-# optional: the checksums file is signed keylessly by the release workflow (from v0.2.0)
-curl -fsSLO "https://github.com/infraedgecloud-tools/tfimpact/releases/download/v${v}/checksums.txt.sig"
-curl -fsSLO "https://github.com/infraedgecloud-tools/tfimpact/releases/download/v${v}/checksums.txt.pem"
-cosign verify-blob --certificate checksums.txt.pem --signature checksums.txt.sig \
-  --certificate-identity-regexp 'github.com/infraedgecloud-tools/tfimpact' \
-  --certificate-oidc-issuer https://token.actions.githubusercontent.com checksums.txt
+# Alternatively, a pinned source install with the Go toolchain required by the module:
+go install github.com/infraedgecloud-tools/tfimpact/cmd/tfimpact@v0.1.0
 ```
+
+Release checksums detect corruption; a checksum downloaded beside a binary does not
+establish build provenance. Do not assume the signatures or attestations configured
+in the current release workflow exist on earlier releases.
 
 Try it on the bundled fixtures without any AWS account:
 
@@ -108,7 +120,6 @@ tfimpact explain testdata/plans/rename/plan.json --format markdown
 ```yaml
 permissions:
   contents: read
-  pull-requests: write
 
 steps:
   - uses: actions/checkout@<sha>
@@ -117,11 +128,24 @@ steps:
   - uses: infraedgecloud-tools/tfimpact@<sha>   # pin to a release tag or commit
     with:
       plan: plan.json
+      version: '0.1.0'      # binary release; pin independently of the Action source
+      comment: 'false'      # works with a read-only/fork PR token
       fail-on: high        # exit 1 when an unsuppressed finding is high or critical
 ```
 
-The action writes the report to the job summary and keeps one comment on the pull
-request up to date. GitLab CI and Azure DevOps snippets are in [`docs/ci/`](docs/ci/).
+The action writes the report to the job summary. Comments are opt-in (`comment: 'true'`)
+and need `pull-requests: write`; denied comment permissions do not replace the scan's
+exit code. Use ordinary `pull_request` workflows and read-only tokens for fork scans.
+Do not check out untrusted PR code under `pull_request_target` with privileged credentials.
+
+The Action defaults to binary version `0.1.0`; moving version labels are rejected.
+Pin both the Action source SHA and binary version. `verify-provenance: 'true'` requires
+an attestation from this repository's release workflow and the exact selected tag;
+it fails closed if verification is unavailable. The default is false for compatibility
+with the legacy v0.1.0 release, whose provenance is not established. Enable verification
+only after the selected release has been verified by the maintainer.
+GitLab CI and Azure DevOps snippets in [`docs/ci/`](docs/ci/) are reference examples;
+they have not been run on those providers in this change.
 
 ## What it looks for
 
@@ -137,7 +161,7 @@ request up to date. GitLab CI and Azure DevOps snippets are in [`docs/ci/`](docs
 | `PLAN-EXPOSE-001` | A protection turned off or an exposure flag turned on: public access block, encryption, deletion protection, logging, `publicly_accessible`. |
 | `PLAN-DELETE-001` | Other deletions, raised when the resource is protective (a trail, a flow log, a public access block). |
 
-Everything else is listed as routine in one line per group, so forty tag changes take one
+Supported changes without a finding are listed as routine in one line per group, so forty tag changes take one
 line and the dangerous change does not scroll off the screen.
 
 Resource knowledge lives in [`internal/knowledge/aws/`](internal/knowledge/aws/), one
@@ -147,11 +171,11 @@ one, and `tfimpact rules` prints the rule catalogue ([docs/rules.md](docs/rules.
 
 ## Sensitive values
 
-`terraform show -json` writes sensitive values in plain text. tfimpact honours
-Terraform's `before_sensitive` and `after_sensitive` marks, and also never prints
-attributes whose names suggest secrets (`password`, `secret`, `token`, `user_data`,
-`private_key`, `api_key`, ...), marked or not. `--no-values` prints attribute names only.
-Treat the plan JSON itself as a secret: do not attach it to issues without redacting.
+`terraform show -json` writes sensitive values in plain text. Redaction behaviour
+and the available flags depend on the selected binary version. Keep plan files and
+generated reports inside trusted CI storage, and review reports before sharing.
+Attribute names, resource identities and file paths can also carry confidential data.
+Do not attach unreviewed plans or reports to public issues.
 
 ## Suppressions
 
@@ -187,7 +211,16 @@ they look like. Leaving `address` out suppresses the rule everywhere.
   finding's stable ID as its fingerprint
 - `--output FILE`, `--json FILE` and `--sarif FILE` write files alongside whatever
   goes to stdout
-- Exit code 0, or 1 when `--fail-on LEVEL` is reached, or 2 on bad input
+- Exit code 0, or 1 when `--fail-on LEVEL` is reached, or 2 on bad input,
+  explicit `errored: true`, or explicit `complete: false`. `applyable: false` alone
+  does not reject a valid empty no-op plan. Older plans without these optional fields
+  remain supported. Unknown minor fields are ignored; unsupported major formats fail.
+- Unrecognised resource types, providers and action combinations emit
+  `PLAN-COVERAGE-001` as unassessed. `--fail-on low` gates these findings; broader
+  thresholds do not imply full assessment. Generic plan action facts can still be shown.
+- JSON input is limited to 64 MiB. `--json-only` rejects binary saved plans before
+  any subprocess. JSON files and stdin are parsed locally without Terraform/OpenTofu.
+  These hardening changes are pending release and are absent from v0.1.0.
 
 Upload the SARIF to GitHub code scanning from the same job:
 
@@ -233,3 +266,18 @@ mock (`testdata/plans/generate.sh`); never hand-edit a plan.json.
 ## Licence
 
 Apache-2.0. tfimpact is made by [InfraEdge](https://infraedgecloud.com).
+
+## Assessment limits
+
+Downtime and rename effects are resource heuristics; action lists and replacement paths
+are plan facts. Equal names across delete/create entries suggest a rename and do not prove
+operator intent. IAM comparison does not compute effective permissions across policies,
+SCPs, boundaries or identity sessions. This is not dependency blast-radius analysis.
+
+Saved binary plans explicitly invoke `terraform show -json` or `tofu show -json` from PATH
+(or the executable selected by `TFIMPACT_TERRAFORM`) with a 60-second deadline. This can
+load provider plugins from the initialised configuration. Only use it with trusted
+executables and provider installations. The helper never runs init, plan or apply.
+Use pre-generated show-JSON with `--json-only` for strict offline scanning; do not set
+`TFIMPACT_TERRAFORM` from untrusted repository content. Subprocess diagnostics are withheld
+from tfimpact errors because they may contain sensitive material.

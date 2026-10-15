@@ -5,10 +5,10 @@
 
 ### Routine changes (5)
 
-- `aws_cloudwatch_log_group.app`: tags only
-- `aws_dynamodb_table.sessions`: tags only
-- `aws_s3_bucket.artifacts`: tags only
-- `aws_sqs_queue.jobs`: tags only
-- `aws_ssm_parameter.feature_flag`: tags only
+- `aws\_cloudwatch\_log\_group.app`: tags only
+- `aws\_dynamodb\_table.sessions`: tags only
+- `aws\_s3\_bucket.artifacts`: tags only
+- `aws\_sqs\_queue.jobs`: tags only
+- `aws\_ssm\_parameter.feature\_flag`: tags only
 
 <sub>tfimpact test by [InfraEdge](https://infraedgecloud.com) · deterministic, runs on the runner, sends nothing anywhere · sensitive values masked</sub>

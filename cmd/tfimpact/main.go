@@ -4,6 +4,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"fmt"
@@ -92,6 +93,7 @@ Explain flags:
   --color auto|always|never     colour in the text report (default auto: a terminal without NO_COLOR)
   --fail-on LEVEL               exit 1 if an unsuppressed finding reaches LEVEL: none, low, medium, high, critical (default none)
   --no-values                   never print attribute values, only attribute names
+  --json-only                   reject saved binary plans; never execute terraform/tofu
   --config FILE                 suppressions file (default .tfimpact.toml if present)
   --knowledge DIR               load resource knowledge from DIR instead of the built-in copy
   --quiet                       print nothing to stdout
@@ -105,7 +107,7 @@ Exit codes: 0 ok · 1 threshold reached · 2 usage or input error
 // `terraform plan -out` writes), which is handed to `terraform show -json`
 // in the directory it sits in. A directory gets the hint that tfimpact reads
 // a plan, not a configuration.
-func openPlan(source string, stdin io.Reader) (io.Reader, func(), error) {
+func openPlan(source string, stdin io.Reader, jsonOnly bool) (io.Reader, func(), error) {
 	none := func() {}
 	if source == "-" {
 		return stdin, none, nil
@@ -122,6 +124,9 @@ func openPlan(source string, stdin io.Reader) (io.Reader, func(), error) {
 	if st.IsDir() {
 		return nil, none, fmt.Errorf("%s is a directory; tfimpact reads a plan, not a configuration. Run `terraform plan -out=tfplan` there, then `tfimpact explain tfplan`", source)
 	}
+	if !st.Mode().IsRegular() {
+		return nil, none, errors.New("plan path must be a regular file or - for stdin")
+	}
 	f, err := os.Open(source)
 	if err != nil {
 		return nil, none, err
@@ -135,6 +140,9 @@ func openPlan(source string, stdin io.Reader) (io.Reader, func(), error) {
 	// A saved plan is a zip archive; plan JSON starts with "{".
 	if n == 4 && string(magic) == "PK\x03\x04" {
 		f.Close()
+		if jsonOnly {
+			return nil, none, errors.New("--json-only rejects saved binary plans; supply show-JSON or stdin")
+		}
 		out, err := showPlanJSON(source)
 		if err != nil {
 			return nil, none, err
@@ -165,18 +173,32 @@ func showPlanJSON(planPath string) (string, error) {
 	if bin == "" {
 		return "", fmt.Errorf("%s is a saved plan, and neither terraform nor tofu is on PATH to read it. Run `terraform show -json %s > plan.json` where you ran plan, or set TFIMPACT_TERRAFORM", planPath, planPath)
 	}
-	cmd := exec.Command(bin, "show", "-no-color", "-json", abs)
-	var stdout, stderr strings.Builder
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, bin, "show", "-no-color", "-json", abs)
+	cmd.WaitDelay = 2 * time.Second
+	stdout := boundedOutput{max: 64 << 20, cancel: cancel}
+	stderr := boundedOutput{max: 64 << 10, cancel: cancel}
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	if err := cmd.Run(); err != nil {
-		msg := strings.TrimSpace(stderr.String())
-		if msg == "" {
-			msg = err.Error()
-		}
-		return "", fmt.Errorf("%s show -json %s failed (run tfimpact in the directory you ran plan in): %s", filepath.Base(bin), planPath, msg)
+		return "", errors.New("terraform/tofu show -json failed; run it directly in the initialised configuration directory to inspect diagnostics (subprocess output withheld)")
 	}
 	return stdout.String(), nil
+}
+
+type boundedOutput struct {
+	strings.Builder
+	max    int
+	cancel context.CancelFunc
+}
+
+func (b *boundedOutput) Write(p []byte) (int, error) {
+	if len(p) > b.max-b.Len() {
+		b.cancel()
+		return 0, errors.New("subprocess output exceeds limit")
+	}
+	return b.Builder.Write(p)
 }
 
 func versionString() string {
@@ -214,6 +236,7 @@ func explain(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	jsonOut := fs.String("json", "", "write the findings JSON to this file")
 	failOn := fs.String("fail-on", "none", "severity threshold for exit code 1")
 	noValues := fs.Bool("no-values", false, "never print attribute values")
+	jsonOnly := fs.Bool("json-only", false, "reject saved binary plans without running terraform/tofu")
 	configPath := fs.String("config", "", "suppressions file")
 	knowledgeDir := fs.String("knowledge", "", "directory of knowledge TOML files")
 	quiet := fs.Bool("quiet", false, "print nothing to stdout")
@@ -240,7 +263,11 @@ func explain(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	}
 
 	source := positional[0]
-	in, cleanup, err := openPlan(source, stdin)
+	if err := validateOutputPaths(source, []string{*output, *jsonOut, *sarifOut}); err != nil {
+		fmt.Fprintf(stderr, "tfimpact: %v\n", err)
+		return exitUsage
+	}
+	in, cleanup, err := openPlan(source, stdin, *jsonOnly)
 	if err != nil {
 		fmt.Fprintf(stderr, "tfimpact: %v\n", err)
 		return exitUsage
@@ -356,15 +383,52 @@ func parseThreshold(s string) (findings.Severity, bool) {
 }
 
 func writeFile(path string, write func(io.Writer) error) error {
-	f, err := os.Create(path)
+	f, err := os.CreateTemp(filepath.Dir(path), ".tfimpact-*.tmp")
 	if err != nil {
+		return err
+	}
+	defer os.Remove(f.Name())
+	if err := f.Chmod(0o644); err != nil {
+		f.Close()
 		return err
 	}
 	if err := write(f); err != nil {
 		f.Close()
 		return err
 	}
-	return f.Close()
+	if err := f.Close(); err != nil {
+		return err
+	}
+	return os.Rename(f.Name(), path)
+}
+
+func validateOutputPaths(source string, paths []string) error {
+	var existing []string
+	if source != "-" {
+		existing = append(existing, source)
+	}
+	for _, path := range paths {
+		if path == "" {
+			continue
+		}
+		abs, err := filepath.Abs(path)
+		if err != nil {
+			return err
+		}
+		for _, prior := range existing {
+			other, err := filepath.Abs(prior)
+			if err != nil {
+				return err
+			}
+			a, ae := os.Stat(path)
+			b, be := os.Stat(prior)
+			if abs == other || ae == nil && be == nil && os.SameFile(a, b) {
+				return errors.New("report outputs must be distinct and must not overwrite the input plan")
+			}
+		}
+		existing = append(existing, path)
+	}
+	return nil
 }
 
 // useColor follows the convention terminals expect: --color always or never

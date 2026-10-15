@@ -10,6 +10,7 @@ type RuleInfo struct {
 
 // Catalogue lists every rule tfimpact can emit, in display order.
 var Catalogue = []RuleInfo{
+	{"PLAN-COVERAGE-001", "coverage", "low", "A resource type, provider or action combination is unassessed. Generic plan action facts are still reported."},
 	{RuleDataDestroyed, "data", "high–critical", "A resource that holds data is destroyed. Names what is lost and which mitigations (final snapshot, deletion protection, recovery window, backups) apply or are missing."},
 	{RuleDataReplaced, "data", "high–critical", "A resource that holds data is destroyed and recreated, with the attribute that forced the replacement."},
 	{RuleRename, "change", "high–critical", "A resource was renamed in code without a moved block: one address is destroyed and another is created with the same identity."},

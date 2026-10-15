@@ -129,8 +129,17 @@ release:
     Every archive below has a CycloneDX SBOM beside it, `checksums.txt` is signed with
     cosign (keyless, through this repository's workflow identity), and each asset carries a
     build-provenance attestation: `gh attestation verify <asset> -R infraedgecloud-tools/tfimpact`.
+  # Only channels this release actually published are listed. The cask and the
+  # Scoop manifest are rendered but not uploaded when TAP_GITHUB_TOKEN is
+  # absent, so advertising them unconditionally sends people to an empty tap.
   footer: |
-    Install: Homebrew `brew install infraedgecloud-tools/tap/tfimpact`, Scoop
-    `scoop bucket add infraedgecloud-tools https://github.com/infraedgecloud-tools/scoop-bucket && scoop install tfimpact`,
-    deb/rpm/apk above, `go install github.com/infraedgecloud-tools/tfimpact/cmd/tfimpact@{{ .Tag }}`,
+    Install: the archive above, verified against `checksums.txt`; the deb, rpm or apk
+    package above; `go install github.com/infraedgecloud-tools/tfimpact/cmd/tfimpact@{{ .Tag }}`;
     or `docker run ghcr.io/infraedgecloud-tools/tfimpact:{{ .Tag }}`.
+    {{ if envOrDefault "TAP_GITHUB_TOKEN" "" }}
+    Homebrew `brew install infraedgecloud-tools/tap/tfimpact` and Scoop
+    `scoop bucket add infraedgecloud-tools https://github.com/infraedgecloud-tools/scoop-bucket && scoop install tfimpact`
+    are published for this release.
+    {{ else }}
+    Homebrew and Scoop are not published for this release.
+    {{ end }}

@@ -3,7 +3,7 @@
   "findings": [
     {
       "domain": "change",
-      "id": "fnd_645c2317cfb4de7c",
+      "id": "fnd_37ba06ad27ed7506",
       "line": null,
       "metadata": {
         "action_reason": "delete_because_no_resource_config",
@@ -12,10 +12,10 @@
         "identity": "bucket",
         "resource_type": "aws_s3_bucket"
       },
-      "observed": "`aws_s3_bucket.logs` will be destroyed because it left the configuration, and `aws_s3_bucket.audit_logs` will be created with the same `bucket` (\"fixture-alb-access-logs-eu-west-2\"). Terraform does not know they are the same object. The S3 bucket would be destroyed with it, losing every object and object version in the bucket.",
+      "observed": "`aws_s3_bucket.logs` will be destroyed because it left the configuration, and `aws_s3_bucket.audit_logs` will be created with the same `bucket` (\"fixture-alb-access-logs-eu-west-2\"). A shared identity suggests a possible address rename; it does not establish that these are the same cloud object. The S3 bucket would be destroyed with it, losing every object and object version in the bucket.",
       "path": "aws_s3_bucket.logs",
       "product": "tfimpact",
-      "recommendation": "Add a moved block (`from = aws_s3_bucket.logs`, `to = aws_s3_bucket.audit_logs`) so Terraform changes the address in state instead. Applying as planned also tries to create a resource with the same bucket, which fails for globally named resources.",
+      "recommendation": "Confirm that both entries refer to the same provider configuration, account, region and cloud object before considering a moved block (`from = aws_s3_bucket.logs`, `to = aws_s3_bucket.audit_logs`). Otherwise review the intended migration and any uniqueness constraints on bucket.",
       "rule_id": "PLAN-RENAME-001",
       "severity": "critical",
       "suppressed": false,
@@ -25,7 +25,7 @@
         "aws_s3_bucket",
         "rename"
       ],
-      "title": "`aws_s3_bucket.logs` is renamed to `aws_s3_bucket.audit_logs` without a moved block, so it will be destroyed and recreated"
+      "title": "`aws_s3_bucket.logs` and `aws_s3_bucket.audit_logs` share an identity across a destroy/create pair: possible address rename"
     },
     {
       "domain": "change",

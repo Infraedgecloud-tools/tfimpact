@@ -18,8 +18,9 @@ meaning; a rule that needs different semantics gets a new ID.
   rather than skipped. (#7)
 - Knowledge files: `no_object`, `replace_routine`, `data_severity`, `starts_with`
   conditions, and `only` conditions on flags. (#5, #7)
-- Homebrew tap, Scoop bucket, deb/rpm/apk packages, CycloneDX SBOMs and a
-  cosign-signed checksums file on every release.
+- Release workflow configuration for Homebrew, Scoop, deb/rpm/apk, CycloneDX SBOMs
+  and signed checksums. Availability must be verified per release; these artifacts
+  are not established for v0.1.0.
 - Action inputs `working-directory` and `config`; output `sarif`.
 
 ### Changed
@@ -44,12 +45,31 @@ meaning; a rule that needs different semantics gets a new ID.
   creates. (#3)
 - The README's release install block named archives without their version and
   downloaded a 404 page. (#6)
+- An attribute that becomes unknown after apply no longer prints the value it held
+  before, and a sensitive container now hides every attribute under it. Report this
+  class of defect privately: see SECURITY.md.
+- A plan Terraform recorded as failed, incomplete or deferred is rejected instead of
+  being read as a safe no-op. A genuine no-op with `applyable=false` is still valid.
+- Resources, providers, actions and modes the catalogue does not cover are reported as
+  unassessed rather than counted as safe.
+- Report paths can no longer overwrite the plan they were generated from, or collide
+  with each other; each file is replaced atomically.
+- Human-readable output escapes markup and control characters that came from the plan.
 
-## [0.1.0] - 2026-10-10
+### Security
+- `--format json` runs no subprocess at all. Saved-plan execution has a time and output
+  budget, and its diagnostics are withheld rather than echoed.
+- GitHub Action: binaries are installed at exact versions into isolated directories,
+  the checksum selects exactly one archive, extraction streams only the named binary,
+  and an optional comment can no longer replace the scan's exit status.
+
+## [0.1.0] - 2026-10-14
 
 First release: the plan reader, nine rules, 63 AWS knowledge files, Markdown, text and
-JSON output, suppressions, the GitHub Action, GitLab and Azure DevOps examples, the
-container image and build-provenance attestations.
+JSON output, suppressions, the GitHub Action, and GitLab/Azure DevOps reference examples.
+Observed release assets are six OS/architecture archives and `checksums.txt`.
+Container availability and build-provenance attestations are not established by
+those assets; see the version-specific availability matrix in the README.
 
 [Unreleased]: https://github.com/infraedgecloud-tools/tfimpact/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/infraedgecloud-tools/tfimpact/releases/tag/v0.1.0

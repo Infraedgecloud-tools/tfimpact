@@ -43,7 +43,7 @@ func Parse(doc string) (*Policy, error) {
 	case map[string]any:
 		stmts = []any{s}
 	case nil:
-		return &Policy{}, nil
+		return nil, fmt.Errorf("policy requires Statement")
 	default:
 		return nil, fmt.Errorf("unexpected Statement type %T", raw.Statement)
 	}
@@ -51,7 +51,7 @@ func Parse(doc string) (*Policy, error) {
 	for _, s := range stmts {
 		m, ok := s.(map[string]any)
 		if !ok {
-			continue
+			return nil, fmt.Errorf("policy statements must be objects")
 		}
 		st := Statement{
 			Sid:           str(m["Sid"]),
@@ -64,8 +64,8 @@ func Parse(doc string) (*Policy, error) {
 			NotPrincipals: principals(m["NotPrincipal"]),
 			Conditions:    conditions(m["Condition"]),
 		}
-		if st.Effect == "" {
-			st.Effect = "Allow"
+		if st.Effect != "Allow" && st.Effect != "Deny" {
+			return nil, fmt.Errorf("policy statements require Effect Allow or Deny")
 		}
 		p.Statements = append(p.Statements, st)
 	}

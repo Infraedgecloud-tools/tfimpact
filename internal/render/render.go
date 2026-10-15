@@ -5,9 +5,12 @@ package render
 import (
 	"encoding/json"
 	"fmt"
+	"html"
 	"io"
 	"sort"
+	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/infraedgecloud-tools/tfimpact/internal/findings"
 	"github.com/infraedgecloud-tools/tfimpact/internal/ghcomment"
@@ -136,7 +139,7 @@ func PlanLine(c findings.ChangeCounts) string {
 	if len(extra) > 0 {
 		s += " (" + strings.Join(extra, ", ") + ")"
 	}
-	return s
+	return singleLine(s)
 }
 
 var severityOrder = []findings.Severity{findings.Critical, findings.High, findings.Medium, findings.Low}
@@ -148,7 +151,7 @@ func Markdown(w io.Writer, r *findings.Result) error {
 	var b strings.Builder
 	b.WriteString(ghcomment.Marker + "\n")
 	fmt.Fprintf(&b, "## tfimpact: %s\n\n", Headline(r))
-	fmt.Fprintf(&b, "**Plan:** %s · %s\n", PlanLine(r.Counts), engine(r))
+	fmt.Fprintf(&b, "**Plan:** %s · %s\n", PlanLine(r.Counts), markdownText(engine(r)))
 	active := r.Active()
 	for _, sev := range severityOrder {
 		group := bySeverity(active, sev)
@@ -157,7 +160,7 @@ func Markdown(w io.Writer, r *findings.Result) error {
 		}
 		fmt.Fprintf(&b, "\n### %s %s (%d)\n\n", severityIcon[sev], title(sev), len(group))
 		for _, f := range group {
-			fmt.Fprintf(&b, "- **%s.** %s _%s_ `%s`\n", f.Title, f.Observed, f.Recommendation, f.RuleID)
+			fmt.Fprintf(&b, "- **%s.** %s _%s_ `%s`\n", markdownText(f.Title), markdownText(f.Observed), markdownText(f.Recommendation), f.RuleID)
 		}
 	}
 	if len(r.Routine) > 0 {
@@ -173,13 +176,13 @@ func Markdown(w io.Writer, r *findings.Result) error {
 	if len(r.Moves) > 0 {
 		fmt.Fprintf(&b, "\n### Moved (%d)\n\n", len(r.Moves))
 		for _, m := range r.Moves {
-			fmt.Fprintf(&b, "- `%s` → `%s` (address change only, nothing is recreated)\n", m.From, m.To)
+			fmt.Fprintf(&b, "- `%s` → `%s` (address change only, nothing is recreated)\n", markdownText(m.From), markdownText(m.To))
 		}
 	}
 	if len(r.Drift) > 0 {
 		fmt.Fprintf(&b, "\n### Changed outside Terraform (%d)\n\n", len(r.Drift))
 		for _, d := range r.Drift {
-			fmt.Fprintf(&b, "- `%s`: %s\n", d.Address, driftText(d, true))
+			fmt.Fprintf(&b, "- `%s`: %s\n", markdownText(d.Address), markdownText(driftText(d, true)))
 		}
 	}
 	if sup := r.Suppressed(); len(sup) > 0 {
@@ -193,7 +196,7 @@ func Markdown(w io.Writer, r *findings.Result) error {
 			if f.SuppressionExpires != nil {
 				exp = ", until " + *f.SuppressionExpires
 			}
-			fmt.Fprintf(&b, "- %s `%s` — %s%s\n", f.Title, f.RuleID, reason, exp)
+			fmt.Fprintf(&b, "- %s `%s` — %s%s\n", markdownText(f.Title), f.RuleID, markdownText(reason), markdownText(exp))
 		}
 	}
 	fmt.Fprintf(&b, "\n<sub>%s</sub>\n", footer(r))
@@ -204,13 +207,13 @@ func Markdown(w io.Writer, r *findings.Result) error {
 func writeRoutineMarkdown(b *strings.Builder, g findings.Routine) {
 	switch {
 	case len(g.Addresses) == 1:
-		fmt.Fprintf(b, "- `%s`: %s\n", g.Addresses[0], g.Summary)
+		fmt.Fprintf(b, "- `%s`: %s\n", markdownText(g.Addresses[0]), markdownText(g.Summary))
 	case len(g.Addresses) <= 3:
-		fmt.Fprintf(b, "- %s: %s\n", joinCodes(g.Addresses), g.Summary)
+		fmt.Fprintf(b, "- %s: %s\n", joinCodes(g.Addresses), markdownText(g.Summary))
 	default:
-		fmt.Fprintf(b, "- <details><summary>%d × `%s`: %s</summary>\n\n", len(g.Addresses), g.Type, g.Summary)
+		fmt.Fprintf(b, "- <details><summary>%d × `%s`: %s</summary>\n\n", len(g.Addresses), markdownText(g.Type), markdownText(g.Summary))
 		for _, a := range g.Addresses {
-			fmt.Fprintf(b, "  - `%s`\n", a)
+			fmt.Fprintf(b, "  - `%s`\n", markdownText(a))
 		}
 		b.WriteString("\n  </details>\n")
 	}
@@ -266,22 +269,22 @@ func TextColor(w io.Writer, r *findings.Result, color bool) error {
 		fmt.Fprintf(&b, "\n%s\n", paint(ansiDim, fmt.Sprintf("ROUTINE (%d)", total)))
 		for _, g := range r.Routine {
 			if len(g.Addresses) <= 3 {
-				fmt.Fprintf(&b, "  * %s: %s\n", strings.Join(g.Addresses, ", "), strip(g.Summary))
+				fmt.Fprintf(&b, "  * %s: %s\n", singleLine(strings.Join(g.Addresses, ", ")), strip(g.Summary))
 			} else {
-				fmt.Fprintf(&b, "  * %d x %s: %s\n", len(g.Addresses), g.Type, strip(g.Summary))
+				fmt.Fprintf(&b, "  * %d x %s: %s\n", len(g.Addresses), singleLine(g.Type), strip(g.Summary))
 			}
 		}
 	}
 	if len(r.Moves) > 0 {
 		fmt.Fprintf(&b, "\nMOVED (%d)\n", len(r.Moves))
 		for _, m := range r.Moves {
-			fmt.Fprintf(&b, "  * %s -> %s\n", m.From, m.To)
+			fmt.Fprintf(&b, "  * %s -> %s\n", singleLine(m.From), singleLine(m.To))
 		}
 	}
 	if len(r.Drift) > 0 {
 		fmt.Fprintf(&b, "\nCHANGED OUTSIDE TERRAFORM (%d)\n", len(r.Drift))
 		for _, d := range r.Drift {
-			fmt.Fprintf(&b, "  * %s: %s\n", d.Address, strip(driftText(d, false)))
+			fmt.Fprintf(&b, "  * %s: %s\n", singleLine(d.Address), strip(driftText(d, false)))
 		}
 	}
 	if sup := r.Suppressed(); len(sup) > 0 {
@@ -291,7 +294,7 @@ func TextColor(w io.Writer, r *findings.Result, color bool) error {
 			if f.SuppressionReason != nil {
 				reason = *f.SuppressionReason
 			}
-			fmt.Fprintf(&b, "  * %s [%s]: %s\n", strip(f.Title), f.RuleID, reason)
+			fmt.Fprintf(&b, "  * %s [%s]: %s\n", strip(f.Title), f.RuleID, singleLine(reason))
 		}
 	}
 	fmt.Fprintf(&b, "\n%s\n", strip(footer(r)))
@@ -323,9 +326,9 @@ func driftText(d findings.Drift, md bool) string {
 
 func engine(r *findings.Result) string {
 	if r.TerraformVersion == "" {
-		return "plan format " + r.FormatVersion
+		return "plan format " + singleLine(r.FormatVersion)
 	}
-	return fmt.Sprintf("Terraform/OpenTofu %s · %s", r.TerraformVersion, plural(r.Resources, "resource"))
+	return fmt.Sprintf("Terraform/OpenTofu %s · %s", singleLine(r.TerraformVersion), plural(r.Resources, "resource"))
 }
 
 func footer(r *findings.Result) string {
@@ -350,7 +353,7 @@ func title(sev findings.Severity) string {
 func joinCodes(xs []string) string {
 	q := make([]string, len(xs))
 	for i, x := range xs {
-		q[i] = "`" + x + "`"
+		q[i] = "`" + markdownText(x) + "`"
 	}
 	return strings.Join(q, ", ")
 }
@@ -360,5 +363,24 @@ func strip(s string) string {
 	s = strings.ReplaceAll(s, "`", "")
 	s = strings.ReplaceAll(s, "**", "")
 	s = strings.ReplaceAll(s, "[InfraEdge](https://infraedgecloud.com)", "InfraEdge")
-	return s
+	return singleLine(s)
+}
+
+// Finding prose is treated as plain text inside the report's own structure.
+// Escaping it as a whole also protects policy-derived fragments and suppressions.
+func markdownText(s string) string {
+	s = html.EscapeString(singleLine(s))
+	return strings.NewReplacer("\\", "\\\\", "`", "&#96;", "*", "\\*", "_", "\\_", "[", "\\[", "]", "\\]", "(", "\\(", ")", "\\)", "|", "\\|").Replace(s)
+}
+
+func singleLine(s string) string {
+	var out strings.Builder
+	for _, r := range s {
+		if unicode.IsControl(r) {
+			out.WriteString(strconv.QuoteRune(r)[1 : len(strconv.QuoteRune(r))-1])
+		} else {
+			out.WriteRune(r)
+		}
+	}
+	return out.String()
 }

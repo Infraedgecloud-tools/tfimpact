@@ -2,9 +2,9 @@ tfimpact: 1 change destroys data, 1 minor, 1 routine
 Plan: 2 to add, 0 to change, 2 to destroy (1 move, 2 unchanged). Terraform/OpenTofu 1.15.5 · 6 resources.
 
 CRITICAL (1)
-  * aws_s3_bucket.logs is renamed to aws_s3_bucket.audit_logs without a moved block, so it will be destroyed and recreated [PLAN-RENAME-001]
-    aws_s3_bucket.logs will be destroyed because it left the configuration, and aws_s3_bucket.audit_logs will be created with the same bucket ("fixture-alb-access-logs-eu-west-2"). Terraform does not know they are the same object. The S3 bucket would be destroyed with it, losing every object and object version in the bucket.
-    -> Add a moved block (from = aws_s3_bucket.logs, to = aws_s3_bucket.audit_logs) so Terraform changes the address in state instead. Applying as planned also tries to create a resource with the same bucket, which fails for globally named resources.
+  * aws_s3_bucket.logs and aws_s3_bucket.audit_logs share an identity across a destroy/create pair: possible address rename [PLAN-RENAME-001]
+    aws_s3_bucket.logs will be destroyed because it left the configuration, and aws_s3_bucket.audit_logs will be created with the same bucket ("fixture-alb-access-logs-eu-west-2"). A shared identity suggests a possible address rename; it does not establish that these are the same cloud object. The S3 bucket would be destroyed with it, losing every object and object version in the bucket.
+    -> Confirm that both entries refer to the same provider configuration, account, region and cloud object before considering a moved block (from = aws_s3_bucket.logs, to = aws_s3_bucket.audit_logs). Otherwise review the intended migration and any uniqueness constraints on bucket.
 
 LOW (1)
   * aws_s3_bucket_versioning.logs will be destroyed [PLAN-DELETE-001]
