@@ -36,17 +36,21 @@ sboms:
 # The checksums file is signed keylessly with cosign through the workflow's
 # OIDC identity, alongside the build-provenance attestation the workflow
 # already attaches. Verify with:
-#   cosign verify-blob --certificate checksums.txt.pem --signature checksums.txt.sig \
+#   cosign verify-blob --bundle checksums.txt.bundle \
 #     --certificate-identity-regexp 'github.com/infraedgecloud-tools/tfimpact' \
 #     --certificate-oidc-issuer https://token.actions.githubusercontent.com checksums.txt
+#
+# One bundle rather than a separate .sig and .pem: cosign now defaults to the
+# new bundle format, and in that mode --output-signature and --output-certificate
+# are ignored, so the v0.2.0 release failed with "create bundle file: open :
+# no such file or directory" on an empty --bundle path.
 signs:
   - cmd: cosign
-    certificate: "${artifact}.pem"
+    signature: "${artifact}.bundle"
     args:
       - sign-blob
       - --yes
-      - --output-certificate=${certificate}
-      - --output-signature=${signature}
+      - --bundle=${signature}
       - ${artifact}
     artifacts: checksum
     output: true
