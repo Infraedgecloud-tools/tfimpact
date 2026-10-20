@@ -41,8 +41,13 @@ sboms:
 # OIDC identity, alongside the build-provenance attestation the workflow
 # already attaches. Verify with:
 #   cosign verify-blob --bundle checksums.txt.bundle \
-#     --certificate-identity-regexp 'github.com/infraedgecloud-tools/tfimpact' \
+#     --certificate-identity-regexp \
+#       '(?i)^https://github\.com/infraedgecloud-tools/tfimpact/\.github/workflows/release\.yml@refs/tags/' \
 #     --certificate-oidc-issuer https://token.actions.githubusercontent.com checksums.txt
+#
+# The regexp is anchored on the workflow identity and case-insensitive: GitHub
+# puts the organisation in the SAN the way it stores it, Infraedgecloud-tools,
+# and cosign matches case-sensitively.
 #
 # One bundle rather than a separate .sig and .pem: cosign now defaults to the
 # new bundle format, and in that mode --output-signature and --output-certificate
