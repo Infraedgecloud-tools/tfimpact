@@ -4,6 +4,29 @@ All notable changes to tfimpact. The format follows [Keep a Changelog](https://k
 and the project uses [Semantic Versioning](https://semver.org/). Rule IDs never change
 meaning; a rule that needs different semantics gets a new ID.
 
+## [0.2.1] - 2026-10-20
+
+### Fixed
+- The Action's `verify-provenance: 'true'` verifies. It passed `--cert-identity` and
+  `--signer-workflow` together, which `gh` refuses, so the step failed for everyone who
+  turned it on. (#25)
+- The SBOMs are CycloneDX, as the release notes have always described them. The `sboms`
+  block named no arguments, so goreleaser used its default syft invocation and v0.2.0's
+  documents are SPDX-2.3. (#24)
+- The `cosign verify-blob` command in the release configuration verifies the signature
+  it describes: the certificate identity is matched case-insensitively, because GitHub
+  writes the organisation into the SAN as `Infraedgecloud-tools`. (#24)
+- The README describes the release that exists. Its install section was written against
+  v0.1.0 and said the packages, SBOMs, signed checksums and attestations v0.2.0 publishes
+  were not established. (#26)
+
+### Changed
+- The Action installs `0.2.0` by default, not `0.1.0`, and verifies provenance by
+  default. Pin `version: '0.1.0'` to keep the previous binary. (#25)
+- Built with Go 1.27. The module was held at 1.26 while staticcheck could not read Go
+  1.27 export data; staticcheck 2026.2.2 can. (#23)
+- `goreleaser/goreleaser-action` 7.2.3 → 7.3.0. (#16)
+
 ## [0.2.0] - 2026-10-15
 
 ### Added
@@ -67,9 +90,11 @@ meaning; a rule that needs different semantics gets a new ID.
 
 First release: the plan reader, nine rules, 63 AWS knowledge files, Markdown, text and
 JSON output, suppressions, the GitHub Action, and GitLab/Azure DevOps reference examples.
-Observed release assets are six OS/architecture archives and `checksums.txt`.
-Container availability and build-provenance attestations are not established by
-those assets; see the version-specific availability matrix in the README.
+Release assets are six OS/architecture archives and `checksums.txt`, each with a
+build-provenance attestation. Signed checksums, SBOMs and Linux packages start at
+v0.2.0.
 
-[Unreleased]: https://github.com/infraedgecloud-tools/tfimpact/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/infraedgecloud-tools/tfimpact/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/infraedgecloud-tools/tfimpact/compare/v0.2.0...v0.2.1
+[0.2.0]: https://github.com/infraedgecloud-tools/tfimpact/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/infraedgecloud-tools/tfimpact/releases/tag/v0.1.0
