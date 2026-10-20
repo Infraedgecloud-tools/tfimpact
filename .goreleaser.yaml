@@ -30,8 +30,12 @@ checksum:
 
 # A CycloneDX SBOM per archive, from syft, which the release workflow
 # installs. Downloaders who audit dependencies get it without building.
+# The output format is named explicitly: goreleaser's default syft arguments
+# write SPDX, which is how v0.2.0 shipped SPDX documents under a CycloneDX
+# description.
 sboms:
   - artifacts: archive
+    args: ["$artifact", "--output", "cyclonedx-json=$document"]
 
 # The checksums file is signed keylessly with cosign through the workflow's
 # OIDC identity, alongside the build-provenance attestation the workflow
