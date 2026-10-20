@@ -11,10 +11,10 @@ inputs:
     required: true
   version:
     description: >-
-      Exact tfimpact release to install, for example 0.2.0. Moving labels are rejected.
+      Exact tfimpact release to install, for example 0.2.1. Moving labels are rejected.
       Pin the Action source SHA as well as the binary version.
     required: false
-    default: '0.2.0'
+    default: '0.2.1'
   verify-provenance:
     description: >-
       Require GitHub build attestation from this repository's release workflow and exact tag.

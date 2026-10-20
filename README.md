@@ -66,24 +66,24 @@ terraform show -json tfplan | tfimpact explain -
 
 ## Install
 
-Checked on 20 October 2026 against the published **v0.2.0** assets, on Linux arm64.
+Checked on 20 October 2026 against the published **v0.2.1** assets, on Linux arm64.
 
 | Channel | Available | How it was checked |
 |---|---|---|
-| Release archives | Linux and macOS `.tar.gz`, Windows `.zip`, amd64 and arm64, with `checksums.txt` | `tfimpact_0.2.0_linux_arm64.tar.gz` downloaded, checksum verified, binary run |
-| deb / rpm / apk | Linux amd64 and arm64 | `tfimpact_0.2.0_linux_arm64.deb` read: package `tfimpact`, version `0.2.0`, architecture `arm64` |
-| Go source install | `go install ...@v0.2.0` | Installed into an empty `GOBIN`; reports `tfimpact v0.2.0 linux/arm64` |
+| Release archives | Linux and macOS `.tar.gz`, Windows `.zip`, amd64 and arm64, with `checksums.txt` | `tfimpact_0.2.1_linux_arm64.tar.gz` downloaded, checksum verified, binary run on the bundled plan |
+| deb / rpm / apk | Linux amd64 and arm64 | `tfimpact_0.2.1_linux_arm64.deb` read: package `tfimpact`, version `0.2.1`, architecture `arm64` |
+| Go source install | `go install ...@v0.2.1` | Installed into an empty `GOBIN`; reports the version |
 | GitHub Action | `infraedgecloud-tools/tfimpact@<sha>` | Runs against a bundled fixture in CI on every push |
 | Build provenance | One attestation per asset | `gh attestation verify` succeeds; the same command against the wrong tag fails |
 | Signed checksums | `checksums.txt.bundle`, keyless cosign | `cosign verify-blob` reports `Verified OK`; a modified `checksums.txt` fails |
-| SBOM | One per archive | Present. v0.2.0's are SPDX-2.3 although the release notes call them CycloneDX; the next release writes CycloneDX |
+| SBOM | One per archive | CycloneDX 1.7, 4 components. v0.2.0's were SPDX-2.3 under a CycloneDX description; fixed in v0.2.1 |
 | Container | Not pullable | The image is published to GHCR but the package is private: an anonymous pull answers 403 ([#17](https://github.com/infraedgecloud-tools/tfimpact/issues/17)) |
 | Homebrew / Scoop | Not published | The tap and the bucket are empty; the release job skips them while `TAP_GITHUB_TOKEN` is unset ([#18](https://github.com/infraedgecloud-tools/tfimpact/issues/18)) |
 
 ```bash
 # A release archive, verified against the checksum published beside it.
 # Pick the platform you are on; this is Linux amd64.
-v=0.2.0
+v=0.2.1
 archive="tfimpact_${v}_linux_amd64.tar.gz"
 base="https://github.com/infraedgecloud-tools/tfimpact/releases/download/v${v}"
 curl -fsSLO "$base/$archive"
@@ -97,10 +97,10 @@ chmod +x tfimpact
 ./tfimpact version
 
 # Or a Debian, RPM or Alpine package:
-# sudo dpkg -i tfimpact_0.2.0_linux_amd64.deb
+# sudo dpkg -i tfimpact_0.2.1_linux_amd64.deb
 
 # Or from source, pinned:
-go install github.com/infraedgecloud-tools/tfimpact/cmd/tfimpact@v0.2.0
+go install github.com/infraedgecloud-tools/tfimpact/cmd/tfimpact@v0.2.1
 ```
 
 ### Verify what you downloaded
@@ -110,9 +110,9 @@ built the binary. These two do.
 
 ```bash
 # Build provenance: this asset came out of this repository's release workflow at this tag.
-gh attestation verify tfimpact_0.2.0_linux_amd64.tar.gz \
+gh attestation verify tfimpact_0.2.1_linux_amd64.tar.gz \
   --repo Infraedgecloud-tools/tfimpact \
-  --source-ref refs/tags/v0.2.0
+  --source-ref refs/tags/v0.2.1
 
 # The checksums file itself, signed keylessly by the same workflow.
 curl -fsSLO "$base/checksums.txt.bundle"
@@ -149,7 +149,7 @@ steps:
   - uses: infraedgecloud-tools/tfimpact@<sha>   # pin to a release tag or commit
     with:
       plan: plan.json
-      version: '0.2.0'      # binary release; pin independently of the Action source
+      version: '0.2.1'      # binary release; pin independently of the Action source
       comment: 'false'      # works with a read-only/fork PR token
       fail-on: high        # exit 1 when an unsuppressed finding is high or critical
 ```
@@ -159,7 +159,7 @@ and need `pull-requests: write`; denied comment permissions do not replace the s
 exit code. Use ordinary `pull_request` workflows and read-only tokens for fork scans.
 Do not check out untrusted PR code under `pull_request_target` with privileged credentials.
 
-The Action defaults to binary version `0.2.0`; moving version labels are rejected.
+The Action defaults to binary version `0.2.1`; moving version labels are rejected.
 Pin both the Action source SHA and binary version. `verify-provenance` defaults to
 `'true'`: it requires an attestation from this repository's release workflow and the
 exact selected tag, and fails closed if verification is unavailable. Every published
@@ -240,7 +240,7 @@ they look like. Leaving `address` out suppresses the rule everywhere.
   thresholds do not imply full assessment. Generic plan action facts can still be shown.
 - JSON input is limited to 64 MiB. `--json-only` rejects binary saved plans before
   any subprocess. JSON files and stdin are parsed locally without Terraform/OpenTofu.
-  These limits are in v0.2.0 and are absent from v0.1.0.
+  These limits are in v0.2.0 and later, and are absent from v0.1.0.
 
 Upload the SARIF to GitHub code scanning from the same job:
 
