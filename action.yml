@@ -11,16 +11,17 @@ inputs:
     required: true
   version:
     description: >-
-      Exact tfimpact release to install, for example 0.1.0. Moving labels are rejected.
+      Exact tfimpact release to install, for example 0.2.0. Moving labels are rejected.
       Pin the Action source SHA as well as the binary version.
     required: false
-    default: '0.1.0'
+    default: '0.2.0'
   verify-provenance:
     description: >-
       Require GitHub build attestation from this repository's release workflow and exact tag.
-      v0.1.0 has no verified attestation; false uses release checksums only and does not establish provenance.
+      Every published release carries one. Release checksums alone detect corruption;
+      they do not establish provenance.
     required: false
-    default: 'false'
+    default: 'true'
   fail-on:
     description: Fail the step when an unsuppressed finding reaches this severity (none, low, medium, high, critical).
     required: false
@@ -104,8 +105,10 @@ runs:
             raise SystemExit('selected archive checksum missing, duplicated or mismatched')
         PYVERIFY
         if [ "$VERIFY_PROVENANCE" = true ]; then
+          # --cert-identity pins the signing workflow and the exact tag, so
+          # --signer-workflow would say the same thing again; gh rejects both
+          # together.
           gh attestation verify "$dl/$archive" --repo Infraedgecloud-tools/tfimpact \
-            --signer-workflow Infraedgecloud-tools/tfimpact/.github/workflows/release.yml \
             --source-ref "refs/tags/v${v}" \
             --cert-identity "https://github.com/Infraedgecloud-tools/tfimpact/.github/workflows/release.yml@refs/tags/v${v}"
         fi

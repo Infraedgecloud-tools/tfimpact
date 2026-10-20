@@ -80,7 +80,9 @@ func TestActionInstallConsumer(t *testing.T) {
 			}
 			os.WriteFile(filepath.Join(dir, "checksums.txt"), []byte(sum+"  tfimpact_0.1.0_linux_amd64.tar.gz\n"), 0600)
 			os.WriteFile(filepath.Join(bin, "curl"), []byte("#!/bin/bash\nwhile [ \"$1\" != '-o' ]; do shift; done\ncase \"$3\" in *checksums.txt) cp \"$FIXTURES/checksums.txt\" \"$2\";; *) cp \"$FIXTURES/fixture.tar.gz\" \"$2\";; esac\n"), 0700)
-			os.WriteFile(filepath.Join(bin, "gh"), []byte("#!/bin/bash\nprintf '%s\\n' \"$@\" > \"$FIXTURES/gh-args\"\nexit \"$GH_STATUS\"\n"), 0700)
+			// gh refuses --cert-identity and --signer-workflow together and exits
+			// before it verifies anything, so the stub refuses them too.
+			os.WriteFile(filepath.Join(bin, "gh"), []byte("#!/bin/bash\nprintf '%s\\n' \"$@\" > \"$FIXTURES/gh-args\"\nif grep -qx -- --cert-identity \"$FIXTURES/gh-args\" && grep -qx -- --signer-workflow \"$FIXTURES/gh-args\"; then exit 1; fi\nexit \"$GH_STATUS\"\n"), 0700)
 			script := actionScript(t, "Install tfimpact")
 			cmd := exec.Command("bash", "-e", "-o", "pipefail", "-c", script)
 			verify := "false"
@@ -101,10 +103,13 @@ func TestActionInstallConsumer(t *testing.T) {
 			}
 			if tc.provenance {
 				args, _ := os.ReadFile(filepath.Join(dir, "gh-args"))
-				for _, required := range []string{"--repo\nInfraedgecloud-tools/tfimpact", "--source-ref\nrefs/tags/v0.1.0", "--signer-workflow\nInfraedgecloud-tools/tfimpact/.github/workflows/release.yml", "--cert-identity\nhttps://github.com/Infraedgecloud-tools/tfimpact/.github/workflows/release.yml@refs/tags/v0.1.0"} {
+				for _, required := range []string{"--repo\nInfraedgecloud-tools/tfimpact", "--source-ref\nrefs/tags/v0.1.0", "--cert-identity\nhttps://github.com/Infraedgecloud-tools/tfimpact/.github/workflows/release.yml@refs/tags/v0.1.0"} {
 					if !strings.Contains(string(args), required) {
 						t.Error("missing provenance constraint")
 					}
+				}
+				if strings.Contains(string(args), "--signer-workflow") {
+					t.Error("--signer-workflow cannot be passed with --cert-identity")
 				}
 			}
 		})
