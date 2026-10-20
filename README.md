@@ -56,10 +56,7 @@ terraform show -json tfplan > plan.json
 tfimpact explain plan.json
 ```
 
-**Unreleased main features (absent from v0.1.0):** saved-plan helper, SARIF output,
-shell completion, and the associated current-source flags shown below.
-
-Given the saved plan, current unreleased source runs `terraform show -json` on it for you (or `tofu`), in
+Given the saved plan, tfimpact runs `terraform show -json` on it for you (or `tofu`), in
 the directory you ran `plan` in. In CI, where the JSON is usually written anyway, hand it
 the JSON or pipe it:
 
@@ -69,29 +66,28 @@ terraform show -json tfplan | tfimpact explain -
 
 ## Install
 
-Availability checked on 15 October 2026 against the published **v0.1.0** assets.
-Workflow configuration describes future packaging; it does not prove publication.
-The published version is legacy: the hardening described in this change requires
-an owner-approved release. Installing v0.1.0 does not install these pending changes.
+Checked on 20 October 2026 against the published **v0.2.0** assets, on Linux arm64.
 
-| Channel | v0.1.0 availability | Verification in this change |
+| Channel | Available | How it was checked |
 |---|---|---|
-| Release archives | Linux/macOS amd64 and arm64 `.tar.gz`; Windows amd64 and arm64 `.zip`; `checksums.txt` | Linux amd64 downloaded, checksum checked and CLI smoke tested; other platforms pending native runners |
-| Go source install | Versioned module path below | See [validation evidence](docs/validation.md) |
-| GitHub Action | Source available; pin source SHA and binary version separately | Embedded Bash consumer tests; live hosted runner and fork permissions pending |
-| Homebrew / Scoop | Upcoming; tap and bucket were empty when checked | No supported installation command yet |
-| deb / rpm / apk | Not attached to v0.1.0 | Upcoming |
-| Container | Not established by the archive release | Registry pull/run verification pending |
-| SBOM / signed checksums / attestations | Not established for v0.1.0 | No provenance claim for that release |
+| Release archives | Linux and macOS `.tar.gz`, Windows `.zip`, amd64 and arm64, with `checksums.txt` | `tfimpact_0.2.0_linux_arm64.tar.gz` downloaded, checksum verified, binary run |
+| deb / rpm / apk | Linux amd64 and arm64 | `tfimpact_0.2.0_linux_arm64.deb` read: package `tfimpact`, version `0.2.0`, architecture `arm64` |
+| Go source install | `go install ...@v0.2.0` | Installed into an empty `GOBIN`; reports `tfimpact v0.2.0 linux/arm64` |
+| GitHub Action | `infraedgecloud-tools/tfimpact@<sha>` | Runs against a bundled fixture in CI on every push |
+| Build provenance | One attestation per asset | `gh attestation verify` succeeds; the same command against the wrong tag fails |
+| Signed checksums | `checksums.txt.bundle`, keyless cosign | `cosign verify-blob` reports `Verified OK`; a modified `checksums.txt` fails |
+| SBOM | One per archive | Present. v0.2.0's are SPDX-2.3 although the release notes call them CycloneDX; the next release writes CycloneDX |
+| Container | Not pullable | The image is published to GHCR but the package is private: an anonymous pull answers 403 ([#17](https://github.com/infraedgecloud-tools/tfimpact/issues/17)) |
+| Homebrew / Scoop | Not published | The tap and the bucket are empty; the release job skips them while `TAP_GITHUB_TOKEN` is unset ([#18](https://github.com/infraedgecloud-tools/tfimpact/issues/18)) |
 
 ```bash
-# Explicit Linux amd64 release archive. Inspect the release before selecting another platform.
-v=0.1.0
+# A release archive, verified against the checksum published beside it.
+# Pick the platform you are on; this is Linux amd64.
+v=0.2.0
 archive="tfimpact_${v}_linux_amd64.tar.gz"
-base="https://github.com/Infraedgecloud-tools/tfimpact/releases/download/v${v}"
+base="https://github.com/infraedgecloud-tools/tfimpact/releases/download/v${v}"
 curl -fsSLO "$base/$archive"
 curl -fsSLO "$base/checksums.txt"
-test -f "$archive"
 awk -v archive="$archive" '$2 == archive {print}' checksums.txt > selected-checksum.txt
 test "$(wc -l < selected-checksum.txt)" -eq 1
 sha256sum -c selected-checksum.txt
@@ -100,13 +96,38 @@ tar -xOzf "$archive" tfimpact > tfimpact
 chmod +x tfimpact
 ./tfimpact version
 
-# Alternatively, a pinned source install with the Go toolchain required by the module:
-go install github.com/infraedgecloud-tools/tfimpact/cmd/tfimpact@v0.1.0
+# Or a Debian, RPM or Alpine package:
+# sudo dpkg -i tfimpact_0.2.0_linux_amd64.deb
+
+# Or from source, pinned:
+go install github.com/infraedgecloud-tools/tfimpact/cmd/tfimpact@v0.2.0
 ```
 
-Release checksums detect corruption; a checksum downloaded beside a binary does not
-establish build provenance. Do not assume the signatures or attestations configured
-in the current release workflow exist on earlier releases.
+### Verify what you downloaded
+
+A checksum published beside a binary detects corruption; it says nothing about who
+built the binary. These two do.
+
+```bash
+# Build provenance: this asset came out of this repository's release workflow at this tag.
+gh attestation verify tfimpact_0.2.0_linux_amd64.tar.gz \
+  --repo Infraedgecloud-tools/tfimpact \
+  --source-ref refs/tags/v0.2.0
+
+# The checksums file itself, signed keylessly by the same workflow.
+curl -fsSLO "$base/checksums.txt.bundle"
+cosign verify-blob --bundle checksums.txt.bundle \
+  --certificate-identity-regexp \
+    '(?i)^https://github\.com/infraedgecloud-tools/tfimpact/\.github/workflows/release\.yml@refs/tags/' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+  checksums.txt
+```
+
+The identity regexp is case-insensitive because GitHub writes the organisation into the
+certificate the way it stores it, `Infraedgecloud-tools`, and cosign matches case.
+
+v0.1.0 carries attestations too, but no signed checksums file and no SBOMs; those
+start at v0.2.0.
 
 Try it on the bundled fixtures without any AWS account:
 
@@ -128,7 +149,7 @@ steps:
   - uses: infraedgecloud-tools/tfimpact@<sha>   # pin to a release tag or commit
     with:
       plan: plan.json
-      version: '0.1.0'      # binary release; pin independently of the Action source
+      version: '0.2.0'      # binary release; pin independently of the Action source
       comment: 'false'      # works with a read-only/fork PR token
       fail-on: high        # exit 1 when an unsuppressed finding is high or critical
 ```
@@ -138,12 +159,11 @@ and need `pull-requests: write`; denied comment permissions do not replace the s
 exit code. Use ordinary `pull_request` workflows and read-only tokens for fork scans.
 Do not check out untrusted PR code under `pull_request_target` with privileged credentials.
 
-The Action defaults to binary version `0.1.0`; moving version labels are rejected.
-Pin both the Action source SHA and binary version. `verify-provenance: 'true'` requires
-an attestation from this repository's release workflow and the exact selected tag;
-it fails closed if verification is unavailable. The default is false for compatibility
-with the legacy v0.1.0 release, whose provenance is not established. Enable verification
-only after the selected release has been verified by the maintainer.
+The Action defaults to binary version `0.2.0`; moving version labels are rejected.
+Pin both the Action source SHA and binary version. `verify-provenance` defaults to
+`'true'`: it requires an attestation from this repository's release workflow and the
+exact selected tag, and fails closed if verification is unavailable. Every published
+release carries one.
 GitLab CI and Azure DevOps snippets in [`docs/ci/`](docs/ci/) are reference examples;
 they have not been run on those providers in this change.
 
@@ -220,7 +240,7 @@ they look like. Leaving `address` out suppresses the rule everywhere.
   thresholds do not imply full assessment. Generic plan action facts can still be shown.
 - JSON input is limited to 64 MiB. `--json-only` rejects binary saved plans before
   any subprocess. JSON files and stdin are parsed locally without Terraform/OpenTofu.
-  These hardening changes are pending release and are absent from v0.1.0.
+  These limits are in v0.2.0 and are absent from v0.1.0.
 
 Upload the SARIF to GitHub code scanning from the same job:
 
